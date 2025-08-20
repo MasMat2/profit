@@ -1,0 +1,129 @@
+/* Estilos para el Acordeón */
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordion-header .nav-item {
+  flex-grow: 1;
+}
+
+.accordion-header > i.fas {
+  color: #9da5b5;
+}
+
+.accordion-header > i.fas.rotated {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding-left: 1rem; /* Indentación para sub-items */
+}
+
+.accordion-content.show {
+  max-height: 200px; /* Ajusta según el número de sub-items */
+}
+
+.main-layout {
+    display: flex;
+    height: 100%;
+}
+
+
+.sidebar {
+    width: 260px;
+    background-color: var(--surface-b); /* Color de fondo azul-grisáceo claro */
+    border-right: 1px solid var(--surface-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Footer del Sidebar */
+.sidebar-footer {
+  margin-top: auto; /* Empuja este contenedor hacia abajo */
+  padding-top: 1rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+
+.logo-container {
+    padding: 1rem 0; /* Padding vertical reducido para quitar espacio en blanco */
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .logo-container img {
+    height: 80px; 
+    width: auto;
+    object-fit: contain;
+  }
+
+  .main-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+
+  .menu-section {
+    margin-bottom: 1rem;
+  }
+
+
+  .menu-section-header {
+    padding: 0 1rem;
+    margin: 1.5rem 0 0.75rem 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+  }
+
+
+//   nav-item
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #4b5563; /* Texto más oscuro */
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  
+  .nav-item i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    color: #9da5b5; /* Iconos grisáceos */
+  }
+  
+  .nav-item:hover {
+    background-color: transparent; /* Sin hover de fondo */
+    color: var(--primary-color);
+  }
+  
+  .nav-item:hover i {
+    color: var(--primary-color);
+  }
+  
+  .nav-item.active {
+    background-color: var(--primary-color-light); /* Un fondo muy sutil, como en la referencia */
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  
+  .nav-item.active i {
+    color: var(--primary-color);
+  }
+  

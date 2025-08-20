@@ -1,1 +1,66 @@
+
 /* You can add global styles to this file, and also import other style files */
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+
+
+/* --- VARIABLES DE COLOR --- */
+:root {
+  /* === Tema Claro (por defecto) === */
+  --primary-color: #F97316; /* Naranja (Tailwind Orange 500) */
+  --primary-color-text: #FFFFFF;
+  --primary-color-darker: #EA580C; /* Naranja más oscuro para hover */
+
+  /* Superficies */
+  --surface-a: #FFFFFF;       /* Fondo de tarjetas, modales */
+  --surface-b: #F3F4F6;       /* Fondo principal de la app */
+  --surface-c: #E5E7EB;       /* Divisores, fondos sutiles */
+  --surface-d: #D1D5DB;       /* Elementos deshabilitados */
+  --surface-border: #D1D5DB;  /* Bordes */
+  --surface-hover: #E5E7EB;   /* Hover en elementos de lista */
+
+  /* Texto */
+  --text-color: #111827;          /* Principal (casi negro) */
+  --text-color-secondary: #6B7280; /* Secundario (gris) */
+
+  /* Otros */
+  --border-radius: 8px;
+  --focus-ring-color: #FDBA74; /* Naranja claro para el foco */
+}
+
+[data-theme="dark"] {
+  /* === Tema Oscuro === */
+  --primary-color: #F97316; /* Mismo naranja */
+  --primary-color-text: #FFFFFF;
+  --primary-color-darker: #FB923C; /* Naranja más claro para hover en modo oscuro */
+
+  /* Superficies */
+  --surface-a: #1F2937;       /* Fondo de tarjetas, modales */
+  --surface-b: #111827;       /* Fondo principal de la app */
+  --surface-c: #374151;       /* Divisores, fondos sutiles */
+  --surface-d: #4B5563;       /* Elementos deshabilitados */
+  --surface-border: #374151;  /* Bordes */
+  --surface-hover: #374151;   /* Hover en elementos de lista */
+
+  /* Texto */
+  --text-color: #F9FAFB;          /* Principal (casi blanco) */
+  --text-color-secondary: #9CA3AF; /* Secundario (gris claro) */
+
+  --focus-ring-color: #EA580C;
+}
+
+body, html {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--surface-b);
+    color: var(--text-color);
+}
+
+/* --- VARIABLES DE COLOR --- */
+:root {
+    --primary-color: #F97316; /* Naranja (Tailwind Orange 500) */
+    --text-color-secondary: #6B7280; /* Secundario (gris) */
+  
+  }
+  
