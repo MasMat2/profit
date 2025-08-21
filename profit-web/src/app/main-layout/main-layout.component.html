@@ -46,8 +46,14 @@
         <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
       </a>
     </div>
-    
+
   </div>
 
+  <div class="main-content">
+    <div class="page-content-wrapper">
+      <div [ngSwitch]="selectedComponent">
+        <app-category-plans *ngSwitchCase="'category-plans'"></app-category-plans>
+    </div>
+  </div>
 
 </div>

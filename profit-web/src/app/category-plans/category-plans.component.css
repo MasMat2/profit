@@ -1,0 +1,207 @@
+/* Navegación Superior (Categoría / Planes) */
+.header-nav {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 2px solid var(--surface-border);
+  margin-bottom: 2rem;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-color-secondary);
+  padding: 1rem 0;
+  margin-bottom: -2px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.nav-button:hover {
+  color: var(--text-color);
+}
+
+.nav-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Contenedor Principal de la Vista de Categorías */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas de igual tamaño */
+  gap: 2.5rem;
+}
+
+.column-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+/* Columna del Formulario */
+.category-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color-secondary);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--surface-border);
+  background-color: var(--surface-a);
+  color: var(--text-color);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.form-field select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1em;
+}
+
+.form-grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.save-button {
+  background-color: var(--primary-color);
+  color: var(--primary-color-text);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.85rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: filter 0.2s;
+  align-self: flex-start; /* Alinear a la izquierda */
+}
+
+.save-button:hover {
+  filter: brightness(1.1);
+}
+
+/* Columna de la Lista */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 400px; /* Altura máxima para la lista */
+  overflow-y: auto;
+  padding-right: 1rem; /* Espacio para la barra de scroll */
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--surface-b);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--surface-border);
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* Pequeño espacio entre los textos */
+}
+
+.item-name {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.item-category {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  background-color: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.item-description {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+}
+
+.item-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.item-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--surface-d);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+}
+
+.item-duration {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--surface-d);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  white-space: nowrap;
+}
+
+.item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: none;
+  border: 1px solid transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color-secondary);
+}
+.action-btn:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-color);
+}
+.action-btn.delete:hover {
+  background-color: #f8717130;
+  color: #F87171;
+}
+.action-btn i.material-icons {
+  font-size: 18px;
+} 
