@@ -98,7 +98,6 @@ export class MainLayoutComponent {
 
 
   selectComponent(componentName: string) {
-    console.log(componentName);
     this.selectedComponent = componentName;
     this.activeMenu = componentName;
 
