@@ -18,6 +18,11 @@ export class AppController {
     return this.prismaService.category.create({data: createDto});
   }
 
+  @Post('api/category/update')
+  update(@Body() updateDto: any) {
+    return this.prismaService.category.update({where: {id: updateDto.id}, data: updateDto});
+  }
+
   @Get('api/category/delete/:id')
   delete(@Param('id') id: string) {
     return this.prismaService.category.delete({where: {id: Number(id)}});

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoryService, Category } from './category.service';
+import { firstValueFrom } from 'rxjs';
 
 interface Plan {
   id: number;
@@ -25,7 +26,7 @@ export class CategoryPlansComponent implements OnInit {
 
   // --- DATOS DE CATEGORÍAS ---
   existingCategories: Category[] = [];
-  newCategory = { name: '', description: '' };
+  newCategory: Category = { name: '', description: '' };
 
   // --- DATOS DE PLANES ---
   existingPlans: Plan[] = [];
@@ -43,24 +44,32 @@ export class CategoryPlansComponent implements OnInit {
     });
   }
 
-  saveCategory() {
-    // Enviar a la API
-    this.categoryService.agregar(this.newCategory as Category).subscribe(() => {
-      this.newCategory = { name: '', description: '' };
-      this.consultarCategorias();
-    });
+  async saveCategory() {
+
+    if (this.newCategory.id) {
+      await firstValueFrom(this.categoryService.update(this.newCategory));
+    } else {
+      await firstValueFrom(this.categoryService.agregar(this.newCategory));
+    }
+
+    this.newCategory = { name: '', description: '' };
+    this.consultarCategorias();
 
 
   }
 
   deleteCategory(category: Category) {
+    if (!category.id) {
+      return;
+    }
+
     this.categoryService.eliminar(category.id).subscribe(() => {
       this.consultarCategorias();
     });
   }
 
   editCategory(category: Category) {
-    this.newCategory = category;
+    this.newCategory = {...category};
     this.activeView = 'categoria';
   }
 

@@ -3,9 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Category {
-  id: number;
-  name: string;
-  description: string;
+  id?: number;
+  name?: string;
+  description?: string;
 }
 
 @Injectable({
@@ -24,6 +24,9 @@ export class CategoryService {
     return this.http.post<void>(this.dataUrl + 'create', category);
   }
 
+  public update(category: Category): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'update', category);
+  }
 
   public eliminar(id: number): Observable<void> {
     return this.http.get<void>(this.dataUrl + 'delete/' + id);

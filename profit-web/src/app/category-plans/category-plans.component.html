@@ -43,6 +43,7 @@
             <span class="item-description">{{ category.description }}</span>
           </div>
           <div class="item-actions">
+            <button class="action-btn" (click)="editCategory(category)"><i class="material-icons">edit</i></button>
             <button class="action-btn delete" (click)="deleteCategory(category)"><i class="material-icons">delete</i></button>
           </div>
         </div>
