@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
+
 
 @Controller()
 export class AppController {
@@ -15,5 +16,10 @@ export class AppController {
   @Post('api/category/create')
   create(@Body() createDto: any) {
     return this.prismaService.category.create({data: createDto});
+  }
+
+  @Get('api/category/delete/:id')
+  delete(@Param('id') id: string) {
+    return this.prismaService.category.delete({where: {id: Number(id)}});
   }
 }

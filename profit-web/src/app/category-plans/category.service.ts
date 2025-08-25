@@ -23,4 +23,10 @@ export class CategoryService {
   public agregar(category: Category): Observable<void> {
     return this.http.post<void>(this.dataUrl + 'create', category);
   }
+
+
+  public eliminar(id: number): Observable<void> {
+    return this.http.get<void>(this.dataUrl + 'delete/' + id);
+  }
+  
 }

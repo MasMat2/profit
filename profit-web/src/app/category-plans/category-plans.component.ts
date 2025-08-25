@@ -49,5 +49,25 @@ export class CategoryPlansComponent implements OnInit {
       this.newCategory = { name: '', description: '' };
       this.consultarCategorias();
     });
+
+
   }
+
+  deleteCategory(category: Category) {
+    this.categoryService.eliminar(category.id).subscribe(() => {
+      this.consultarCategorias();
+    });
+  }
+
+  editCategory(category: Category) {
+    this.newCategory = category;
+    this.activeView = 'categoria';
+  }
+
+
+
+
+
+
+
 } 
