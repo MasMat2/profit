@@ -1,11 +1,10 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../prisma.service';
 
 
 @Controller()
-export class AppController {
+export class CategoryController {
   constructor(private readonly prismaService: PrismaService) {}
-
 
   @Get('api/category')
   category() {
@@ -13,18 +12,19 @@ export class AppController {
   }
 
 
-  @Post('api/category/create')
+  @Post('api/category/agregar')
   create(@Body() createDto: any) {
     return this.prismaService.category.create({data: createDto});
   }
 
-  @Post('api/category/update')
+  @Post('api/category/editar')
   update(@Body() updateDto: any) {
     return this.prismaService.category.update({where: {id: updateDto.id}, data: updateDto});
   }
 
-  @Get('api/category/delete/:id')
+  @Get('api/category/eliminar/:id')
   delete(@Param('id') id: string) {
     return this.prismaService.category.delete({where: {id: Number(id)}});
   }
+
 }

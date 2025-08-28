@@ -21,15 +21,17 @@ export class CategoryService {
   }
 
   public agregar(category: Category): Observable<void> {
-    return this.http.post<void>(this.dataUrl + 'create', category);
+    return this.http.post<void>(this.dataUrl + 'agregar', category);
   }
 
-  public update(category: Category): Observable<void> {
-    return this.http.post<void>(this.dataUrl + 'update', category);
+  public editar(category: Category): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'editar', category);
   }
 
   public eliminar(id: number): Observable<void> {
-    return this.http.get<void>(this.dataUrl + 'delete/' + id);
+    return this.http.get<void>(this.dataUrl + 'eliminar/' + id);
   }
+
+
   
 }

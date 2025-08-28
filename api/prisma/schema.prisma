@@ -13,3 +13,12 @@ model category {
   name        String  @db.VarChar(255)
   description String?
 }
+
+model plans {
+  id          Int     @id @default(autoincrement())
+  category_id Int
+  name        String  @db.VarChar(255)
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  duration    Int
+}
