@@ -27,5 +27,12 @@ export class PlansService {
   public agregar(plan: Plan): Observable<void> {
     return this.http.post<void>(this.dataUrl + 'agregar', plan);
   }
-  
+   
+  public editar(plan: Plan): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'editar', plan);
+  }
+
+  public eliminar(id: number): Observable<void> {
+    return this.http.get<void>(this.dataUrl + 'eliminar/' + id);
+  }
 }

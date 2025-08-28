@@ -64,31 +64,66 @@ export class CategoryPlansComponent implements OnInit {
 
     this.categoryService.eliminar(category.id).subscribe(() => {
       this.consultarCategorias();
+      
+      if (this.newCategory.id==category.id) {
+        this.newCategory.id=undefined;
+      }
     });
-  }
+}
+
+
 
   editCategory(category: Category) {
     this.newCategory = {...category};
     this.activeView = 'categoria';
   }
 
-  savePlan() {
+
+
+
+  async savePlan() {
     // Validación simple
-    if (!this.newPlan.category_id || !this.newPlan.name || !this.newPlan.price) {
-      console.error("Faltan datos para guardar el plan.");
-      return;
+    if (this.newPlan.id) {
+      await firstValueFrom(this.plansService.editar(this.newPlan));
+    } else {
+      await firstValueFrom(this.plansService.agregar(this.newPlan));
     }
-    console.log('Guardando plan:', this.newPlan);
-    this.plansService.agregar(this.newPlan).subscribe(() => {
-      this.consultarPlanes();
-    });
-      
-    // Limpiamos el formulario
     this.newPlan = { category_id: undefined, name: '', description: '', price: 0, duration: 30 };
+    this.consultarPlanes();
   }
 
   getCategoryName(categoryId?: number): any {
     const category = this.existingCategories.find(c => c.id === categoryId);
     return category ? category.name : 'Sin categoría';
   }
+
+// --- PLANES EDITAR Y ELIMINAR ---
+  deletePlan(plan: Plan) {
+    if (!plan.id) {
+      return;
+    }
+
+    this.plansService.eliminar(plan.id).subscribe(() => {
+      this.consultarPlanes();
+
+      if (this.newPlan.id==plan.id) {
+      this.newPlan.id=undefined;
+      }
+    });
+  }
+
+  editPlan(plan: Plan) {
+    this.newPlan = {...plan};
+    this.activeView = 'planes';
+  }
+
+
+
+
+
+
+
+
+
+
 } 

@@ -17,4 +17,14 @@ export class PlansController {
     return this.prismaService.plans.create({data: planDto});
   }
 
+  @Post('api/plan/editar')
+  update(@Body() updateDto: any) {
+    return this.prismaService.plans.update({where: {id: updateDto.id}, data: updateDto});
+  }
+
+  @Get('api/plan/eliminar/:id')
+  delete(@Param('id') id: string) {
+    return this.prismaService.plans.delete({where: {id: Number(id)}});
+  }
+
 }

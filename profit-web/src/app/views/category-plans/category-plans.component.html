@@ -111,8 +111,8 @@
           <div class="item-details">
             <span class="item-price">${{ plan.price }}</span>
             <div class="item-actions">
-              <button class="action-btn"><i class="material-icons">edit</i></button>
-              <button class="action-btn delete"><i class="material-icons">delete</i></button>
+              <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
+              <button class="action-btn delete"(click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
             </div>
           </div>
         </div>
