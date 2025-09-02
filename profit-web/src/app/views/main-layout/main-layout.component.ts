@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryPlansComponent } from '../category-plans/category-plans.component';
+import { EnrollClientComponent } from '../enroll-client/enroll-client.component';
 
 interface MenuSection {
   title: string;
@@ -19,7 +20,7 @@ interface MenuItem {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, CategoryPlansComponent],
+  imports: [CommonModule, CategoryPlansComponent, EnrollClientComponent],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })

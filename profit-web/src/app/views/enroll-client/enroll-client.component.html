@@ -1,0 +1,182 @@
+<!-- Contenedor principal de la página de inscripción -->
+<div class="enroll-client-container">
+
+    <div *ngIf="!enrollmentComplete; else successScreen">
+        <h2 class="page-title">Inscribir Nuevo Cliente</h2>
+
+        <!-- Wizard Progress Bar -->
+        <div class="wizard-progress-bar">
+            <div class="step-item" *ngFor="let step of steps; let i = index" 
+                 [class.active]="wizardStep === (i + 1)"
+                 [class.completed]="wizardStep > (i + 1)">
+                <div class="step-counter">{{ i + 1 }}</div>
+                <div class="step-name">{{ step.label }}</div>
+            </div>
+        </div>
+
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            <div [ngSwitch]="wizardStep">
+                <!-- Paso 1: Datos Personales -->
+                <div *ngSwitchCase="1">
+                    <h3 class="step-title">Paso 1: Introduce los datos personales</h3>
+                    <div class="wizard-form">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="firstName">Nombre(s)</label>
+                                <input id="firstName" type="text" [(ngModel)]="newClient.firstName" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Juan">
+                            </div>
+                            <div class="form-field">
+                                <label for="lastName">Apellidos</label>
+                                <input id="lastName" type="text" [(ngModel)]="newClient.lastName" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Pérez García">
+                            </div>
+                            <div class="form-field">
+                                <label for="email">Email</label>
+                                <input id="email" type="email" [(ngModel)]="newClient.email" (ngModelChange)="guardarEstadoFormulario()" placeholder="juan.perez@correo.com">
+                            </div>
+                            <div class="form-field">
+                                <label for="phone">Teléfono</label>
+                                <input id="phone" type="tel" [(ngModel)]="newClient.phone" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. 55 1234 5678">
+                            </div>
+                            <div class="form-field">
+                                <label for="dob">Fecha de Nacimiento</label>
+                                <input id="dob" type="date" [(ngModel)]="newClient.dob" (ngModelChange)="guardarEstadoFormulario()">
+                            </div>
+                            <div class="form-field">
+                                <label for="address">Dirección</label>
+                                <input id="address" type="text" [(ngModel)]="newClient.address" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Av. Siempre Viva 742">
+                            </div>
+                            <div class="form-field">
+                                <label for="gender">Género</label>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" id="gender-male" name="gender" value="Masculino" [(ngModel)]="newClient.gender" (ngModelChange)="guardarEstadoFormulario()">
+                                        Masculino
+                                    </label>
+                                    <label>
+                                        <input type="radio" id="gender-female" name="gender" value="Femenino" [(ngModel)]="newClient.gender" (ngModelChange)="guardarEstadoFormulario()">
+                                        Femenino
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Selección de Plan -->
+                <div *ngSwitchCase="2">
+                    <h3 class="step-title">Paso 2: Selecciona un plan</h3>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="category">Categoría</label>
+                            <select id="category" [ngModel]="selectedCategoryId" (ngModelChange)="onCategoryChange($event)">
+                                <option [ngValue]="null" disabled>-- Elige una categoría --</option>
+                                <option *ngFor="let category of allCategories" [value]="category.id">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="plan">Plan</label>
+                            <select id="plan" [(ngModel)]="newClient.planId" (ngModelChange)="guardarEstadoFormulario()" [disabled]="!selectedCategoryId">
+                                <option [ngValue]="null" disabled>-- Elige un plan --</option>
+                                <option *ngFor="let plan of filteredPlans" [value]="plan.id">
+                                    {{ plan.name }} ({{ plan.price | currency }})
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 3: Información Adicional -->
+                <div *ngSwitchCase="3">
+                    <h3 class="step-title">Paso 3: Completa la información adicional</h3>
+                    <div class="wizard-form">
+                        <div class="form-field">
+                            <label for="medicalNotes">Notas médicas relevantes</label>
+                            <textarea id="medicalNotes" rows="4" [(ngModel)]="newClient.medicalNotes" (ngModelChange)="guardarEstadoFormulario()" placeholder="Alergias, condiciones previas, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 4: Procesar Pago -->
+                <div *ngSwitchCase="4">
+                    <h3 class="step-title">Paso 4: Registra el pago del plan</h3>
+                    <div class="payment-summary" *ngIf="selectedPlan">
+                        <div class="plan-name">{{ selectedPlan.name }}</div>
+                        <div class="plan-price">{{ selectedPlan.price | currency:'USD':'symbol':'1.2-2' }}</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="paymentMethod">Método de Pago</label>
+                            <select id="paymentMethod" [(ngModel)]="newClient.paymentDetails.method" (ngModelChange)="guardarEstadoFormulario()">
+                                <option [ngValue]="null" disabled>-- Elige un método --</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+                                <option value="Transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+                        <div class="form-field" *ngIf="newClient.paymentDetails.method === 'Tarjeta' || newClient.paymentDetails.method === 'Transferencia'">
+                            <label for="paymentReference">Referencia</label>
+                            <input id="paymentReference" type="text" [(ngModel)]="newClient.paymentDetails.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 5: Confirmación -->
+                <div *ngSwitchCase="5">
+                    <h3 class="step-title">Paso 5: Confirma los datos</h3>
+                    <div class="confirmation-summary">
+                        <p><strong>Nombre:</strong> {{ newClient.firstName }} {{ newClient.lastName }}</p>
+                        <p><strong>Email:</strong> {{ newClient.email }}</p>
+                        <p><strong>Teléfono:</strong> {{ newClient.phone }}</p>
+                        <p><strong>Fecha de Nacimiento:</strong> {{ newClient.dob | date:'dd/MM/yyyy' }}</p>
+                        <hr>
+                        <p><strong>Plan Seleccionado:</strong> {{ selectedPlanName }}</p>
+                        <p><strong>Pago Registrado:</strong> {{ newClient.paymentDetails.method }} (Ref: {{ newClient.paymentDetails.reference || 'N/A' }})</p>
+                    </div>
+
+                    <h4 class="preview-title">Vista Previa del Contrato</h4>
+                    <div class="contract-preview-container">
+                        <pre class="contract-text">{{ contractPreviewText }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Footer -->
+        <div class="wizard-footer">
+            <button *ngIf="wizardStep > 1" class="secondary-button" (click)="previousStep()">Anterior</button>
+            <button *ngIf="wizardStep < steps.length" class="primary-button" (click)="nextStep(); submitWizard()">Siguiente</button>
+            <button *ngIf="wizardStep === steps.length" class="primary-button" (click)="submitWizard()">Finalizar y Guardar</button>
+        </div>
+    </div>
+
+    <ng-template #successScreen>
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>¡Cliente Inscrito con Éxito!</h3>
+            <p>Se ha registrado a <strong>{{ lastEnrolledClientData?.clientName }}</strong>.</p>
+            <div class="success-actions">
+                <button class="primary-button" (click)="generateTicket()">
+                    <i class="fas fa-receipt"></i> Ver Recibo
+                </button>
+                <button class="secondary-button" (click)="startNewEnrollment()">
+                    <i class="fas fa-plus"></i> Inscribir Otro Cliente
+                </button>
+            </div>
+        </div>
+    </ng-template>
+
+</div>
+
+<!-- Ticket Preview Modal -->
+<div class="modal-overlay" *ngIf="showTicketModal" (click)="startNewEnrollment()">
+    <div class="modal-content ticket-modal-content" (click)="$event.stopPropagation()">
+        <button class="close-button" (click)="startNewEnrollment()">&times;</button>
+        <!-- <app-ticket [data]="lastEnrolledClientData" [showPrintButton]="true"></app-ticket> -->
+    </div>
+</div> 
