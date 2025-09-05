@@ -9,16 +9,16 @@ export interface PaymentDetails {
 
 export interface Client {
   id?: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dob: string;
-  gender: string;
-  address: string;
-  planId: number | null;
-  paymentDetails: PaymentDetails;
-  medicalNotes: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  dob?: string;
+  gender?: string;
+  address?: string;
+  plan_id?: number | null;
+  payment_details: PaymentDetails;
+  medical_notes?: string;
 }
 
 
@@ -31,6 +31,7 @@ export class ClientService {
   constructor(public http: HttpClient) { }
   
   public agregar(client: Client): Observable<void> {
+    console.log(client);
     return this.http.post<void>(this.dataUrl + 'agregar', client);
   }
    

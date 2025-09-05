@@ -23,12 +23,12 @@
                     <div class="wizard-form">
                         <div class="form-grid">
                             <div class="form-field">
-                                <label for="firstName">Nombre(s)</label>
-                                <input id="firstName" type="text" [(ngModel)]="newClient.firstName" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Juan">
+                                <label for="first_name">Nombre(s)</label>
+                                <input id="first_name" type="text" [(ngModel)]="newClient.first_name" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Juan">
                             </div>
                             <div class="form-field">
-                                <label for="lastName">Apellidos</label>
-                                <input id="lastName" type="text" [(ngModel)]="newClient.lastName" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Pérez García">
+                                <label for="last_name">Apellidos</label>
+                                <input id="last_name" type="text" [(ngModel)]="newClient.last_name" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Pérez García">
                             </div>
                             <div class="form-field">
                                 <label for="email">Email</label>
@@ -78,7 +78,7 @@
                         </div>
                         <div class="form-field">
                             <label for="plan">Plan</label>
-                            <select id="plan" [(ngModel)]="newClient.planId" (ngModelChange)="guardarEstadoFormulario()" [disabled]="!selectedCategoryId">
+                            <select id="plan" [(ngModel)]="newClient.plan_id" (ngModelChange)="guardarEstadoFormulario()" [disabled]="!selectedCategoryId">
                                 <option [ngValue]="null" disabled>-- Elige un plan --</option>
                                 <option *ngFor="let plan of filteredPlans" [value]="plan.id">
                                     {{ plan.name }} ({{ plan.price | currency }})
@@ -94,7 +94,7 @@
                     <div class="wizard-form">
                         <div class="form-field">
                             <label for="medicalNotes">Notas médicas relevantes</label>
-                            <textarea id="medicalNotes" rows="4" [(ngModel)]="newClient.medicalNotes" (ngModelChange)="guardarEstadoFormulario()" placeholder="Alergias, condiciones previas, etc."></textarea>
+                            <textarea id="medicalNotes" rows="4" [(ngModel)]="newClient.medical_notes" (ngModelChange)="guardarEstadoFormulario()" placeholder="Alergias, condiciones previas, etc."></textarea>
                         </div>
                     </div>
                 </div>
@@ -110,16 +110,16 @@
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="paymentMethod">Método de Pago</label>
-                            <select id="paymentMethod" [(ngModel)]="newClient.paymentDetails.method" (ngModelChange)="guardarEstadoFormulario()">
+                            <select id="paymentMethod" [(ngModel)]="newClient.payment_details.method" (ngModelChange)="guardarEstadoFormulario()">
                                 <option [ngValue]="null" disabled>-- Elige un método --</option>
                                 <option value="Efectivo">Efectivo</option>
                                 <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
                                 <option value="Transferencia">Transferencia Bancaria</option>
                             </select>
                         </div>
-                        <div class="form-field" *ngIf="newClient.paymentDetails.method === 'Tarjeta' || newClient.paymentDetails.method === 'Transferencia'">
+                        <div class="form-field" *ngIf="newClient.payment_details?.method === 'Tarjeta' || newClient.payment_details?.method === 'Transferencia'">
                             <label for="paymentReference">Referencia</label>
-                            <input id="paymentReference" type="text" [(ngModel)]="newClient.paymentDetails.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
+                            <input id="paymentReference" type="text" [(ngModel)]="newClient.payment_details.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
                         </div>
                     </div>
                 </div>
@@ -128,13 +128,13 @@
                 <div *ngSwitchCase="5">
                     <h3 class="step-title">Paso 5: Confirma los datos</h3>
                     <div class="confirmation-summary">
-                        <p><strong>Nombre:</strong> {{ newClient.firstName }} {{ newClient.lastName }}</p>
+                        <p><strong>Nombre:</strong> {{ newClient.first_name }} {{ newClient.last_name }}</p>
                         <p><strong>Email:</strong> {{ newClient.email }}</p>
                         <p><strong>Teléfono:</strong> {{ newClient.phone }}</p>
                         <p><strong>Fecha de Nacimiento:</strong> {{ newClient.dob | date:'dd/MM/yyyy' }}</p>
                         <hr>
                         <p><strong>Plan Seleccionado:</strong> {{ selectedPlanName }}</p>
-                        <p><strong>Pago Registrado:</strong> {{ newClient.paymentDetails.method }} (Ref: {{ newClient.paymentDetails.reference || 'N/A' }})</p>
+                        <p><strong>Pago Registrado:</strong> {{ newClient.payment_details?.method }} (Ref: {{ newClient.payment_details?.reference || 'N/A' }})</p>
                     </div>
 
                     <h4 class="preview-title">Vista Previa del Contrato</h4>
@@ -148,7 +148,7 @@
         <!-- Wizard Footer -->
         <div class="wizard-footer">
             <button *ngIf="wizardStep > 1" class="secondary-button" (click)="previousStep()">Anterior</button>
-            <button *ngIf="wizardStep < steps.length" class="primary-button" (click)="nextStep(); submitWizard()">Siguiente</button>
+            <button *ngIf="wizardStep < steps.length" class="primary-button" (click)="nextStep()">Siguiente</button>
             <button *ngIf="wizardStep === steps.length" class="primary-button" (click)="submitWizard()">Finalizar y Guardar</button>
         </div>
     </div>

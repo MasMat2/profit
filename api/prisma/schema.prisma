@@ -22,3 +22,17 @@ model plans {
   price       Decimal @db.Decimal(10, 2)
   duration    Int
 }
+
+model clients {
+  id              Int       @id @default(autoincrement())
+  first_name      String    @db.VarChar(100)
+  last_name       String    @db.VarChar(100)
+  email           String    @unique @db.VarChar(255)
+  phone           String?   @db.VarChar(20)
+  dob             DateTime? @db.Date
+  gender          String?   @db.VarChar(20)
+  address         String?
+  plan_id         Int?
+  payment_details Json?
+  medical_notes   String?
+}

@@ -4,7 +4,7 @@ import { Plan } from '../../services/plans.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Client } from '../../services/client.service';
-// import { ClientDataService } from '../services/client-data.service';
+import { ClientService } from '../../services/client.service';
 
 @Component({
   standalone: true,
@@ -15,8 +15,8 @@ import { Client } from '../../services/client.service';
 })
 export class EnrollClientComponent implements OnInit {
 
-    newClient: Partial<Client> = {
-        paymentDetails: { method: '', reference: '' }
+    newClient: Client = {
+        payment_details: { method: '', reference: '' }
     };
     wizardStep = 1;
     enrollmentComplete = false;
@@ -53,10 +53,13 @@ export class EnrollClientComponent implements OnInit {
     
     
 
-    constructor() { }
+    constructor(
+        private clientDataService: ClientService
+    ) {}
+    
 
     public ngOnInit(): void {
-        this.cargarEstadoFormulario();
+        // this.cargarEstadoFormulario();
     }
 
     startNewEnrollment(){}
@@ -66,11 +69,17 @@ export class EnrollClientComponent implements OnInit {
     public submitWizard(): void {
 
         console.log(this.newClient);
-        // this.clientDataService.addClient(this.newClient);
+        this.clientDataService.agregar(this.newClient).subscribe();
+
+
+
+
     
         this.lastEnrolledClientData = {
-          clientName: this.newClient.firstName + ' ' + this.newClient.lastName
+          clientName: this.newClient.first_name + ' ' + this.newClient.last_name
       }
+
+
     }
 
 
@@ -117,10 +126,8 @@ export class EnrollClientComponent implements OnInit {
         }
     }
 
-    onCategoryChange(test: any){}
-
     public get selectedPlan(): Plan | undefined {
-        return this.allPlans.find(p => p.id === this.newClient.planId);
+        return this.allPlans.find(p => p.id === this.newClient.plan_id);
     }
 
 
