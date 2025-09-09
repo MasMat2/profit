@@ -5,10 +5,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Client } from '../../services/client.service';
 import { ClientService } from '../../services/client.service';
+import { CategoryService } from '../../services/category.service';
+import { PlansService } from '../../services/plans.service';
 
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [CategoryService, PlansService],
   selector: 'app-enroll-client',
   templateUrl: './enroll-client.component.html',
   styleUrls: ['./enroll-client.component.css']
@@ -32,17 +35,8 @@ export class EnrollClientComponent implements OnInit {
     ];
 
     // --- Datos para la selección de planes ---
-    allCategories: Category[] = [
-        { id: 1, name: 'Acceso General', description: 'Acceso a todas las áreas comunes.' },
-        { id: 2, name: 'Clases de Yoga', description: 'Acceso exclusivo a clases de yoga.' },
-        { id: 3, name: 'Entrenamiento Personalizado', description: 'Incluye sesiones con entrenador.' }
-    ];
-    allPlans: Plan[] = [
-        { id: 101, category_id: 1, name: 'Acceso Básico Mensual', description: 'Acceso de 8am a 5pm.', price: 29.99, duration: 30 },
-        { id: 102, category_id: 1, name: 'Acceso VIP Mensual', description: 'Acceso ilimitado 24/7.', price: 49.99, duration: 30 },
-        { id: 103, category_id: 2, name: 'Paquete 10 Clases de Yoga', description: 'Válido por 3 meses.', price: 89.99, duration: 90 },
-        { id: 104, category_id: 3, name: 'Entrenamiento Personal 12 Sesiones', description: '12 sesiones con un entrenador certificado.', price: 250, duration: 60 }
-    ];
+    allCategories: Category[] = [];
+    allPlans: Plan[] = [];
     filteredPlans: Plan[] = [];
     selectedCategoryId: number | null = null;
     contractPreviewText: string = '';
@@ -54,10 +48,26 @@ export class EnrollClientComponent implements OnInit {
     
 
     constructor(
-        private clientDataService: ClientService
-    ) {}
-    
+        private clientDataService: ClientService,
+        private categoryService: CategoryService,
+        private plansService: PlansService
+    ) {
+        this.consultarCategorias();
+        this.consultarPlanes();
+    }
 
+    public consultarCategorias() {
+        this.categoryService.consultar().subscribe((categorias) => {
+            this.allCategories = categorias;
+        });
+    }
+
+    public consultarPlanes() {
+        this.plansService.consultar().subscribe((planes) => {
+            this.allPlans = planes;
+        });
+    }
+    
     public ngOnInit(): void {
         // this.cargarEstadoFormulario();
     }
@@ -71,10 +81,6 @@ export class EnrollClientComponent implements OnInit {
         console.log(this.newClient);
         this.clientDataService.agregar(this.newClient).subscribe();
 
-
-
-
-    
         this.lastEnrolledClientData = {
           clientName: this.newClient.first_name + ' ' + this.newClient.last_name
       }
@@ -125,6 +131,20 @@ export class EnrollClientComponent implements OnInit {
         }
         }
     }
+
+    public onCategoryChange(categoryId: number): void {
+
+        this.selectedCategoryId = categoryId;
+        
+        if (this.selectedCategoryId) {
+          this.filteredPlans = this.allPlans.filter(p => p.category_id == this.selectedCategoryId);
+        } else {
+          this.filteredPlans = [];
+        }
+        this.newClient.plan_id = null; // Reseteamos la selección de plan
+        this.guardarEstadoFormulario();
+      }
+    
 
     public get selectedPlan(): Plan | undefined {
         return this.allPlans.find(p => p.id === this.newClient.plan_id);
