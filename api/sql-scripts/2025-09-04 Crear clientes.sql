@@ -1,5 +1,5 @@
 CREATE TABLE clients (
-    id SERIAL PRIMARY KEY, -- Autoincrementa y es clave primaria
+    id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -7,7 +7,9 @@ CREATE TABLE clients (
     dob DATE,
     gender VARCHAR(20),
     address TEXT,
-    plan_id INT,
-    payment_details JSONB, -- Almacena datos de pago como JSON
+    plan_id INTEGER  REFERENCES plans(id),
+    payment_details JSONB,
     medical_notes TEXT
+    
 );
+
