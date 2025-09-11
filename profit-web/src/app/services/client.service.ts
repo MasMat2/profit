@@ -29,7 +29,15 @@ export class ClientService {
   private dataUrl = 'http://localhost:3000/api/cliente/';
 
   constructor(public http: HttpClient) { }
-  
+  ///Validar acceso a clientes usando el correo y dob///
+
+  public validarAcceso(email: string, dob: string): Observable<boolean> {
+    return this.http.get<boolean>(this.dataUrl + 'validar-acceso', { params: { email, dob } });
+  }
+
+
+
+
   public agregar(client: Client): Observable<void> {
     console.log(client);
     return this.http.post<void>(this.dataUrl + 'agregar', client);

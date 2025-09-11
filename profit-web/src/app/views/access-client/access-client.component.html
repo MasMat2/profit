@@ -1,0 +1,59 @@
+<!-- Contenedor principal de la página de inscripción -->
+<div class="enroll-client-container">
+
+    <div *ngIf="!enrollmentComplete; else successScreen">
+        <h2 class="page-title">Acceso a Clientes</h2>
+
+      
+
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            <div [ngSwitch]="wizardStep">
+                <!-- Paso 1: Datos Personales -->
+                <div *ngSwitchCase="1">
+                    <h3 class="step-title">Introduce tu codigo</h3>
+                    <div class="wizard-form">
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="email">Email</label>
+                                <input id="email" type="email" [(ngModel)]="newClient.email" (ngModelChange)="guardarEstadoFormulario()" placeholder="juan.perez@correo.com">
+                            </div>
+                          
+                            <div class="form-field">
+                                <label for="dob">Fecha de Nacimiento</label>
+                                <input id="dob" type="date" [(ngModel)]="newClient.dob" (ngModelChange)="guardarEstadoFormulario()">
+                            
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Footer -->
+        <div class="wizard-footer">
+            <button class="primary-button" (click)="submitWizard()">Continuar</button>
+        </div>
+    </div>
+
+    <ng-template #successScreen>
+        <div class="success-container">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>¡Cliente Inscrito con Éxito!</h3>
+            <p>Se ha registrado a <strong>{{ lastEnrolledClientData?.clientName }}</strong>.</p>
+            <div class="success-actions">
+                <button class="primary-button" (click)="generateTicket()">
+                    <i class="fas fa-receipt"></i> Ver Recibo
+                </button>
+                <button class="secondary-button" (click)="startNewEnrollment()">
+                    <i class="fas fa-plus"></i> Inscribir Otro Cliente
+                </button>
+            </div>
+        </div>
+    </ng-template>
+
+</div>
+

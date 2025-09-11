@@ -4,6 +4,7 @@ import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoryPlansComponent } from '../category-plans/category-plans.component';
 import { EnrollClientComponent } from '../enroll-client/enroll-client.component';
+import { AccessClientComponent } from '../access-client/access-client.component';
 
 interface MenuSection {
   title: string;
@@ -20,7 +21,7 @@ interface MenuItem {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, CategoryPlansComponent, EnrollClientComponent],
+  imports: [CommonModule, CategoryPlansComponent, EnrollClientComponent, AccessClientComponent],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })
@@ -43,7 +44,8 @@ export class MainLayoutComponent {
       items: [
         { id: 'dashboard', name: 'Estadísticas', icon: 'fas fa-chart-line' },
         { id: 'administration', name: 'Administración', icon: 'fas fa-building' },
-        { id: 'access-monitor', name: 'Monitor de Acceso', icon: 'fas fa-video' }
+        { id: 'access-monitor', name: 'Monitor de Acceso', icon: 'fas fa-video' },
+        { id: 'access-client', name: 'Acceso a Clientes', icon: 'fas fa-user' },
       ]
     },
     {
