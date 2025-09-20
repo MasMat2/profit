@@ -80,7 +80,7 @@
                             <label for="plan">Plan</label>
                             <select id="plan" [(ngModel)]="newClient.plan_id" (ngModelChange)="guardarEstadoFormulario()" [disabled]="!selectedCategoryId">
                                 <option [ngValue]="null" disabled>-- Elige un plan --</option>
-                                <option *ngFor="let plan of filteredPlans" [value]="plan.id">
+                                <option *ngFor="let plan of filteredPlans" [ngValue]="plan.id">
                                     {{ plan.name }} ({{ plan.price | currency }})
                                 </option>
                             </select>

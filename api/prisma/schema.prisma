@@ -15,12 +15,13 @@ model category {
 }
 
 model plans {
-  id          Int     @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   category_id Int
-  name        String  @db.VarChar(255)
+  name        String    @db.VarChar(255)
   description String?
-  price       Decimal @db.Decimal(10, 2)
+  price       Decimal   @db.Decimal(10, 2)
   duration    Int
+  clients     clients[]
 }
 
 model clients {
@@ -35,4 +36,5 @@ model clients {
   plan_id         Int?
   payment_details Json?
   medical_notes   String?
+  plans           plans?    @relation(fields: [plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

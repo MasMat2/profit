@@ -1,7 +1,7 @@
 <!-- Contenedor principal de la página de inscripción -->
 <div class="enroll-client-container">
 
-    <div *ngIf="!enrollmentComplete; else successScreen">
+    <div *ngIf="!accessComplete; else successScreen">
         <h2 class="page-title">Acceso a Clientes</h2>
 
       
@@ -16,18 +16,23 @@
                         <div class="form-grid">
                             <div class="form-field">
                                 <label for="email">Email</label>
-                                <input id="email" type="email" [(ngModel)]="newClient.email" (ngModelChange)="guardarEstadoFormulario()" placeholder="juan.perez@correo.com">
+                                <input id="email" type="email" [(ngModel)]="newClient.email" placeholder="juan.perez@correo.com">
                             </div>
                           
                             <div class="form-field">
                                 <label for="dob">Fecha de Nacimiento</label>
-                                <input id="dob" type="date" [(ngModel)]="newClient.dob" (ngModelChange)="guardarEstadoFormulario()">
+                                <input id="dob" type="date" [(ngModel)]="newClient.dob">
                             
                             </div>
                         </div>
                     </div>
+
+                    <div *ngIf="invalidAccess">
+                        <p class="error-message">Datos inválidos. Inténtalo de nuevo.</p>
+                    </div>
                     
                 </div>
+
             </div>
         </div>
 
@@ -42,14 +47,11 @@
             <div class="success-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
-            <h3>¡Cliente Inscrito con Éxito!</h3>
-            <p>Se ha registrado a <strong>{{ lastEnrolledClientData?.clientName }}</strong>.</p>
+            <h3>¡Acceso Exitoso!</h3>
+            <p>Has accedido exitosamente a <strong> Profit</strong>.</p>
             <div class="success-actions">
-                <button class="primary-button" (click)="generateTicket()">
-                    <i class="fas fa-receipt"></i> Ver Recibo
-                </button>
-                <button class="secondary-button" (click)="startNewEnrollment()">
-                    <i class="fas fa-plus"></i> Inscribir Otro Cliente
+                <button class="primary-button" (click)="newAccess()">
+                    <i class="fas fa-receipt"></i> Nuevo Acceso
                 </button>
             </div>
         </div>

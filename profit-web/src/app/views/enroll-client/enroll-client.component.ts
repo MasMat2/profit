@@ -79,6 +79,12 @@ export class EnrollClientComponent implements OnInit {
     public submitWizard(): void {
 
         console.log(this.newClient);
+
+        if(this.newClient.dob){
+            const dobDate = new Date(this.newClient.dob);
+            this.newClient.dob = dobDate.toISOString();
+        }
+        
         this.clientDataService.agregar(this.newClient).subscribe();
 
         this.lastEnrolledClientData = {
@@ -109,6 +115,7 @@ export class EnrollClientComponent implements OnInit {
 
 
     public guardarEstadoFormulario(): void {
+        console.log(this.newClient);
         const state = {
         newClient: this.newClient,
         wizardStep: this.wizardStep,
@@ -141,6 +148,8 @@ export class EnrollClientComponent implements OnInit {
         } else {
           this.filteredPlans = [];
         }
+
+        console.log(this.filteredPlans);
         this.newClient.plan_id = null; // Reseteamos la selección de plan
         this.guardarEstadoFormulario();
       }
