@@ -15,12 +15,14 @@ model category {
 }
 
 model plans {
-  id          Int     @id @default(autoincrement())
-  category_id Int
-  name        String  @db.VarChar(255)
-  description String?
-  price       Decimal @db.Decimal(10, 2)
-  duration    Int
+  id                Int       @id @default(autoincrement())
+  category_id       Int
+  name              String    @db.VarChar(255)
+  description       String?
+  price             Decimal   @db.Decimal(10, 2)
+  duration          Int
+  inscription_price Decimal?  @db.Decimal(10, 2)
+  clients           clients[]
 }
 
 model clients {

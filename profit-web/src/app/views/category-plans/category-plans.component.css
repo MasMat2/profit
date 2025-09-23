@@ -82,9 +82,9 @@
   background-size: 1em;
 }
 
-.form-grid-2-col {
+.form-grid-3-col {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1.5rem;
 }
 
