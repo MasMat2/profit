@@ -122,7 +122,7 @@
   padding: 1rem;
   background-color: var(--surface-b);
   border-radius: var(--border-radius);
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--primary-color);
 }
 
 .item-info {
@@ -204,4 +204,97 @@
 }
 .action-btn i.material-icons {
   font-size: 18px;
+}
+
+/* Accordion Styles */
+.accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+}
+
+.accordion-group {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+  background-color: var(--surface-a);
+  overflow: hidden;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.accordion-header:hover {
+  background-color: var(--surface-hover);
+}
+
+.accordion-header.active {
+  border-bottom-color: var(--surface-border);
+}
+
+.accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-name {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.plans-count {
+  font-size: 0.875rem;
+  color: var(--primary-color-darker);
+  background-color: color-mix(in srgb, var(--primary-color) 15%, transparent);;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.accordion-icon {
+  color: var(--text-color-secondary);
+  transition: transform 0.2s ease;
+  font-size: 20px;
+}
+
+.accordion-header.active .accordion-icon {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordion-content.open {
+  max-height: 1000px; /* Adjust based on your content needs */
+}
+
+.plans-list {
+  padding: 1rem 1.25rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Adjust list-item styling within accordion */
+.accordion-content .list-item {
+  margin: 0;
+  background-color: var(--surface-a);
+}
+
+.accordion-content .list-item:hover {
+  background-color: var(--surface-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 } 

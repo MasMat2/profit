@@ -23,6 +23,9 @@ export class CategoryPlansComponent implements OnInit {
   // --- DATOS DE PLANES ---
   existingPlans: Plan[] = [];
   newPlan: Plan = { category_id: undefined, name: '', description: '', price: 0, duration: 30, inscription_price: 0 }; //to do: Crear constructor a futuro
+  
+  // --- ACCORDION STATE ---
+  accordionState: { [categoryId: string]: boolean } = {};
 
   constructor(private categoryService: CategoryService, private plansService: PlansService) { }
 
@@ -95,6 +98,39 @@ export class CategoryPlansComponent implements OnInit {
   getCategoryName(categoryId?: number): any {
     const category = this.existingCategories.find(c => c.id === categoryId);
     return category ? category.name : 'Sin categoría';
+  }
+
+  // --- ACCORDION METHODS ---
+  getGroupedPlans(): { [categoryId: string]: { category: Category; plans: Plan[] } } {
+    const grouped: { [categoryId: string]: { category: Category; plans: Plan[] } } = {};
+    
+    this.existingPlans.forEach(plan => {
+      const categoryId = plan.category_id?.toString() || 'uncategorized';
+      const category = this.existingCategories.find(c => c.id === plan.category_id);
+      
+      if (!grouped[categoryId]) {
+        grouped[categoryId] = {
+          category: category || { name: 'Sin categoría', description: '' },
+          plans: []
+        };
+      }
+      
+      grouped[categoryId].plans.push(plan);
+    });
+    
+    return grouped;
+  }
+
+  toggleAccordion(categoryId: string): void {
+    this.accordionState[categoryId] = !this.accordionState[categoryId];
+  }
+
+  isAccordionOpen(categoryId: string): boolean {
+    return this.accordionState[categoryId] || false;
+  }
+
+  getCategoryKeys(): string[] {
+    return Object.keys(this.getGroupedPlans());
   }
 
 // --- PLANES EDITAR Y ELIMINAR ---

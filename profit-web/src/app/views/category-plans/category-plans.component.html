@@ -102,21 +102,40 @@
       </form>
     </div>
 
-    <!-- Columna Derecha: Lista de Planes -->
+    <!-- Columna Derecha: Lista de Planes por Categoría -->
     <div class="list-column">
-      <h3 class="column-header">Planes Existentes</h3>
-      <div class="category-list">
-        <div *ngFor="let plan of existingPlans" class="list-item">
-          <div class="item-info">
-            <span class="item-name">{{ plan.name }}</span>
-            <span class="item-category">{{ getCategoryName(plan.category_id) }}</span>
-            <span class="item-description">{{ plan.description }}</span>
+      <h3 class="column-header">Planes por Categoría</h3>
+      <div class="accordion-container">
+        <div *ngFor="let categoryId of getCategoryKeys()" class="accordion-group">
+          <!-- Accordion Header -->
+          <div class="accordion-header" 
+               (click)="toggleAccordion(categoryId)"
+               [class.active]="isAccordionOpen(categoryId)">
+            <div class="accordion-title">
+              <span class="category-name">{{ getGroupedPlans()[categoryId].category.name }}</span>
+              <span class="plans-count">({{ getGroupedPlans()[categoryId].plans.length }} planes)</span>
+            </div>
+            <i class="material-icons accordion-icon">
+              {{ isAccordionOpen(categoryId) ? 'expand_less' : 'expand_more' }}
+            </i>
           </div>
-          <div class="item-details">
-            <span class="item-price">${{ plan.price }}</span>
-            <div class="item-actions">
-              <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
-              <button class="action-btn delete"(click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
+          
+          <!-- Accordion Content -->
+          <div class="accordion-content" [class.open]="isAccordionOpen(categoryId)">
+            <div class="plans-list">
+              <div *ngFor="let plan of getGroupedPlans()[categoryId].plans" class="list-item">
+                <div class="item-info">
+                  <span class="item-name">{{ plan.name }}</span>
+                  <span class="item-description">{{ plan.description }}</span>
+                </div>
+                <div class="item-details">
+                  <span class="item-price">${{ plan.price }}</span>
+                  <div class="item-actions">
+                    <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
+                    <button class="action-btn delete" (click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
