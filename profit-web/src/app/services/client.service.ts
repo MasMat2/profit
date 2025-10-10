@@ -21,6 +21,19 @@ export interface Client {
   medical_notes?: string;
 }
 
+export interface ClientPlan {
+  id?: number;
+  plan_id: number;
+  client_id?: number;
+  fecha_inicio: string; // ISO string format
+  fecha_fin?: string;    // ISO string format
+  created_at?: string;
+}
+
+export interface EnrollmentRequest {
+  client: Client;
+  plans: ClientPlan[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -35,12 +48,11 @@ export class ClientService {
     return this.http.get<boolean>(this.dataUrl + 'validar-acceso', { params: { email, dob } });
   }
 
-
-
-
-  public agregar(client: Client): Observable<void> {
-    console.log(client);
-    return this.http.post<void>(this.dataUrl + 'agregar', client);
+  public agregar(enrollmentRequest: EnrollmentRequest): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'agregar', enrollmentRequest);
   }
-   
+
+  public obtenerClientes(): Observable<Client[]> {
+    return this.http.get<Client[]>(this.dataUrl + 'obtener-clientes');
+  }
 }

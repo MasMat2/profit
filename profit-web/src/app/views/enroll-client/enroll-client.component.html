@@ -65,26 +65,92 @@
 
                 <!-- Paso 2: Selección de Plan -->
                 <div *ngSwitchCase="2">
-                    <h3 class="step-title">Paso 2: Selecciona un plan</h3>
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label for="category">Categoría</label>
-                            <select id="category" [ngModel]="selectedCategoryId" (ngModelChange)="onCategoryChange($event)">
-                                <option [ngValue]="null" disabled>-- Elige una categoría --</option>
-                                <option *ngFor="let category of allCategories" [value]="category.id">
-                                    {{ category.name }}
-                                </option>
-                            </select>
+                    <div class="plan-grid">
+                        <div class="plan-form">
+                            <h3 class="step-title">Paso 2: Selecciona un plan</h3>
+                            <div>
+                                <div class="form-field">
+                                    <label for="category">Categoría</label>
+                                    <select id="category" [ngModel]="selectedCategoryId" (ngModelChange)="onCategoryChange($event)">
+                                        <option [ngValue]="null" disabled>-- Elige una categoría --</option>
+                                        <option *ngFor="let category of allCategories" [value]="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label for="plan">Plan</label>
+                                    <select id="plan" [(ngModel)]="selectedPlanId" [disabled]="!selectedCategoryId" (change)="calculateEndDate()">
+                                        <option [ngValue]="null" disabled>-- Elige un plan --</option>
+                                        <option *ngFor="let plan of filteredPlans" [ngValue]="plan.id">
+                                            {{ plan.name }} ({{ plan.price | currency }})
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-field" *ngIf="selectedPlanId">
+                                    <label for="fechaInicio">Fecha Inicio</label>
+                                    <input 
+                                        type="date" 
+                                        id="fechaInicio" 
+                                        [(ngModel)]="planFechaInicio"
+                                        [min]="today"
+                                        required
+                                        (change)="calculateEndDate()">
+                                </div>
+                                <div class="form-field" *ngIf="selectedPlanId">
+                                    <label for="fechaFin">Fecha Fin</label>
+                                    <input 
+                                        type="date" 
+                                        id="fechaFin" 
+                                        [(ngModel)]="planFechaFin"
+                                        [min]="planFechaInicio"
+                                        disabled>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-field" *ngIf="selectedPlanId">
+                                    <button type="button" class="secondary-button" (click)="addPlanToClient()">
+                                        Agregar Plan
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-field">
-                            <label for="plan">Plan</label>
-                            <select id="plan" [(ngModel)]="newClient.plan_id" (ngModelChange)="guardarEstadoFormulario()" [disabled]="!selectedCategoryId">
-                                <option [ngValue]="null" disabled>-- Elige un plan --</option>
-                                <option *ngFor="let plan of filteredPlans" [ngValue]="plan.id">
-                                    {{ plan.name }} ({{ plan.price | currency }})
-                                </option>
-                            </select>
-                        </div>
+
+                        <div class="accordion-container">
+                            <!-- Accordion Header -->
+                            <div class="accordion-header">
+                            <div class="accordion-title">
+                                <!-- cambiar nombre de la clase -->
+                                <span class="category-name">Planes Seleccionados:</span> 
+                                <span class="plans-count">({{ plans.length }} planes)</span>
+                            </div>
+                            </div>
+                            
+                            <!-- Accordion Content -->
+                            <div class="accordion-content">
+                            <div class="plans-list">
+                                <div *ngFor="let plan of plans" class="list-item">
+                                <div class="item-info">
+                                    <span class="item-name">{{ getPlanName(plan.plan_id) }}</span>
+                                    <span class="item-description">
+                                        <span>Inicio: {{ plan.fecha_inicio | date:'shortDate' }}</span>
+                                        <span *ngIf="plan.fecha_fin">Fin: {{ plan.fecha_fin | date:'shortDate' }}</span>
+                                    </span>
+                                </div>
+                                <div class="item-details">
+                                    <span class="item-price">${{ getPlanPrice(plan.plan_id) }}</span>
+                                    <div class="item-actions">
+                                    <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
+                                    <button class="action-btn delete" (click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                            </div>
+                            
+                          </div>
                     </div>
                 </div>
 
@@ -102,25 +168,32 @@
                 <!-- Paso 4: Procesar Pago -->
                 <div *ngSwitchCase="4">
                     <h3 class="step-title">Paso 4: Registra el pago del plan</h3>
-                    <div class="payment-summary" *ngIf="selectedPlan">
-                        <div class="plan-name">{{ selectedPlan.name }}</div>
-                        <div class="plan-price">{{ selectedPlan.price | currency:'USD':'symbol':'1.2-2' }}</div>
-                    </div>
+                    <div class="payment-container">
+                        
+                        <div class="payment-summary">
+                            <!-- desglose de precios en clientPlans -->
+                            <div class="payment-item" *ngFor="let clientPlan of plans">
+                                <div class="plan-name">{{ getPlanName(clientPlan.plan_id) }}</div>
+                                <div class="plan-price">${{ getPlanPrice(clientPlan.plan_id) }}</div>
+                            </div>
+                        </div>
 
-                    <div class="form-grid">
-                        <div class="form-field">
-                            <label for="paymentMethod">Método de Pago</label>
-                            <select id="paymentMethod" [(ngModel)]="newClient.payment_details.method" (ngModelChange)="guardarEstadoFormulario()">
-                                <option [ngValue]="null" disabled>-- Elige un método --</option>
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
-                                <option value="Transferencia">Transferencia Bancaria</option>
-                            </select>
+                        <div class="payment-method">
+                            <div class="form-field">
+                                <label for="paymentMethod">Método de Pago</label>
+                                <select id="paymentMethod" [(ngModel)]="newClient.payment_details.method" (ngModelChange)="guardarEstadoFormulario()">
+                                    <option [ngValue]="null" disabled>-- Elige un método --</option>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+                                    <option value="Transferencia">Transferencia Bancaria</option>
+                                </select>
+                            </div>
+                            <div class="form-field" *ngIf="newClient.payment_details?.method === 'Tarjeta' || newClient.payment_details?.method === 'Transferencia'">
+                                <label for="paymentReference">Referencia</label>
+                                <input id="paymentReference" type="text" [(ngModel)]="newClient.payment_details.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
+                            </div>
                         </div>
-                        <div class="form-field" *ngIf="newClient.payment_details?.method === 'Tarjeta' || newClient.payment_details?.method === 'Transferencia'">
-                            <label for="paymentReference">Referencia</label>
-                            <input id="paymentReference" type="text" [(ngModel)]="newClient.payment_details.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
-                        </div>
+
                     </div>
                 </div>
 
@@ -180,3 +253,10 @@
         <!-- <app-ticket [data]="lastEnrolledClientData" [showPrintButton]="true"></app-ticket> -->
     </div>
 </div> 
+
+<app-shared-modal 
+  *ngIf="warningMessage"
+  [showSaveButton]="false"
+  (close)="dismissWarning()">
+  <p style="font-size: larger;">{{ warningMessage }}</p>
+</app-shared-modal>
