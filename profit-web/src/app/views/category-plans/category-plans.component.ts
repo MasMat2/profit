@@ -48,6 +48,10 @@ export class CategoryPlansComponent implements OnInit {
 
   async saveCategory() {
 
+    if (this.newCategory.name == '') {
+      return;
+    }
+
     if (this.newCategory.id) {
       await firstValueFrom(this.categoryService.editar(this.newCategory));
     } else {
@@ -85,6 +89,11 @@ export class CategoryPlansComponent implements OnInit {
 
 
   async savePlan() {
+
+    if (this.newPlan.name == '' || this.newPlan.category_id == undefined) {
+      return;
+    }
+    
     // Validación simple
     if (this.newPlan.id) {
       await firstValueFrom(this.plansService.editar(this.newPlan));
