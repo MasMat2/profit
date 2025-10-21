@@ -179,6 +179,10 @@
                                 <div class="plan-name">{{ getPlanName(clientPlan.plan_id) }}</div>
                                 <div class="plan-price">${{ getPlanPrice(clientPlan.plan_id) }}</div>
                             </div>
+                            <div class="payment-item payment-total" style="margin-top: 12px; padding-top: 8px; font-weight: 600;">
+                                <div class="plan-name">Total</div>
+                                <div class="plan-price">${{ getTotalPrice() }}</div>
+                            </div>
                         </div>
 
                         <div class="payment-method">
@@ -260,6 +264,7 @@
 <app-shared-modal 
   *ngIf="warningMessage"
   [showSaveButton]="false"
-  (close)="dismissWarning()">
+  (close)="dismissWarning()"
+  [size]="'small'">
   <p style="font-size: larger;">{{ warningMessage }}</p>
 </app-shared-modal>

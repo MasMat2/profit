@@ -296,7 +296,11 @@ export class EnrollClientComponent implements OnInit {
 
     public getPlanPrice(planId: number): number {
         const plan = this.allPlans.find(p => p.id === planId);
-        return plan ? plan.price : 0;
+        return plan ? Number(plan.price) : 0;
+    }
+
+    public getTotalPrice(): number {
+        return this.plans.reduce((total, clientPlan) => total + this.getPlanPrice(clientPlan.plan_id), 0);
     }
 
     editPlan(clientPlan: ClientPlan) {
