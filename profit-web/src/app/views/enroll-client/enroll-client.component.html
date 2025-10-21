@@ -208,13 +208,20 @@
                 <div *ngSwitchCase="5">
                     <h3 class="step-title">Paso 5: Confirma los datos</h3>
                     <div class="confirmation-summary">
-                        <p><strong>Nombre:</strong> {{ newClient.first_name }} {{ newClient.last_name }}</p>
-                        <p><strong>Email:</strong> {{ newClient.email }}</p>
-                        <p><strong>Teléfono:</strong> {{ newClient.phone }}</p>
-                        <p><strong>Fecha de Nacimiento:</strong> {{ newClient.dob | date:'dd/MM/yyyy' }}</p>
+                        <p><strong>Nombre:</strong>{{ newClient.first_name }} {{ newClient.last_name }}</p>
+                        <p><strong>Email:</strong>{{ newClient.email }}</p>
+                        <p><strong>Teléfono:</strong>{{ newClient.phone }}</p>
+                        <p><strong>Fecha de Nacimiento:</strong>{{ newClient.dob | date:'dd/MM/yyyy' }}</p>
                         <hr>
-                        <p><strong>Plan Seleccionado:</strong> {{ selectedPlanName }}</p>
-                        <p><strong>Pago Registrado:</strong> {{ newClient.payment_details?.method }} (Ref: {{ newClient.payment_details?.reference || 'N/A' }})</p>
+                        <div style="display: flex; align-items: flex-start;">
+                            <strong>Planes Seleccionados:</strong>
+                            <div style="flex: 1;">
+                                <div *ngFor="let plan of plans">
+                                    <div>{{ getPlanName(plan.plan_id) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p><strong>Pago Registrado:</strong>{{ newClient.payment_details?.method }} (Ref: {{ newClient.payment_details?.reference || 'N/A' }})</p>
                     </div>
 
                     <h4 class="preview-title">Vista Previa del Contrato</h4>

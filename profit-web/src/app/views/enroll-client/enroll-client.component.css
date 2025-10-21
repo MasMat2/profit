@@ -358,17 +358,21 @@ label > input[type="radio"] {
 }
 
 /* Resumen de Confirmación */
-.confirmation-summary p {
+.confirmation-summary p, .confirmation-summary div {
   margin: 0.5rem 0;
   color: var(--text-color-secondary);
   font-size: 1rem;
   line-height: 1.5;
 }
-.confirmation-summary p strong {
+.confirmation-summary p strong, .confirmation-summary div strong {
   color: var(--text-color);
   font-weight: 600;
   display: inline-block;
-  width: 180px;
+  width: 200px;
+}
+
+.confirmation-summary div {
+  margin: 0;
 }
 
 /* Estilos para la vista previa del contrato */
