@@ -18,50 +18,53 @@
         <div class="wizard-content">
             <div [ngSwitch]="wizardStep">
                 <!-- Paso 1: Datos Personales -->
-                <div *ngSwitchCase="1">
-                    <h3 class="step-title">Paso 1: Introduce los datos personales</h3>
-                    <div class="wizard-form">
-                        <div class="form-grid">
-                            <div class="form-field">
-                                <label for="first_name">Nombre(s)</label>
-                                <input id="first_name" type="text" [(ngModel)]="newClient.first_name" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Juan">
-                            </div>
-                            <div class="form-field">
-                                <label for="last_name">Apellidos</label>
-                                <input id="last_name" type="text" [(ngModel)]="newClient.last_name" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Pérez García">
-                            </div>
-                            <div class="form-field">
-                                <label for="email">Email</label>
-                                <input id="email" type="email" [(ngModel)]="newClient.email" (ngModelChange)="guardarEstadoFormulario()" placeholder="juan.perez@correo.com">
-                            </div>
-                            <div class="form-field">
-                                <label for="phone">Teléfono</label>
-                                <input id="phone" type="tel" [(ngModel)]="newClient.phone" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. 55 1234 5678">
-                            </div>
-                            <div class="form-field">
-                                <label for="dob">Fecha de Nacimiento</label>
-                                <input id="dob" type="date" [(ngModel)]="newClient.dob" (ngModelChange)="guardarEstadoFormulario()">
-                            </div>
-                            <div class="form-field">
-                                <label for="address">Dirección</label>
-                                <input id="address" type="text" [(ngModel)]="newClient.address" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Av. Siempre Viva 742">
-                            </div>
-                            <div class="form-field">
+                 <div *ngSwitchCase="1">
+                    <form #clientForm="ngForm">
+                        <h3 class="step-title">Paso 1: Introduce los datos personales</h3>
+                        <div class="wizard-form">
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="first_name">Nombre(s) <span class="required-asterisk" *ngIf="firstName.invalid && validateStep1">*</span></label>
+                                    <input id="first_name" name="first_name" type="text" [(ngModel)]="newClient.first_name" #firstName="ngModel" required (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Juan">
+                                </div>
+                                <div class="form-field">
+                                    <label for="last_name">Apellidos <span class="required-asterisk" *ngIf="lastName.invalid && validateStep1">*</span></label>
+                                    <input id="last_name" name="last_name" type="text" [(ngModel)]="newClient.last_name" #lastName="ngModel" required (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Pérez García">
+                                </div>
+                                <div class="form-field">
+                                    <label for="email">Email <span class="required-asterisk" *ngIf="email.invalid && validateStep1">*</span></label>
+                                    <input id="email" name="email" type="email" [(ngModel)]="newClient.email" #email="ngModel" required email (ngModelChange)="guardarEstadoFormulario()" placeholder="juan.perez@correo.com">
+                                </div>
+                                <div class="form-field">
+                                    <label for="phone">Teléfono <span class="required-asterisk" *ngIf="phone.invalid && validateStep1">*</span></label>
+                                    <input id="phone" name="phone" type="tel" [(ngModel)]="newClient.phone" #phone="ngModel" required (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. 55 1234 5678">
+                                </div>
+                                <div class="form-field">
+                                    <label for="dob">Fecha de Nacimiento <span class="required-asterisk" *ngIf="dob.invalid && validateStep1">*</span></label>
+                                    <input id="dob" name="dob" type="date" [(ngModel)]="newClient.dob" #dob="ngModel" required (ngModelChange)="guardarEstadoFormulario()">
+                                </div>
+                                <div class="form-field">
+                                    <label for="address">Dirección<span class="required-asterisk" *ngIf="address.invalid && validateStep1">*</span></label>
+                                    <input id="address" name="address" type="text" [(ngModel)]="newClient.address" #address="ngModel" required (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Av. Siempre Viva 742">
+                                </div>
+                                <div class="form-field">
                                 <label for="gender">Género</label>
-                                <div class="radio-group">
-                                    <label>
+                                    <div class="radio-group">
+                                        <label>
                                         <input type="radio" id="gender-male" name="gender" value="Masculino" [(ngModel)]="newClient.gender" (ngModelChange)="guardarEstadoFormulario()">
-                                        Masculino
-                                    </label>
-                                    <label>
+                                            Masculino
+                                        </label>
+                                        <label>
                                         <input type="radio" id="gender-female" name="gender" value="Femenino" [(ngModel)]="newClient.gender" (ngModelChange)="guardarEstadoFormulario()">
-                                        Femenino
-                                    </label>
+                                            Femenino
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
+
 
                 <!-- Paso 2: Selección de Plan -->
                 <div *ngSwitchCase="2">

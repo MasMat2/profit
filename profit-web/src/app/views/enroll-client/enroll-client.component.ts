@@ -31,6 +31,7 @@ export class EnrollClientComponent implements OnInit {
     };
 
     wizardStep = 1;
+    validateStep1 = false;
     enrollmentComplete = false;
     showTicketModal = false;
     lastEnrolledClientData: any = null;
@@ -91,10 +92,6 @@ export class EnrollClientComponent implements OnInit {
         // this.cargarEstadoFormulario();
     }
 
-    startNewEnrollment(){}
-
-    generateTicket(){}
-
     public submitWizard(): void {
 
         console.log(this.newClient);
@@ -115,10 +112,48 @@ export class EnrollClientComponent implements OnInit {
           clientName: this.newClient.first_name + ' ' + this.newClient.last_name
       }
 
+      this.enrollmentComplete = true;
 
     }
 
+
+    public generateTicket(): void {
+        this.showTicketModal = true;
+    }
+
+    public startNewEnrollment(): void {
+        this.resetWizard();
+        this.enrollmentComplete = false;
+        this.showTicketModal = false;
+        this.lastEnrolledClientData = null;
+    }
+
+    public resetWizard(): void {
+
+        this.newClient = {
+            payment_details: { method: '', reference: '' }
+        };
+        this.wizardStep = 1;
+        this.selectedCategoryId = null;
+        this.filteredPlans = [];
+        this.plans = [];
+      }
+
+    public isStep1Valid(): boolean {
+        return !!(this.newClient.first_name && 
+                 this.newClient.last_name && 
+                 this.newClient.email && 
+                 this.newClient.phone && 
+                 this.newClient.dob);
+    }
+
     public nextStep(): void {
+        if (this.wizardStep == 1) {
+            this.validateStep1 = true;
+            if (!this.isStep1Valid()) {
+                return; // Don't proceed if step 1 is invalid
+            }
+        }
         if (this.wizardStep < this.steps.length) { 
             this.wizardStep++;
             if (this.wizardStep === this.steps.length) { 
