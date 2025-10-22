@@ -224,10 +224,13 @@
                         <p><strong>Pago Registrado:</strong>{{ newClient.payment_details?.method }} (Ref: {{ newClient.payment_details?.reference || 'N/A' }})</p>
                     </div>
 
-                    <h4 class="preview-title">Vista Previa del Contrato</h4>
-                    <div class="contract-preview-container">
-                        <pre class="contract-text">{{ contractPreviewText }}</pre>
-                    </div>
+                    <app-contract-preview
+                        [clientData]="newClient"
+                        [plansData]="getContractPlansData()"
+                        [totalPrice]="getTotalPrice()"
+                        [paymentMethod]="newClient.payment_details?.method || ''"
+                        [paymentReference]="newClient.payment_details?.reference || ''">
+                    </app-contract-preview>
                 </div>
             </div>
         </div>

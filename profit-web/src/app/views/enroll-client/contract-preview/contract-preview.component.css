@@ -1,0 +1,316 @@
+/* ========== Screen Styles ========== */
+.contract-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.contract-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-button i {
+  font-size: 18px;
+}
+
+.print-btn {
+  background-color: #636466;
+  color: white;
+}
+
+
+.pdf-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.contract-document {
+  background: white;
+  padding: 60px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Letterhead */
+.contract-letterhead {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 3px double #636466;
+}
+
+.logo-img {
+  max-width: 300px;
+  height: auto;
+}
+
+.contract-letterhead h2 {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #636466;
+  letter-spacing: 1px;
+}
+
+.letterhead-info {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 12px;
+}
+
+.contract-number, .contract-address {
+  margin: 0;
+  font-size: 14px;
+  color: #A7A9AC;
+  font-weight: 500;
+}
+
+.contract-date {
+  margin: 0;
+  font-size: 14px;
+  color: #A7A9AC;
+}
+
+/* Sections */
+.contract-section {
+  margin: 30px 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #636466;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #F7931E;
+}
+
+.contract-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 25px 0;
+}
+
+/* Tables */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+}
+
+.info-table tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-table td {
+  padding: 10px 8px;
+  font-size: 14px;
+}
+
+.info-table .label {
+  font-weight: 600;
+  color: #555;
+  width: 40%;
+}
+
+.info-table .value {
+  color: #333;
+}
+
+.plans-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 14px;
+}
+
+.plans-table thead {
+  background-color: #F7931E;
+  color: white;
+}
+
+.plans-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.plans-table tbody tr {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.plans-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.plans-table td {
+  padding: 12px 8px;
+}
+
+.plans-table .price {
+  text-align: right;
+  font-weight: 600;
+  color: #F7931E;
+}
+
+.plans-table tfoot {
+  background-color: #f8f9fa;
+  border-top: 2px solid #F7931E;
+}
+
+.total-row td {
+  padding: 15px 8px;
+  font-weight: 700;
+}
+
+.total-label {
+  text-align: right;
+  font-size: 15px;
+  color: #636466;
+}
+
+.total-price {
+  text-align: right;
+  font-size: 18px;
+  color: #F7931E;
+}
+
+/* Terms */
+.terms-content {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.8;
+}
+
+.terms-content p {
+  margin: 10px 0;
+}
+
+.terms-list {
+  margin: 15px 0;
+  padding-left: 25px;
+}
+
+.terms-list li {
+  margin: 8px 0;
+}
+
+/* Signatures */
+.signature-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 60px;
+  gap: 40px;
+}
+
+.signature-box {
+  flex: 1;
+  text-align: center;
+}
+
+.signature-line {
+  border-top: 2px solid #636466;
+  margin-bottom: 10px;
+  min-width: 200px;
+}
+
+.signature-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin: 5px 0;
+}
+
+.signature-name {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  .contract-wrapper {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .contract-document {
+    padding: 40px;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .contract-section {
+    page-break-inside: avoid;
+  }
+
+  .plans-table {
+    page-break-inside: avoid;
+  }
+
+  .signature-section {
+    page-break-before: avoid;
+  }
+
+  /* Ensure black text for printing */
+  body {
+    background: white;
+  }
+
+  .contract-letterhead h2,
+  .section-title,
+  .total-label {
+    color: #000;
+  }
+
+  .plans-table thead {
+    background-color: #F7931E !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Remove hover effects */
+  .plans-table tbody tr:hover {
+    background-color: transparent;
+  }
+}
+
+/* ========== PDF Specific Adjustments ========== */
+@page {
+  size: letter;
+  margin: 0.5in;
+}

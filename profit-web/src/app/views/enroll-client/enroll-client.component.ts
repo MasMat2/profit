@@ -8,10 +8,11 @@ import { CategoryService } from '../../services/category.service';
 import { PlansService } from '../../services/plans.service';
 import { Client, EnrollmentRequest, ClientPlan } from '../../services/client.service';
 import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
+import { ContractPreviewComponent } from './contract-preview/contract-preview.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, ContractPreviewComponent],
   providers: [CategoryService, PlansService],
   selector: 'app-enroll-client',
   templateUrl: './enroll-client.component.html',
@@ -53,7 +54,6 @@ export class EnrollClientComponent implements OnInit {
     planFechaInicio: string = '';
     planFechaFin: string = '';
     planEnEdicion: number | null = null;
-    contractPreviewText: string = '';
     warningMessage: string | null = null;
 
     // Fecha mínima para el formulario
@@ -299,8 +299,28 @@ export class EnrollClientComponent implements OnInit {
         return plan ? Number(plan.price) : 0;
     }
 
+    public getCategoryName(planId: number): any {
+        const plan = this.allPlans.find(p => p.id === planId);
+        if (plan) {
+            const category = this.allCategories.find(c => c.id === plan.category_id);
+            return category ? category.name : 'Categoría no encontrada';
+        }
+        return 'Plan no encontrado';
+    }
+
     public getTotalPrice(): number {
         return this.plans.reduce((total, clientPlan) => total + this.getPlanPrice(clientPlan.plan_id), 0);
+    }
+
+    // Prepare contract data for the preview component
+    public getContractPlansData(): any[] {
+        return this.plans.map(plan => ({
+            planName: this.getPlanName(plan.plan_id),
+            categoryName: this.getCategoryName(plan.plan_id),
+            fecha_inicio: plan.fecha_inicio,
+            fecha_fin: plan.fecha_fin || '',
+            price: this.getPlanPrice(plan.plan_id)
+        }));
     }
 
     editPlan(clientPlan: ClientPlan) {

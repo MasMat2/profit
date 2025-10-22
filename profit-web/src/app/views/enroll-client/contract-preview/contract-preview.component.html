@@ -1,0 +1,140 @@
+<div class="contract-wrapper">
+  <!-- Action Buttons (Hidden in print) -->
+  <div class="contract-actions no-print">
+    <button class="action-button print-btn" (click)="printContract()">
+      <i class="material-icons">print</i> Imprimir
+    </button>
+    <button class="action-button pdf-btn" (click)="saveToPDF()">
+      <i class="material-icons">picture_as_pdf</i> Guardar PDF
+    </button>
+  </div>
+
+  <!-- Contract Document -->
+  <div class="contract-document" #contractContent>
+    <!-- Letterhead -->
+    <div class="contract-letterhead">
+      <div class="letterhead-logo">
+        <img src="assets/logo.png" alt="Profit Logo" class="logo-img">
+      </div>
+      <p class="contract-address">Plaza Tribeca - Av. Vasconcelos y, Río Suchiate #430, 66256 Monterrey, N.L.</p>
+      <h2>CONTRATO DE MEMBRESÍA</h2>
+      <div class="letterhead-info">
+        <p class="contract-number">No. {{ contractNumber }}</p>
+        <p class="contract-date">Fecha: {{ contractDate | date:'dd/MM/yyyy' }}</p>
+      </div>
+    </div>
+
+    <div class="contract-divider"></div>
+
+    <!-- Client Information -->
+    <div class="contract-section">
+      <h3 class="section-title">DATOS DEL CLIENTE</h3>
+      <table class="info-table">
+        <tr>
+          <td class="label">Nombre Completo:</td>
+          <td class="value">{{ clientData.first_name }} {{ clientData.last_name }}</td>
+        </tr>
+        <tr>
+          <td class="label">Email:</td>
+          <td class="value">{{ clientData.email }}</td>
+        </tr>
+        <tr>
+          <td class="label">Teléfono:</td>
+          <td class="value">{{ clientData.phone }}</td>
+        </tr>
+        <tr>
+          <td class="label">Fecha de Nacimiento:</td>
+          <td class="value">{{ clientData.dob | date:'dd/MM/yyyy' }}</td>
+        </tr>
+        <tr>
+          <td class="label">Dirección:</td>
+          <td class="value">{{ clientData.address }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="contract-divider"></div>
+
+    <!-- Plans Information -->
+    <div class="contract-section">
+      <h3 class="section-title">PLANES CONTRATADOS</h3>
+      <table class="plans-table">
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Categoría</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let plan of plansData">
+            <td>{{ plan.planName }}</td>
+            <td>{{ plan.categoryName }}</td>
+            <td>{{ plan.fecha_inicio | date:'dd/MM/yyyy' }}</td>
+            <td>{{ plan.fecha_fin | date:'dd/MM/yyyy' }}</td>
+            <td class="price">${{ plan.price }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="4" class="total-label">TOTAL:</td>
+            <td class="total-price">${{ totalPrice }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="contract-divider"></div>
+
+    <!-- Payment Information -->
+    <div class="contract-section">
+      <h3 class="section-title">INFORMACIÓN DE PAGO</h3>
+      <table class="info-table">
+        <tr>
+          <td class="label">Método de Pago:</td>
+          <td class="value">{{ paymentMethod }}</td>
+        </tr>
+        <tr *ngIf="paymentReference">
+          <td class="label">Referencia:</td>
+          <td class="value">{{ paymentReference }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="contract-divider"></div>
+
+    <!-- Terms and Conditions -->
+    <div class="contract-section">
+      <h3 class="section-title">TÉRMINOS Y CONDICIONES</h3>
+      <div class="terms-content">
+        <p>El cliente declara estar de acuerdo con las siguientes condiciones:</p>
+        <ul class="terms-list">
+          <li>El pago de la membresía debe realizarse puntualmente según el plan contratado.</li>
+          <li>Las membresías son intransferibles y de uso personal.</li>
+          <li>Para cancelaciones, se requiere un aviso previo de 30 días.</li>
+          <li>El uso de las instalaciones está sujeto al reglamento interno del establecimiento.</li>
+          <li>El establecimiento no se hace responsable por objetos personales perdidos o dañados.</li>
+          <li>El cliente debe presentar certificado médico que avale su condición física para realizar actividades.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="contract-divider"></div>
+
+    <!-- Signatures -->
+    <div class="signature-section">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Firma del Cliente</p>
+        <p class="signature-name">{{ clientData.first_name }} {{ clientData.last_name }}</p>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Firma del Representante</p>
+        <p class="signature-name">Nombre del usuario que registra el contrato</p>
+      </div>
+    </div>
+  </div>
+</div>
