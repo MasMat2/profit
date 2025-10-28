@@ -1,0 +1,78 @@
+<div class="receipt-container">
+  <div class="receipt-content">
+    <!-- Logo -->
+    <div class="receipt-logo">
+      <img src="/assets/logo.png" alt="PROFIT Logo">
+    </div>
+
+    <!-- Business Info -->
+    <div class="business-info">
+      <p>Avenida Siempreviva 742, Springfield</p>
+      <p>Tel: (555) 123-4567</p>
+      <p>RFC: PSG123456XYZ</p>
+    </div>
+
+    <!-- Receipt Title -->
+    <div class="receipt-title">
+      <h1>Recibo de Pago</h1>
+    </div>
+
+    <!-- Receipt Details -->
+    <div class="receipt-details">
+      <div class="detail-row">
+        <strong>Fecha:</strong> {{ data.date | date:'dd/MM/yyyy HH:mm' }}
+      </div>
+      <div class="detail-row">
+        <strong>Cliente:</strong> {{ data.clientName }}
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Items Table -->
+    <div class="items-table">
+      <div class="table-header">
+        <div class="col-qty">Cant.</div>
+        <div class="col-desc">Descripción</div>
+        <div class="col-total">Total</div>
+      </div>
+      
+      <div class="table-row" *ngFor="let item of data.items">
+        <div class="col-qty">{{ item.quantity }}</div>
+        <div class="col-desc">{{ item.description }}</div>
+        <div class="col-total">{{ item.price | currency:'MXN':'symbol-narrow' }}</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Total -->
+    <div class="receipt-total">
+      <strong>Total:</strong>
+      <span class="total-amount">{{ data.total | currency:'MXN':'symbol-narrow' }}</span>
+    </div>
+
+    <!-- Payment Method -->
+    <div class="payment-info">
+      <strong>Método de Pago:</strong> 
+      {{ data.paymentMethod || 'No especificado' }}
+      <span *ngIf="data.paymentReference"> ({{ data.paymentReference }})</span>
+    </div>
+
+    <!-- Thank You Message -->
+    <div class="thank-you">
+      ¡Gracias por su preferencia!
+    </div>
+
+    <!-- Print Button -->
+    <div class="print-button-container" *ngIf="showPrintButton">
+      <button class="print-button" (click)="printReceipt()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Imprimir Ticket
+      </button>
+    </div>
+  </div>
+</div>

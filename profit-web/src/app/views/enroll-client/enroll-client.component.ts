@@ -9,10 +9,11 @@ import { PlansService } from '../../services/plans.service';
 import { Client, EnrollmentRequest, ClientPlan } from '../../services/client.service';
 import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
 import { ContractPreviewComponent } from './contract-preview/contract-preview.component';
+import { ReceiptComponent, ReceiptData } from './receipt/receipt.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent, ContractPreviewComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, ContractPreviewComponent, ReceiptComponent],
   providers: [CategoryService, PlansService],
   selector: 'app-enroll-client',
   templateUrl: './enroll-client.component.html',
@@ -35,7 +36,7 @@ export class EnrollClientComponent implements OnInit {
     validateStep1 = false;
     enrollmentComplete = false;
     showTicketModal = false;
-    lastEnrolledClientData: any = null;
+    lastEnrolledClientData: ReceiptData | null = null;
 
     steps = [
         { label: 'Datos Personales' },
@@ -108,11 +109,21 @@ export class EnrollClientComponent implements OnInit {
         
         this.clientDataService.agregar(this.enrollmentRequest).subscribe();
 
+        // Prepare receipt data
         this.lastEnrolledClientData = {
-          clientName: this.newClient.first_name + ' ' + this.newClient.last_name
-      }
+            clientName: `${this.newClient.first_name} ${this.newClient.last_name}`,
+            date: new Date(),
+            items: this.plans.map(plan => ({
+                quantity: 1,
+                description: this.getPlanName(plan.plan_id),
+                price: this.getPlanPrice(plan.plan_id)
+            })),
+            total: this.getTotalPrice(),
+            paymentMethod: this.newClient.payment_details?.method || 'No especificado',
+            paymentReference: this.newClient.payment_details?.reference
+        };
 
-      this.enrollmentComplete = true;
+        this.enrollmentComplete = true;
 
     }
 

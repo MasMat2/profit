@@ -267,7 +267,7 @@
 <div class="modal-overlay" *ngIf="showTicketModal" (click)="startNewEnrollment()">
     <div class="modal-content ticket-modal-content" (click)="$event.stopPropagation()">
         <button class="close-button" (click)="startNewEnrollment()">&times;</button>
-        <!-- <app-ticket [data]="lastEnrolledClientData" [showPrintButton]="true"></app-ticket> -->
+        <app-receipt *ngIf="lastEnrolledClientData" [data]="lastEnrolledClientData" [showPrintButton]="true"></app-receipt>
     </div>
 </div> 
 
