@@ -1,5 +1,5 @@
 <div class="modal-backdrop" (click)="onClose()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
+  <div class="modal-content" [ngClass]="size"(click)="$event.stopPropagation()">
     <div class="modal-header">
       <!-- <h2 class="modal-title">Detalles de cliente</h2> -->
       <h2 class="modal-title">

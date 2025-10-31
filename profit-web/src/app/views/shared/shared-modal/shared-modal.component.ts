@@ -14,6 +14,8 @@ export class SharedModalComponent {
   @Input() user: any;
   @Input() modalTitle: string = "";
   @Input() showSaveButton: boolean = true;
+  @Input() size: 'small' | 'medium' | 'large' = 'medium'; // Default size
+
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
 
