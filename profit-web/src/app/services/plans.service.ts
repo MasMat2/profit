@@ -17,7 +17,7 @@ export interface Plan {
   providedIn: 'root'
 })
 export class PlansService {
-  private dataUrl = 'http://localhost:3000/api/plan/';
+  private dataUrl = '/api/plan/';
 
   constructor(public http: HttpClient) { }
 

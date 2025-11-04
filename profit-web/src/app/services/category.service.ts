@@ -12,7 +12,7 @@ export interface Category {
   providedIn: 'root'
 })
 export class CategoryService {
-  private dataUrl = 'http://localhost:3000/api/category/';
+  private dataUrl = '/api/category/';
 
   constructor(public http: HttpClient) { }
 

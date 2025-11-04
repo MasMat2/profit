@@ -39,7 +39,7 @@ export interface EnrollmentRequest {
   providedIn: 'root'
 })
 export class ClientService {
-  private dataUrl = 'http://localhost:3000/api/cliente/';
+  private dataUrl = '/api/cliente/';
 
   constructor(public http: HttpClient) { }
   ///Validar acceso a clientes usando el correo y dob///
