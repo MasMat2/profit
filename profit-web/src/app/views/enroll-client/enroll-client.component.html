@@ -143,7 +143,7 @@
                                     </span>
                                 </div>
                                 <div class="item-details">
-                                    <span class="item-price">${{ getPlanPrice(plan.plan_id) }}</span>
+                                    <span class="item-price">${{ getPlanPrice(plan.plan_id) | number:'1.0-0' }}</span>
                                     <div class="item-actions">
                                     <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
                                     <button class="action-btn delete" (click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
@@ -177,11 +177,11 @@
                             <!-- desglose de precios en clientPlans -->
                             <div class="payment-item" *ngFor="let clientPlan of plans">
                                 <div class="plan-name">{{ getPlanName(clientPlan.plan_id) }}</div>
-                                <div class="plan-price">${{ getPlanPrice(clientPlan.plan_id) }}</div>
+                                <div class="plan-price">${{ getPlanPrice(clientPlan.plan_id) | number:'1.0-0' }}</div>
                             </div>
                             <div class="payment-item payment-total" style="margin-top: 12px; padding-top: 8px; font-weight: 600;">
                                 <div class="plan-name">Total</div>
-                                <div class="plan-price">${{ getTotalPrice() }}</div>
+                                <div class="plan-price">${{ getTotalPrice() | number:'1.0-0' }}</div>
                             </div>
                         </div>
 

@@ -74,13 +74,13 @@
             <td>{{ plan.categoryName }}</td>
             <td>{{ plan.fecha_inicio | date:'dd/MM/yyyy' }}</td>
             <td>{{ plan.fecha_fin | date:'dd/MM/yyyy' }}</td>
-            <td class="price">${{ plan.price }}</td>
+            <td class="price">${{ plan.price | number:'1.0-0' }}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td colspan="4" class="total-label">TOTAL:</td>
-            <td class="total-price">${{ totalPrice }}</td>
+            <td class="total-price">${{ totalPrice | number:'1.0-0' }}</td>
           </tr>
         </tfoot>
       </table>

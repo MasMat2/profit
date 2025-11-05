@@ -125,7 +125,7 @@
                   <span class="item-description">{{ plan.description }}</span>
                 </div>
                 <div class="item-details">
-                  <span class="item-price">${{ plan.price }}</span>
+                  <span class="item-price">${{ plan.price | number:'1.0-0' }}</span>
                   <div class="item-actions">
                     <button class="action-btn" (click)="editPlan(plan)"><i class="material-icons">edit</i></button>
                     <button class="action-btn delete" (click)="deletePlan(plan)"><i class="material-icons">delete</i></button>
