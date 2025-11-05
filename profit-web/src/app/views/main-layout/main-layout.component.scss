@@ -43,6 +43,7 @@
 
 .sidebar {
     width: 260px;
+    flex-shrink: 0;
     background-color: var(--surface-b); /* Color de fondo azul-grisáceo claro */
     border-right: 1px solid var(--surface-border);
     padding: 1.5rem;
