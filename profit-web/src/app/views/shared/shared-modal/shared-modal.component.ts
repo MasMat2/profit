@@ -1,33 +1,30 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { ModalService } from '../../../services/modal.service';
 
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [ModalService], // Each modal gets its own instance
   selector: 'app-shared-modal',
   templateUrl: './shared-modal.component.html',
   styleUrls: ['./shared-modal.component.css']
 })
 export class SharedModalComponent {
-  @Input() user: any;
   @Input() modalTitle: string = "";
   @Input() showSaveButton: boolean = true;
   @Input() size: 'small' | 'medium' | 'large' = 'medium'; // Default size
 
   @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<any>();
 
-  editedUser: any;
+  constructor(private modalService: ModalService) { }
 
   ngOnInit() {
-    // Clonar el usuario para no modificar el original directamente
-    this.editedUser = this.user ? { ...this.user } : {};
   }
 
   onSave() {
-    this.save.emit(this.editedUser);
+    this.modalService.triggerSave();
   }
 
   onClose() {
