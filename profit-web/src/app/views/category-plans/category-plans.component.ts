@@ -22,7 +22,7 @@ export class CategoryPlansComponent implements OnInit {
 
   // --- DATOS DE PLANES ---
   existingPlans: Plan[] = [];
-  newPlan: Plan = { category_id: undefined, name: '', description: '', price: 0, duration: 30, inscription_price: 0 }; //to do: Crear constructor a futuro
+  newPlan: Plan = { category_id: undefined, name: '', description: '', price: 0, duration: 30 }; //to do: Crear constructor a futuro
   
   // --- ACCORDION STATE ---
   accordionState: { [categoryId: string]: boolean } = {};
@@ -100,7 +100,7 @@ export class CategoryPlansComponent implements OnInit {
     } else {
       await firstValueFrom(this.plansService.agregar(this.newPlan));
     }
-    this.newPlan = { category_id: undefined, name: '', description: '', price: 0, duration: 30, inscription_price: 0 };
+    this.newPlan = { category_id: undefined, name: '', description: '', price: 0, duration: 30 };
     this.consultarPlanes();
   }
 
