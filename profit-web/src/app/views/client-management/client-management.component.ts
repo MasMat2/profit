@@ -16,6 +16,7 @@ import { ClientDetailComponent } from '../client-detail/client-detail.component'
 export class ClientManagementComponent implements OnInit {
 
   isModalOpen = false;
+  selectedClientEmail: string = '';
 
   activeTab: 'details' | 'documents' | 'history' = 'details';
   clients: any[] = [];
@@ -38,7 +39,8 @@ export class ClientManagementComponent implements OnInit {
   }
 
   // --- Lógica del Modal de Usuario ---
-  public openModal() {
+  public openModal(email: string) {
+    this.selectedClientEmail = email;
     this.isModalOpen = true;
   }
 

@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../services/client.service';
-import { firstValueFrom, Subscription } from 'rxjs';
 import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
 import { PlansService } from '../../services/plans.service';
 import { ModalService } from '../../services/modal.service';
@@ -15,8 +14,10 @@ import { Client } from '../../services/client.service';
   templateUrl: './client-detail.component.html',
   styleUrls: ['./client-detail.component.css']
 })
-export class ClientDetailComponent
+export class ClientDetailComponent implements OnInit
 {
+  @Input() email!: string;
+  
   activeSubTab: 'memberships' | 'payments' = 'memberships';
 
 
@@ -63,14 +64,17 @@ export class ClientDetailComponent
     private clientService: ClientService,
     private modalService: ModalService
   ) { 
-      this.consultarCliente();
       // this.saveSubscription = this.modalService.onSave$.subscribe(() => {
       //   this.handleSave();
       // });
   }
 
+  ngOnInit(): void {
+    this.consultarCliente();
+  }
+
   consultarCliente() {
-    this.clientService.consultarCliente('amaxmunoz98@gmail.com').subscribe((client) => {
+    this.clientService.consultarCliente(this.email).subscribe((client) => {
       this.client = client;
       this.consultarPlanes();
     });

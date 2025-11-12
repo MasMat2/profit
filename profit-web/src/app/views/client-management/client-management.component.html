@@ -37,7 +37,7 @@
             <td><span class="status" [ngClass]="'Activo'">Activo</span></td>
             <td class="actions">
               <button class="action-button view-button" (click)="viewClientContract()" title="Ver Contrato"><i class="fas fa-file-contract"></i></button>
-              <button class="action-button edit-button" (click)="openModal()" title="Editar Cliente"><i class="fas fa-pen-to-square"></i></button>
+              <button class="action-button edit-button" (click)="openModal(client.email)" title="Editar Cliente"><i class="fas fa-pen-to-square"></i></button>
             </td>
           </tr>
           <tr *ngIf="filteredClients.length === 0">
@@ -61,5 +61,6 @@
   [size]="'large'"
   [showSaveButton]="true">
 
-  <app-client-detail></app-client-detail>
+  <app-client-detail
+  [email]="selectedClientEmail"></app-client-detail>
 </app-shared-modal> 
