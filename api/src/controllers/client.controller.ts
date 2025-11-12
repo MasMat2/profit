@@ -7,6 +7,11 @@ import { PrismaService } from '../prisma.service';
 export class ClientController {
   constructor(private readonly prismaService: PrismaService) {}
 
+  @Get('api/cliente/consultar')
+  consultarCliente(@Query() query: any) {
+    return this.prismaService.clients.findUnique({where: {email: query.email}});
+  }
+
   @Get('api/cliente/validar-acceso')
   validateAccess(@Query() query: any) {
     return this.prismaService.clients.findUnique({where: {email: query.email, dob: query.dob}});

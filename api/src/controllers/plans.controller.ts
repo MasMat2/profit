@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 
@@ -25,6 +25,16 @@ export class PlansController {
   @Get('api/plan/eliminar/:id')
   delete(@Param('id') id: string) {
     return this.prismaService.plans.delete({where: {id: Number(id)}});
+  }
+
+  @Get('api/plan/consultarPorCliente')
+  consultarPorCliente(@Query() query: any) {
+    return this.prismaService.planes_clientes.findMany({
+      where: {client_id: Number(query.client_id)},
+      include: {
+        plans: true
+      }
+    });
   }
 
 }

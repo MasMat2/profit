@@ -1,0 +1,100 @@
+<div class="history-content">
+  <div class="client-info-card">
+    <div class="client-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    <div class="client-details">
+      <h3 class="client-name">{{ client.first_name }} {{ client.last_name }}</h3>
+      <p class="client-meta">ID: {{ client.id }} | Email: {{ client.email }}</p>
+    </div>
+    <!-- <button class="edit-icon-button" (click)="openEditModal()" title="Editar detalles del cliente"> -->
+    <button class="edit-icon-button" title="Editar detalles del cliente">
+      <i class="fas fa-pen-to-square"></i>
+    </button>
+  </div>
+
+  <!-- Navegación de Sub-Pestañas -->
+  <div class="sub-tab-nav">
+    <button class="sub-tab-button" [class.active]="activeSubTab === 'memberships'" (click)="activeSubTab = 'memberships'">Membresías Adquiridas</button>
+    <button class="sub-tab-button" [class.active]="activeSubTab === 'payments'" (click)="activeSubTab = 'payments'">Pagos Realizados</button>
+  </div>
+
+  <!-- Contenido de las Sub-Pestañas -->
+  <div class="sub-tab-content">
+    <!-- Tabla de Membresías -->
+    <div *ngIf="activeSubTab === 'memberships'">
+      <div class="history-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de Membresía</th>
+              <th>Fecha de Inicio</th>
+              <th>Fecha de Fin</th>
+              <th>Estado</th>
+              <th>Renov. Autom.</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of memberships">
+              <td>{{ m.plans.name }}</td>
+              <td>{{ m.fecha_inicio | date:'yyyy-MM-dd' }}</td>
+              <td>{{ m.fecha_fin | date:'yyyy-MM-dd' }}</td>
+              <td><span class="status" [ngClass]="getMembershipStatus(m.fecha_inicio, m.fecha_fin)">{{ getMembershipStatus(m.fecha_inicio, m.fecha_fin) }}</span></td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" [checked]="true">
+                  <span class="slider round"></span>
+                </label>
+              </td>
+              <td>
+                <button class="secondary-button small">
+                  Cobrar Ahora
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Tabla de Pagos -->
+    <div *ngIf="activeSubTab === 'payments'">
+      <div class="history-table">
+        <table>
+          <thead>
+            <tr>
+              <th>ID de Transacción</th>
+              <th>Fecha de Pago</th>
+              <th>Concepto</th>
+              <th>Monto</th>
+              <th>Método</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of payments">
+              <td>{{ p.id }}</td>
+              <td>{{ p.date }}</td>
+              <td>{{ p.concept }}</td>
+              <td>{{ p.amount | currency }}</td>
+              <td><i [class]="p.methodIcon"></i> {{ p.method }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Nested Modal for Editing Client Details -->
+<!-- <app-shared-modal
+  *ngIf="isEditModalOpen"
+  (close)="closeEditModal()"
+  [size]="'medium'"
+  [modalTitle]="'Editar Detalles del Cliente'"
+  [showSaveButton]="true">
+  
+  <app-edit-client-form 
+    [clientData]="clientData">
+  </app-edit-client-form>
+  
+</app-shared-modal> -->

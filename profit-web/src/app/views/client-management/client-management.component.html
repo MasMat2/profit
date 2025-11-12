@@ -1,0 +1,65 @@
+<!-- Vista Principal: Lista de Clientes -->
+<div class="header">
+  <h1 class="title">Gestión de Clientes</h1>
+</div>
+
+<div class="client-tabs">
+  <button class="tab-button" [class.active]="activeTab === 'details'" (click)="activeTab = 'details'">Detalles del Cliente</button>
+  <button class="tab-button" [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'">Documentos</button>
+</div>
+
+<div class="client-tab-content">
+  <div *ngIf="activeTab === 'details'">
+    <div class="table-toolbar">
+      <div class="search-bar-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" placeholder="Buscar cliente por nombre o plan..."
+               [(ngModel)]="searchTerm" (ngModelChange)="filterClients()">
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>ID Cliente</th>
+            <th>Nombre Completo</th>
+            <th>Fecha de Inicio</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of filteredClients" (mouseenter)="client.hovered = true" (mouseleave)="client.hovered = false">
+            <td>{{ client.id }}</td>
+            <td>{{ client.first_name }} {{ client.last_name }}</td>
+            <!-- todo: get fecha de inscripcion -->
+            <td>25/01/2025</td>
+            <td><span class="status" [ngClass]="'Activo'">Activo</span></td>
+            <td class="actions">
+              <button class="action-button view-button" (click)="viewClientContract()" title="Ver Contrato"><i class="fas fa-file-contract"></i></button>
+              <button class="action-button edit-button" (click)="openModal()" title="Editar Cliente"><i class="fas fa-pen-to-square"></i></button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredClients.length === 0">
+            <td colspan="5" class="no-results">No se encontraron clientes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'documents'">
+    <!-- <app-documents></app-documents> -->
+  </div>
+
+</div> 
+
+
+<app-shared-modal 
+  *ngIf="isModalOpen" 
+  (close)="closeModal()"
+  [size]="'large'"
+  [showSaveButton]="true">
+
+  <app-client-detail></app-client-detail>
+</app-shared-modal> 

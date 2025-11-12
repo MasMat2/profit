@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { CategoryPlansComponent } from '../category-plans/category-plans.component';
 import { EnrollClientComponent } from '../enroll-client/enroll-client.component';
 import { AccessClientComponent } from '../access-client/access-client.component';
-// import { ClientManagementComponent } from '../client-management/client-management.component';
+import { ClientManagementComponent } from '../client-management/client-management.component';
 
 interface MenuSection {
   title: string;
@@ -22,7 +22,7 @@ interface MenuItem {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, CategoryPlansComponent, EnrollClientComponent, AccessClientComponent],
+  imports: [CommonModule, CategoryPlansComponent, EnrollClientComponent, AccessClientComponent, ClientManagementComponent],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })

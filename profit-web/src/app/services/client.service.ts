@@ -55,4 +55,8 @@ export class ClientService {
   public obtenerClientes(): Observable<Client[]> {
     return this.http.get<Client[]>(this.dataUrl + 'obtener-clientes');
   }
+
+  public consultarCliente(email: string): Observable<Client> {
+    return this.http.get<Client>(this.dataUrl + 'consultar', { params: { email } });
+  }
 }

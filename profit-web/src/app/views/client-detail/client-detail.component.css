@@ -1,0 +1,99 @@
+.client-info-card {
+  background-color: #ffffff;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.client-avatar { font-size: 2.5rem; color: var(--primary-color); }
+
+
+.client-name { margin: 0; font-size: 1.5rem; }
+
+.client-meta { margin: 0; color: var(--text-color-secondary); }
+
+.sub-tab-nav {
+  display: flex;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 1.5rem;
+}
+
+.sub-tab-button {
+  background: none;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-color-secondary);
+  border-bottom: 2px solid transparent;
+}
+.sub-tab-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.history-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.history-table th, .history-table td {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-border);
+}
+.history-table thead { background-color: var(--surface-b); }
+.history-table th { font-weight: 600; color: var(--text-color-secondary); }
+.history-table tr:last-child td { border-bottom: none; }
+.history-table .status { padding: 0.25rem 0.75rem; border-radius: 15px; font-weight: 600; }
+.history-table .status.Activo { background-color: rgba(34, 197, 94, 0.1); color: #16a34a; }
+.history-table .status.Expirado { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.history-table .fa-credit-card { color: var(--blue-500); }
+.history-table .fa-money-bill-wave { color: var(--green-500); } 
+
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+}
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary-color);
+}
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
