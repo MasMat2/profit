@@ -59,4 +59,8 @@ export class ClientService {
   public consultarCliente(email: string): Observable<Client> {
     return this.http.get<Client>(this.dataUrl + 'consultar', { params: { email } });
   }
+
+  public updateCliente(client: Client): Observable<Client> {
+    return this.http.put<Client>(this.dataUrl + 'update', client);
+  }
 }

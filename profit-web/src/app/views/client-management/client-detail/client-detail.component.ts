@@ -6,10 +6,12 @@ import { SharedModalComponent } from '../../shared/shared-modal/shared-modal.com
 import { PlansService } from '../../../services/plans.service';
 import { ModalService } from '../../../services/modal.service';
 import { Client } from '../../../services/client.service';
+import { EditClientFormComponent } from './edit-client-form/edit-client-form.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, EditClientFormComponent],
   selector: 'app-client-detail',
   templateUrl: './client-detail.component.html',
   styleUrls: ['./client-detail.component.css']
@@ -19,6 +21,7 @@ export class ClientDetailComponent implements OnInit
   @Input() email!: string;
   
   activeSubTab: 'memberships' | 'payments' = 'memberships';
+  isEditModalOpen: boolean = false;
 
 
   client: Client = {
@@ -57,16 +60,16 @@ export class ClientDetailComponent implements OnInit
   
   memberships: any[] = [];
 
-  // saveSubscription: Subscription;
+  saveSubscription: Subscription;
 
   constructor(
     private plansService: PlansService,
     private clientService: ClientService,
     private modalService: ModalService
   ) { 
-      // this.saveSubscription = this.modalService.onSave$.subscribe(() => {
-      //   this.handleSave();
-      // });
+      this.saveSubscription = this.modalService.onSave$.subscribe(() => {
+        this.handleSave();
+      });
   }
 
   ngOnInit(): void {
@@ -88,8 +91,15 @@ export class ClientDetailComponent implements OnInit
     }
   }
 
+  openEditModal() {
+    this.isEditModalOpen = true;
+  }
+
+  closeEditModal() {
+    this.isEditModalOpen = false;
+  }
+
   handleSave() {
-    console.log('save');
   }
 
   ngOnDestroy() {

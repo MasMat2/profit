@@ -7,8 +7,7 @@
       <h3 class="client-name">{{ client.first_name }} {{ client.last_name }}</h3>
       <p class="client-meta">ID: {{ client.id }} | Email: {{ client.email }}</p>
     </div>
-    <!-- <button class="edit-icon-button" (click)="openEditModal()" title="Editar detalles del cliente"> -->
-    <button class="edit-icon-button" title="Editar detalles del cliente">
+    <button class="edit-icon-button" (click)="openEditModal()" title="Editar detalles del cliente">
       <i class="fas fa-pen-to-square"></i>
     </button>
   </div>
@@ -86,7 +85,7 @@
 </div>
 
 <!-- Nested Modal for Editing Client Details -->
-<!-- <app-shared-modal
+<app-shared-modal
   *ngIf="isEditModalOpen"
   (close)="closeEditModal()"
   [size]="'medium'"
@@ -94,7 +93,7 @@
   [showSaveButton]="true">
   
   <app-edit-client-form 
-    [clientData]="clientData">
+    [client]="client">
   </app-edit-client-form>
   
-</app-shared-modal> -->
+</app-shared-modal>

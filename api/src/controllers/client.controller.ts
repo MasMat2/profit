@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 
@@ -43,6 +43,17 @@ export class ClientController {
   @Get('api/cliente/obtener-clientes')
   obtenerClientes() {
     return this.prismaService.clients.findMany();
+  }
+
+  @Put('api/cliente/update')
+  actualizarCliente(@Body() clientDto: any) {
+
+    clientDto.dob = new Date(clientDto.dob);
+    
+    return this.prismaService.clients.update({
+      where: { id: clientDto.id },
+      data: clientDto
+    });
   }
  
   
