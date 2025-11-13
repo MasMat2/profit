@@ -1,11 +1,11 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ClientService } from '../../services/client.service';
-import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
-import { PlansService } from '../../services/plans.service';
-import { ModalService } from '../../services/modal.service';
-import { Client } from '../../services/client.service';
+import { ClientService } from '../../../services/client.service';
+import { SharedModalComponent } from '../../shared/shared-modal/shared-modal.component';
+import { PlansService } from '../../../services/plans.service';
+import { ModalService } from '../../../services/modal.service';
+import { Client } from '../../../services/client.service';
 
 @Component({
   standalone: true,

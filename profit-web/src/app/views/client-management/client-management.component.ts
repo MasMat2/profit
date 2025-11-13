@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../services/client.service';
 import { firstValueFrom } from 'rxjs';
 import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
-import { ClientDetailComponent } from '../client-detail/client-detail.component';
+import { ClientDetailComponent } from './client-detail/client-detail.component';
 
 @Component({
   standalone: true,
