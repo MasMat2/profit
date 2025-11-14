@@ -15,13 +15,7 @@ import { ClientService } from '../../../../services/client.service';
 })
 export class EditClientFormComponent implements OnInit, OnDestroy {
   @Input() client!: Client;
-  
-  editedClient: Client = {
-    payment_details: {
-      method: null,
-      reference: ''
-    }
-  };
+
 
 
   // todo: homologate payment options
@@ -36,9 +30,7 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Create a deep copy of the client data to edit
-    this.editedClient = JSON.parse(JSON.stringify(this.client));
-    
+
     // Subscribe to save events from the modal
     this.saveSubscription = this.modalService.onSave$.subscribe(() => {
       this.onSave();
@@ -53,9 +45,9 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
 
   onSave(): void {
     // Update the client on the server
-    this.clientService.updateCliente(this.editedClient).subscribe({
+    this.clientService.updateCliente(this.client).subscribe({
       next: (updatedClient) => {
-        this.editedClient = updatedClient;
+        this.client = updatedClient;
       },
       error: (error) => {
         // You might want to show an error message to the user here

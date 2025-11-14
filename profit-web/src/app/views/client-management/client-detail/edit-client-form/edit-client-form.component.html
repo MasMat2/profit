@@ -11,7 +11,7 @@
             type="text" 
             id="firstName" 
             class="form-input" 
-            [(ngModel)]="editedClient.first_name" 
+            [(ngModel)]="client.first_name" 
             placeholder="Ingrese el nombre"
             required>
         </div>
@@ -22,7 +22,7 @@
             type="text" 
             id="lastName" 
             class="form-input" 
-            [(ngModel)]="editedClient.last_name" 
+            [(ngModel)]="client.last_name" 
             placeholder="Ingrese el apellido"
             required>
         </div>
@@ -35,7 +35,7 @@
             type="email" 
             id="email" 
             class="form-input" 
-            [(ngModel)]="editedClient.email" 
+            [(ngModel)]="client.email" 
             placeholder="correo@ejemplo.com"
             required>
         </div>
@@ -46,7 +46,7 @@
             type="tel" 
             id="phone" 
             class="form-input" 
-            [(ngModel)]="editedClient.phone" 
+            [(ngModel)]="client.phone" 
             placeholder="(123) 456-7890">
         </div>
       </div>
@@ -58,7 +58,7 @@
             type="date" 
             id="dob" 
             class="form-input" 
-            [(ngModel)]="editedClient.dob">
+            [(ngModel)]="client.dob">
         </div>
 
         <div class="form-group">
@@ -66,7 +66,7 @@
           <select 
             id="gender" 
             class="form-input" 
-            [(ngModel)]="editedClient.gender">
+            [(ngModel)]="client.gender">
             <option value="">Seleccione...</option>
             <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
           </select>
@@ -78,7 +78,7 @@
         <textarea 
           id="address" 
           class="form-input" 
-          [(ngModel)]="editedClient.address" 
+          [(ngModel)]="client.address" 
           placeholder="Dirección completa"
           rows="2"></textarea>
       </div>
@@ -91,7 +91,7 @@
           <select 
             id="paymentMethod" 
             class="form-input" 
-            [(ngModel)]="editedClient.payment_details.method">
+            [(ngModel)]="client.payment_details.method">
             <option [value]="null">Seleccione...</option>
             <option *ngFor="let method of paymentMethods" [value]="method">{{ method }}</option>
           </select>
@@ -103,7 +103,7 @@
             type="text" 
             id="paymentReference" 
             class="form-input" 
-            [(ngModel)]="editedClient.payment_details.reference" 
+            [(ngModel)]="client.payment_details.reference" 
             placeholder="Número de tarjeta/cuenta (últimos 4 dígitos)">
         </div>
       </div>
@@ -113,7 +113,7 @@
         <textarea 
           id="medicalNotes" 
           class="form-input" 
-          [(ngModel)]="editedClient.medical_notes" 
+          [(ngModel)]="client.medical_notes" 
           placeholder="Alergias, condiciones médicas, etc."
           rows="4"></textarea>
       </div>
