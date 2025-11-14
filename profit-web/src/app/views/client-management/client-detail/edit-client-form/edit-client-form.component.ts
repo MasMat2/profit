@@ -30,11 +30,18 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.normalizeClientDates();
 
     // Subscribe to save events from the modal
     this.saveSubscription = this.modalService.onSave$.subscribe(() => {
       this.onSave();
     });
+  }
+
+  private normalizeClientDates(): void {
+    if (this.client.dob && typeof this.client.dob === 'string') {
+      this.client.dob = this.client.dob.split('T')[0] as any;
+    }
   }
 
   ngOnDestroy(): void {
@@ -48,6 +55,7 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
     this.clientService.updateCliente(this.client).subscribe({
       next: (updatedClient) => {
         this.client = updatedClient;
+        this.normalizeClientDates();
       },
       error: (error) => {
         // You might want to show an error message to the user here
