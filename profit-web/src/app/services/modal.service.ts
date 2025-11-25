@@ -4,10 +4,17 @@ import { Subject } from 'rxjs';
 @Injectable() // NO providedIn: 'root' - allows component-level scoping
 export class ModalService {
   private saveTriggered = new Subject<void>();
+  private closeTriggered = new Subject<void>();
   
   public onSave$ = this.saveTriggered.asObservable();
+  public onClose$ = this.closeTriggered.asObservable();
   
   public triggerSave(): void {
     this.saveTriggered.next();
   }
+
+  public triggerClose(): void {
+    this.closeTriggered.next();
+  }
 }
+

@@ -21,6 +21,9 @@ export class SharedModalComponent {
   constructor(private modalService: ModalService) { }
 
   ngOnInit() {
+    this.modalService.onClose$.subscribe(() => {
+      this.close.emit();
+    });
   }
 
   onSave() {
