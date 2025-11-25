@@ -33,7 +33,8 @@ export class ClientController {
   
       plan.client_id = client.id;
       plan.fecha_inicio = new Date(plan.fecha_inicio);
-  
+      plan.fecha_fin = new Date(plan.fecha_fin);
+      
       await this.prismaService.planes_clientes.create({data: plan});
     }
   
@@ -50,10 +51,12 @@ export class ClientController {
 
     clientDto.dob = new Date(clientDto.dob);
     
-    return this.prismaService.clients.update({
+    var updatedClient = this.prismaService.clients.update({
       where: { id: clientDto.id },
       data: clientDto
     });
+
+    return updatedClient;
   }
  
   
