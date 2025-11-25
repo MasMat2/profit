@@ -71,6 +71,7 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
         this.editedClient = updatedClient;
         this.clientChange.emit(updatedClient);
         this.normalizeClientDates();
+        this.modalService.triggerClose();
       },
       error: (error) => {
         // You might want to show an error message to the user here
