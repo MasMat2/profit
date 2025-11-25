@@ -16,6 +16,7 @@ import { ClientService } from '../../../../services/client.service';
 export class EditClientFormComponent implements OnInit, OnDestroy {
   @Input() client!: Client;
 
+  @Output() clientChange = new EventEmitter<Client>();
 
   editedClient: Client = {
       payment_details: { method: '', reference: '' }
@@ -67,7 +68,8 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
     // Update the client on the server
     this.clientService.updateCliente(this.editedClient).subscribe({
       next: (updatedClient) => {
-        this.client = updatedClient;
+        this.editedClient = updatedClient;
+        this.clientChange.emit(updatedClient);
         this.normalizeClientDates();
       },
       error: (error) => {
