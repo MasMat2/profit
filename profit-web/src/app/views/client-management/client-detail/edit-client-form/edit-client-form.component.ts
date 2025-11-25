@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Client } from '../../../../services/client.service';
@@ -17,6 +17,9 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
   @Input() client!: Client;
 
 
+  editedClient: Client = {
+      payment_details: { method: '', reference: '' }
+  };
 
   // todo: homologate payment options
   paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia'];
@@ -24,12 +27,16 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
 
   private saveSubscription!: Subscription;
 
+  validateForm = false;
+
   constructor(
     private clientService: ClientService,
     private modalService: ModalService
   ) { }
 
   ngOnInit(): void {
+    this.editedClient = JSON.parse(JSON.stringify(this.client));
+
     this.normalizeClientDates();
 
     // Subscribe to save events from the modal
@@ -39,8 +46,8 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
   }
 
   private normalizeClientDates(): void {
-    if (this.client.dob && typeof this.client.dob === 'string') {
-      this.client.dob = this.client.dob.split('T')[0] as any;
+    if (this.editedClient.dob && typeof this.editedClient.dob === 'string') {
+      this.editedClient.dob = this.editedClient.dob.split('T')[0] as any;
     }
   }
 
@@ -51,8 +58,14 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
   }
 
   onSave(): void {
+    this.validateForm = true;
+
+    if (!this.isValidForm()) {
+      return;
+    }
+
     // Update the client on the server
-    this.clientService.updateCliente(this.client).subscribe({
+    this.clientService.updateCliente(this.editedClient).subscribe({
       next: (updatedClient) => {
         this.client = updatedClient;
         this.normalizeClientDates();
@@ -62,4 +75,12 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+    public isValidForm(): boolean {
+        return !!(this.editedClient.first_name && 
+                 this.editedClient.last_name && 
+                 this.editedClient.email && 
+                 this.editedClient.phone && 
+                 this.editedClient.dob);
+    }
 }

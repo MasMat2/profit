@@ -6,23 +6,25 @@
       
       <div class="form-row">
         <div class="form-group">
-          <label for="firstName">Nombre(s)</label>
+          <label for="firstName">Nombre(s) <span class="required-asterisk" *ngIf="validateForm && firstName.invalid">*</span></label>
           <input 
+            #firstName="ngModel"
             type="text" 
             id="firstName" 
             class="form-input" 
-            [(ngModel)]="client.first_name" 
+            [(ngModel)]="editedClient.first_name" 
             placeholder="Ingrese el nombre"
             required>
         </div>
 
         <div class="form-group">
-          <label for="lastName">Apellido(s)</label>
+          <label for="lastName">Apellido(s) <span class="required-asterisk" *ngIf="validateForm && lastName.invalid">*</span></label>
           <input 
+            #lastName="ngModel"
             type="text" 
             id="lastName" 
             class="form-input" 
-            [(ngModel)]="client.last_name" 
+            [(ngModel)]="editedClient.last_name" 
             placeholder="Ingrese el apellido"
             required>
         </div>
@@ -30,35 +32,40 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="email">Correo Electrónico</label>
+          <label for="email">Correo Electrónico <span class="required-asterisk" *ngIf="validateForm && email.invalid">*</span></label>
           <input 
+            #email="ngModel"
             type="email" 
             id="email" 
             class="form-input" 
-            [(ngModel)]="client.email" 
+            [(ngModel)]="editedClient.email" 
             placeholder="correo@ejemplo.com"
             required>
         </div>
 
         <div class="form-group">
-          <label for="phone">Teléfono</label>
+          <label for="phone">Teléfono <span class="required-asterisk" *ngIf="validateForm && phone.invalid">*</span></label>
           <input 
+            #phone="ngModel"
             type="tel" 
             id="phone" 
             class="form-input" 
-            [(ngModel)]="client.phone" 
-            placeholder="(123) 456-7890">
+            [(ngModel)]="editedClient.phone" 
+            placeholder="(123) 456-7890"
+            required>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="dob">Fecha de Nacimiento</label>
+          <label for="dob">Fecha de Nacimiento <span class="required-asterisk" *ngIf="validateForm && dob.invalid">*</span></label>
           <input 
+            #dob="ngModel"
             type="date" 
             id="dob" 
             class="form-input" 
-            [(ngModel)]="client.dob">
+            [(ngModel)]="editedClient.dob"
+            required>
         </div>
 
         <div class="form-group">
@@ -66,7 +73,7 @@
           <select 
             id="gender" 
             class="form-input" 
-            [(ngModel)]="client.gender">
+            [(ngModel)]="editedClient.gender">
             <option value="">Seleccione...</option>
             <option *ngFor="let gender of genders" [value]="gender">{{ gender }}</option>
           </select>
@@ -74,24 +81,28 @@
       </div>
 
       <div class="form-group full-width">
-        <label for="address">Dirección</label>
+        <label for="address">Dirección <span class="required-asterisk" *ngIf="validateForm && address.invalid">*</span></label>
         <textarea 
+          #address="ngModel"
           id="address" 
           class="form-input" 
-          [(ngModel)]="client.address" 
+          [(ngModel)]="editedClient.address" 
           placeholder="Dirección completa"
-          rows="2"></textarea>
+          rows="2"
+          required></textarea>
       </div>
 
       <h4 class="section-title">Información de Pago</h4>
       
       <div class="form-row">
         <div class="form-group">
-          <label for="paymentMethod">Método de Pago Preferido</label>
-          <select 
+          <label for="paymentMethod">Método de Pago Preferido <span class="required-asterisk" *ngIf="validateForm && paymentMethod.invalid">*</span></label>
+          <select
+            #paymentMethod="ngModel"
             id="paymentMethod" 
             class="form-input" 
-            [(ngModel)]="client.payment_details.method">
+            [(ngModel)]="editedClient.payment_details.method"
+            required>
             <option [value]="null">Seleccione...</option>
             <option *ngFor="let method of paymentMethods" [value]="method">{{ method }}</option>
           </select>
@@ -103,7 +114,7 @@
             type="text" 
             id="paymentReference" 
             class="form-input" 
-            [(ngModel)]="client.payment_details.reference" 
+            [(ngModel)]="editedClient.payment_details.reference" 
             placeholder="Número de tarjeta/cuenta (últimos 4 dígitos)">
         </div>
       </div>
@@ -113,7 +124,7 @@
         <textarea 
           id="medicalNotes" 
           class="form-input" 
-          [(ngModel)]="client.medical_notes" 
+          [(ngModel)]="editedClient.medical_notes" 
           placeholder="Alergias, condiciones médicas, etc."
           rows="4"></textarea>
       </div>
