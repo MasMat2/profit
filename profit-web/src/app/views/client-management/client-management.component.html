@@ -58,6 +58,7 @@
 <app-shared-modal 
   *ngIf="isModalOpen" 
   (close)="closeModal()"
+  (save)="closeModal()"
   [size]="'large'"
   [showSaveButton]="true">
 
