@@ -17,6 +17,7 @@ export class SharedModalComponent {
   @Input() size: 'small' | 'medium' | 'large' = 'medium'; // Default size
 
   @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<void>();
 
   constructor(private modalService: ModalService) { }
 
@@ -27,6 +28,7 @@ export class SharedModalComponent {
   }
 
   onSave() {
+    this.save.emit();
     this.modalService.triggerSave();
   }
 
