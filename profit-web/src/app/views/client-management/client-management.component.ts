@@ -26,11 +26,11 @@ export class ClientManagementComponent implements OnInit {
   constructor(private clientService: ClientService) { }
 
   async ngOnInit(): Promise<void> {
-    this.clients = await firstValueFrom(this.clientService.obtenerClientes());
-    this.filterClients();
+    await this.filterClients();
   }
 
-  filterClients(): void {
+  async filterClients(): Promise<void> {
+    this.clients = await firstValueFrom(this.clientService.obtenerClientes());
     this.filteredClients = this.clients;
   }
 
@@ -46,6 +46,7 @@ export class ClientManagementComponent implements OnInit {
 
   public closeModal() {
     this.isModalOpen = false;
+    this.filterClients();
   }
 
 
