@@ -87,6 +87,11 @@ export class ClientDetailComponent implements OnInit
     if (this.client.id) {
       this.plansService.consultarPorCliente(this.client.id).subscribe((memberships) => {
         this.memberships = memberships;
+
+      this.memberships.forEach((membership) => {
+        const endDate = new Date(membership.fecha_inicio);
+        membership.fecha_fin = new Date(endDate.setDate(endDate.getDate() + membership.plans.duration)).toISOString();
+      });
       });
     }
   }

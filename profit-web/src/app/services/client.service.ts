@@ -49,7 +49,16 @@ export class ClientService {
   }
 
   public agregar(enrollmentRequest: EnrollmentRequest): Observable<void> {
-    return this.http.post<void>(this.dataUrl + 'agregar', enrollmentRequest);
+  // Create a clean copy without fecha_fin
+    const cleanRequest = {
+      ...enrollmentRequest,
+      plans: enrollmentRequest.plans.map(plan => ({
+        plan_id: plan.plan_id,
+        fecha_inicio: plan.fecha_inicio
+      }))
+    };
+  
+    return this.http.post<void>(this.dataUrl + 'agregar', cleanRequest);
   }
 
   public obtenerClientes(): Observable<Client[]> {

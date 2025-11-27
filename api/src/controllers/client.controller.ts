@@ -33,9 +33,8 @@ export class ClientController {
   
       plan.client_id = client.id;
       plan.fecha_inicio = new Date(plan.fecha_inicio);
-      plan.fecha_fin = new Date(plan.fecha_fin);
       
-      await this.prismaService.planes_clientes.create({data: plan});
+        await this.prismaService.planes_clientes.create({data: plan});
     }
   
     return client;
