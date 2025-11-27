@@ -12,6 +12,7 @@ model category {
   id          Int     @id @default(autoincrement())
   name        String  @db.VarChar(255)
   description String?
+  plans       plans[]
 }
 
 model clients {
@@ -47,4 +48,5 @@ model plans {
   price           Decimal           @db.Decimal(10, 2)
   duration        Int
   planes_clientes planes_clientes[]
+  category        category          @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
