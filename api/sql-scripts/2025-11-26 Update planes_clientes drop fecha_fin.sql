@@ -1,0 +1,1 @@
+ALTER TABLE planes_clientes DROP COLUMN fecha_fin;
