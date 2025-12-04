@@ -10,6 +10,7 @@ export interface Plan {
   description: string;
   price: number;
   duration: number; // en días
+  monthly_payment?: boolean;
 }
 
 @Injectable({

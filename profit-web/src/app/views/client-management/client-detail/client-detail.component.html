@@ -41,10 +41,8 @@
               <td>{{ m.fecha_fin | date:'yyyy-MM-dd' }}</td>
               <td><span class="status" [ngClass]="getMembershipStatus(m.fecha_inicio, m.fecha_fin)">{{ getMembershipStatus(m.fecha_inicio, m.fecha_fin) }}</span></td>
               <td>
-                <label class="switch">
-                  <input type="checkbox" [checked]="true">
-                  <span class="slider round"></span>
-                </label>
+                <app-custom-switch
+                  [value]="true"></app-custom-switch>
               </td>
               <td>
                 <button class="secondary-button small">

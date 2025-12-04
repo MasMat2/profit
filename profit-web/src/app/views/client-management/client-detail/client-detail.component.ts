@@ -8,10 +8,11 @@ import { ModalService } from '../../../services/modal.service';
 import { Client } from '../../../services/client.service';
 import { EditClientFormComponent } from './edit-client-form/edit-client-form.component';
 import { Subscription } from 'rxjs';
+import { CustomSwitchComponent } from '../../shared/custom-switch/custom-switch.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent, EditClientFormComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, EditClientFormComponent, CustomSwitchComponent],
   selector: 'app-client-detail',
   templateUrl: './client-detail.component.html',
   styleUrls: ['./client-detail.component.css']
@@ -88,13 +89,13 @@ export class ClientDetailComponent implements OnInit
       this.plansService.consultarPorCliente(this.client.id).subscribe((memberships) => {
         this.memberships = memberships;
 
-      this.memberships.forEach((membership) => {
-        const endDate = new Date(membership.fecha_inicio);
-        membership.fecha_fin = new Date(endDate.setDate(endDate.getDate() + membership.plans.duration)).toISOString();
+        this.memberships.forEach((membership) => {
+          const endDate = new Date(membership.fecha_inicio);
+          membership.fecha_fin = new Date(endDate.setDate(endDate.getDate() + membership.plans.duration)).toISOString();
+        });
       });
-      });
-    }
   }
+}
 
   openEditModal() {
     this.isEditModalOpen = true;

@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { CategoryService, Category } from '../../services/category.service';
 import { PlansService, Plan } from '../../services/plans.service';
 import { firstValueFrom } from 'rxjs';
+import { CustomSwitchComponent } from '../shared/custom-switch/custom-switch.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CustomSwitchComponent],
   providers: [CategoryService, PlansService],
   selector: 'app-category-plans',
   templateUrl: './category-plans.component.html',

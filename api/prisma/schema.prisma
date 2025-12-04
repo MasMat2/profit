@@ -46,6 +46,7 @@ model plans {
   description     String?
   price           Decimal           @db.Decimal(10, 2)
   duration        Int
+  monthly_payment Boolean?
   planes_clientes planes_clientes[]
   category        category          @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

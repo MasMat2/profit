@@ -92,6 +92,15 @@
             <label for="planDuration">Duración (días)</label>
             <input id="planDuration" type="number" [(ngModel)]="newPlan.duration" name="planDuration" required>
           </div>
+          <div class="form-field">
+            <label for="planMonthlyPayment">Pago Mensual</label>
+            <app-custom-switch
+              id="planMonthlyPayment"
+              name="planMonthlyPayment"
+              [value]="newPlan.monthly_payment || false"
+              (valueChange)="newPlan.monthly_payment = $event">
+            </app-custom-switch>
+          </div>
         </div>
 
         <button type="submit" class="save-button">Guardar Plan</button>
