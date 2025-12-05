@@ -22,6 +22,16 @@ export class ClientController {
     const client = await this.prismaService.clients.create({data: clientDto.client});
   
     for (const plan of clientDto.plans) {
+
+  
+      plan.client_id = client.id;
+      plan.fecha_inicio = new Date(plan.fecha_inicio);
+      
+      const planCreated = await this.prismaService.planes_clientes.create({data: plan});
+
+
+      // Create payment
+
       // Fetch the plan details to get the duration
       const planDetails = await this.prismaService.plans.findUnique({
         where: { id: plan.plan_id }
@@ -30,11 +40,34 @@ export class ClientController {
       if (!planDetails) {
         throw new Error(`Plan with id ${plan.plan_id} not found`);
       }
-  
-      plan.client_id = client.id;
-      plan.fecha_inicio = new Date(plan.fecha_inicio);
       
-        await this.prismaService.planes_clientes.create({data: plan});
+      const mesesEspañol = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      ];
+      const nombre_mes = mesesEspañol[plan.fecha_inicio.getMonth()];
+      const año = plan.fecha_inicio.getFullYear();
+      const concepto = `Mensualidad ${nombre_mes} ${año} - ${planDetails.name}`;
+      const fecha_inicio = new Date(plan.fecha_inicio);
+      const fecha_fin = new Date(plan.fecha_inicio);
+      if (planDetails.monthly_payment) {
+        // add 1 month
+        fecha_fin.setMonth(fecha_fin.getMonth() + 1);
+      } else {
+        fecha_fin.setDate(fecha_fin.getDate() + planDetails.duration);
+      }
+
+      await this.prismaService.pagos.create({data: {
+        planes_clientes_id: planCreated.id,
+        pago_fecha: null,
+        concepto: concepto,
+        periodo_inicio: fecha_inicio,
+        periodo_fin: fecha_fin,
+        cantidad: planDetails.price,
+        pago_metodo: null,
+      }});
+
+
     }
   
     return client;

@@ -35,6 +35,7 @@ model planes_clientes {
   client_id    Int
   fecha_inicio DateTime? @db.Date
   created_at   DateTime? @default(now()) @db.Timestamp(6)
+  pagos        pagos[]
   clients      clients   @relation(fields: [client_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   plans        plans     @relation(fields: [plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -49,4 +50,16 @@ model plans {
   monthly_payment Boolean?
   planes_clientes planes_clientes[]
   category        category          @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model pagos {
+  id                 Int             @id @default(autoincrement())
+  planes_clientes_id Int
+  pago_fecha         DateTime?       @db.Timestamp(6)
+  concepto           String          @db.VarChar(255)
+  periodo_inicio     DateTime        @db.Date
+  periodo_fin        DateTime        @db.Date
+  cantidad           Decimal         @db.Decimal(10, 2)
+  pago_metodo        String?         @db.VarChar(50)
+  planes_clientes    planes_clientes @relation(fields: [planes_clientes_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
