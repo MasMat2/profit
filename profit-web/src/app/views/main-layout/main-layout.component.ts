@@ -6,18 +6,7 @@ import { CategoryPlansComponent } from '../category-plans/category-plans.compone
 import { EnrollClientComponent } from '../enroll-client/enroll-client.component';
 import { AccessClientComponent } from '../access-client/access-client.component';
 import { ClientManagementComponent } from '../client-management/client-management.component';
-
-interface MenuSection {
-  title: string;
-  items: MenuItem[];
-}
-
-interface MenuItem {
-  id: string;
-  name: string;
-  icon?: string;
-  children?: MenuItem[];
-}
+import { MENU_CONFIG, MenuSection, MenuItem } from '../../config/menu.config';
 
 @Component({
   selector: 'app-main-layout',
@@ -39,45 +28,7 @@ export class MainLayoutComponent implements OnInit {
 
   selectedComponent: string = 'dashboard';
 
-  menuSections: MenuSection[] = [
-    {
-      title: 'PRINCIPAL',
-      items: [
-        { id: 'dashboard', name: 'Estadísticas', icon: 'fas fa-chart-line' },
-        { id: 'administration', name: 'Administración', icon: 'fas fa-building' },
-        { id: 'access-monitor', name: 'Monitor de Acceso', icon: 'fas fa-video' },
-        { id: 'access-client', name: 'Acceso a Clientes', icon: 'fas fa-user' },
-      ]
-    },
-    {
-      title: 'GESTIÓN',
-      items: [
-        { 
-          id: 'category-plans', 
-          name: 'Categoría/Planes', 
-          icon: 'fas fa-layer-group'
-        },
-        { 
-          id: 'clients-accordion', 
-          name: 'Clientes', 
-          icon: 'fas fa-users',
-          children: [
-            { id: 'enroll-client', name: 'Inscribir Cliente' },
-            { id: 'client-management', name: 'Gestionar Clientes' },
-            { id: 'memberships-management', name: 'Gestión de Membresías' }
-          ]
-        }
-      ]
-    },
-    {
-      title: 'INVENTARIO Y VENTAS',
-      items: [
-        { id: 'products', name: 'Productos y Stock', icon: 'fas fa-box-open' },
-        { id: 'point-of-sale', name: 'Punto de Venta', icon: 'fas fa-cash-register' },
-        { id: 'user-cart', name: 'Carrito de Usuario', icon: 'fas fa-shopping-cart' }
-      ]
-    }
-  ];
+  menuSections: MenuSection[] = MENU_CONFIG;
 
   constructor(private router: Router, private renderer: Renderer2) {
     // Revisa si ya existe una sesión al cargar la app
