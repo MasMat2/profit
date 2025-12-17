@@ -36,8 +36,4 @@ export class PlansService {
   public eliminar(id: number): Observable<void> {
     return this.http.get<void>(this.dataUrl + 'eliminar/' + id);
   }
-
-  public consultarPorCliente(client_id: number): Observable<Plan[]> {
-    return this.http.get<Plan[]>(this.dataUrl + 'consultarPorCliente', {params: {client_id}});
-  }
 }

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../../services/client.service';
 import { SharedModalComponent } from '../../shared/shared-modal/shared-modal.component';
-import { PlansService } from '../../../services/plans.service';
+import { MembershipService } from '../../../services/membership.service';
 import { ModalService } from '../../../services/modal.service';
 import { Client } from '../../../services/client.service';
 import { EditClientFormComponent } from './edit-client-form/edit-client-form.component';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { PaymentService, Payment } from '../../../services/payment.service';
 import { CustomSwitchComponent } from '../../shared/custom-switch/custom-switch.component';
 
 @Component({
@@ -32,39 +33,15 @@ export class ClientDetailComponent implements OnInit
     }
   };
 
-  payments: any[] = [
-    {
-      id: 'TXN-001234',
-      date: '2024-01-15',
-      concept: 'Mensualidad Enero 2024 - Plan Premium',
-      amount: 800,
-      method: 'Tarjeta de Crédito',
-      methodIcon: 'fas fa-credit-card'
-    },
-    {
-      id: 'TXN-001567',
-      date: '2024-02-15',
-      concept: 'Mensualidad Febrero 2024 - Plan Premium',
-      amount: 800,
-      method: 'Transferencia',
-      methodIcon: 'fas fa-university'
-    },
-    {
-      id: 'TXN-001890',
-      date: '2024-03-15',
-      concept: 'Mensualidad Marzo 2024 - Plan Premium',
-      amount: 800,
-      method: 'Efectivo',
-      methodIcon: 'fas fa-money-bill'
-    }
-  ];
+  payments: Payment[] = [];
   
   memberships: any[] = [];
 
   saveSubscription: Subscription;
 
   constructor(
-    private plansService: PlansService,
+    private membershipService: MembershipService,
+    private paymentService: PaymentService,
     private clientService: ClientService,
     private modalService: ModalService
   ) { 
@@ -73,29 +50,53 @@ export class ClientDetailComponent implements OnInit
       });
   }
 
-  ngOnInit(): void {
-    this.consultarCliente();
+  async ngOnInit(): Promise<void> {
+    await this.consultarCliente();
+    await this.consultarPagos();
+    this.consultarMemberesias();
   }
 
-  consultarCliente() {
-    this.clientService.consultarCliente(this.email).subscribe((client) => {
-      this.client = client;
-      this.consultarPlanes();
-    });
+  async consultarCliente() {
+    this.client = await firstValueFrom(this.clientService.consultarCliente(this.email));
   }
 
-  consultarPlanes() {
+  async consultarPagos() {
     if (this.client.id) {
-      this.plansService.consultarPorCliente(this.client.id).subscribe((memberships) => {
+      this.payments = await firstValueFrom(this.paymentService.consultarPorCliente(this.client.id));
+    }
+  }
+
+  consultarMemberesias() {
+    if (this.client.id) {
+      this.membershipService.consultarPorCliente(this.client.id).subscribe((memberships) => {
         this.memberships = memberships;
 
         this.memberships.forEach((membership) => {
+
+          // Calcular fecha fin
           const endDate = new Date(membership.fecha_inicio);
           membership.fecha_fin = new Date(endDate.setDate(endDate.getDate() + membership.plans.duration)).toISOString();
+
+
+          // Calcular el estado de la membresía
+          // tomar ultimo pago para este plan específico
+          const planPayments = this.payments.filter(payment => payment.planes_clientes_id === membership.id);
+          const lastPayment = planPayments.sort((a, b) => {
+            if(b.periodo_inicio && a.periodo_inicio)
+              return new Date(b.periodo_inicio).getTime() - new Date(a.periodo_inicio).getTime()
+            else
+              return 0;
+          }
+          )[0];
+          if (lastPayment.pago_fecha) {
+            membership.status = 'Activo';
+          } else {
+            membership.status = 'Expirado';
+          }
         });
       });
+    }
   }
-}
 
   openEditModal() {
     this.isEditModalOpen = true;
@@ -110,20 +111,6 @@ export class ClientDetailComponent implements OnInit
 
   ngOnDestroy() {
     // this.saveSubscription.unsubscribe();
-  }
-
-
-   getMembershipStatus(fechaInicio: string | Date, fechaFin: string | Date): string {
-    const today = new Date();
-    const startDate = new Date(fechaInicio);
-    const endDate = new Date(fechaFin);
-
-
-    if (today >= startDate && today <= endDate) {
-      return 'Activo';
-    } else {
-      return 'Expirado';
-    }
   }
 
   

@@ -39,7 +39,7 @@
               <td>{{ m.plans.name }}</td>
               <td>{{ m.fecha_inicio | date:'yyyy-MM-dd' }}</td>
               <td>{{ m.fecha_fin | date:'yyyy-MM-dd' }}</td>
-              <td><span class="status" [ngClass]="getMembershipStatus(m.fecha_inicio, m.fecha_fin)">{{ getMembershipStatus(m.fecha_inicio, m.fecha_fin) }}</span></td>
+              <td><span class="status" [ngClass]="m.status">{{ m.status }}</span></td>
               <td>
                 <app-custom-switch
                   [value]="true"></app-custom-switch>
@@ -63,6 +63,7 @@
               <th>ID de Transacción</th>
               <th>Fecha de Pago</th>
               <th>Concepto</th>
+              <th>Periodo</th>
               <th>Monto</th>
               <th>Método</th>
             </tr>
@@ -70,10 +71,14 @@
           <tbody>
             <tr *ngFor="let p of payments">
               <td>{{ p.id }}</td>
-              <td>{{ p.date }}</td>
-              <td>{{ p.concept }}</td>
-              <td>{{ p.amount | currency }}</td>
-              <td><i [class]="p.methodIcon"></i> {{ p.method }}</td>
+              <td>{{ p.pago_fecha | date:'yyyy-MM-dd' }}</td>
+              <td>{{ p.concepto }}</td>
+              <td class="period">
+                <p>{{ p.periodo_inicio | date:'yyyy-MM-dd' }}</p>
+                <p>{{ p.periodo_fin | date:'yyyy-MM-dd' }}</p>
+              </td>
+              <td>{{ p.cantidad | currency }}</td>
+              <td><i [class]=""></i> {{ p.pago_metodo }}</td>
             </tr>
           </tbody>
         </table>

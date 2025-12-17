@@ -1,3 +1,14 @@
+
+.period { 
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.period p {
+  margin: 0;
+}
+
 .client-info-card {
   background-color: #ffffff;
   border-radius: var(--border-radius);
