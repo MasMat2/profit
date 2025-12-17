@@ -45,6 +45,8 @@ export class MainLayoutComponent implements OnInit {
     } else {
       this.renderer.setAttribute(document.body, 'data-theme', 'light');
     }
+
+    this.loadMenuState();
   }
 
 
@@ -60,10 +62,29 @@ export class MainLayoutComponent implements OnInit {
         // this.accordions[key] = false;
       }
     });
+
+    // guardar el estado del menu
+    localStorage.setItem("selectedComponent", componentName);
+    
+  }
+
+  loadMenuState() {
+    const savedAccordion = localStorage.getItem("selectedAccordion");
+    if (savedAccordion) {
+      this.toggleAccordion(savedAccordion);
+    }
+
+
+    const savedComponent = localStorage.getItem("selectedComponent");
+    if (savedComponent) {
+      this.selectComponent(savedComponent);
+    }
   }
 
   toggleAccordion(componentId: string) {
     this.accordions[componentId] = !this.accordions[componentId];
+    // guardar el estado del menu
+    localStorage.setItem("selectedAccordion", componentId);
   }
 
   toggleTheme(): void {
