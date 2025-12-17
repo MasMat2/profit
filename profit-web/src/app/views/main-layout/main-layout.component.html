@@ -13,7 +13,8 @@
 
         <ng-container *ngFor="let item of section.items">
             <!-- Elemento de menú normal -->
-            <a *ngIf="!item.children" class="nav-item" (click)="selectComponent(item.id)" [class.active]="activeMenu === item.id">
+            <a *ngIf="!item.children" class="nav-item" (click)="selectComponent(item.id)" [class.active]="activeMenu === item.id"
+            routerLink="{{ item.route }}">
               <i [class]="item.icon"></i> {{ item.name }}
             </a>
             <!-- Elemento de menú con acordeón -->
@@ -25,7 +26,8 @@
                 <i class="fas fa-chevron-down" [class.rotated]="accordions[item.id]"></i>
               </div>
               <div class="accordion-content" [class.show]="accordions[item.id]">
-                <a *ngFor="let child of item.children" class="nav-item sub-item" (click)="selectComponent(child.id)" [class.active]="activeMenu === child.id">
+                <a *ngFor="let child of item.children" class="nav-item sub-item" (click)="selectComponent(child.id)" [class.active]="activeMenu === child.id"
+                routerLink="{{ child.route }}">
                   {{ child.name }}
                 </a>
               </div>
@@ -51,12 +53,7 @@
 
   <div class="main-content">
     <div class="page-content-wrapper">
-      <div [ngSwitch]="selectedComponent">
-        <app-category-plans *ngSwitchCase="'category-plans'"></app-category-plans>
-        <app-enroll-client *ngSwitchCase="'enroll-client'"></app-enroll-client>
-        <app-access-client *ngSwitchCase="'access-client'"></app-access-client>
-        <app-client-management *ngSwitchCase="'client-management'"></app-client-management>
-    </div>
+      <router-outlet></router-outlet>
   </div>
 
   
