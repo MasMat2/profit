@@ -1,0 +1,288 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <button class="admin-button" [class.active]="activeSection === 'empresa'" (click)="selectSection('empresa')">Conf. Empresa</button>
+    <button class="admin-button" [class.active]="activeSection === 'roles'" (click)="selectSection('roles')">Usuarios/Roles</button>
+    <button class="admin-button" [class.active]="activeSection === 'permisos'" (click)="selectSection('permisos')">Permisos</button>
+    <button class="admin-button" [class.active]="activeSection === 'sistema'" (click)="selectSection('sistema')">Conf. Sistema</button>
+  </div>
+  
+  <div [ngSwitch]="activeSection">
+    <!-- Vista de Configuración de Empresa -->
+    <div *ngSwitchCase="'empresa'" class="config-view">
+      <div class="card">
+        <h3 class="card-header">Información del Negocio</h3>
+        <div class="business-info-grid">
+          <div class="logo-area">
+            <div class="logo-preview">
+                <img [src]="businessInfo.logoUrl" alt="Logo del Negocio" *ngIf="businessInfo.logoUrl">
+                <div class="logo-placeholder" *ngIf="!businessInfo.logoUrl">
+                  <i class="material-icons">business</i>
+                  <p>Sin logo</p>
+                </div>
+            </div>
+            <input type="file" #logoInput (change)="onLogoSelected($event)" accept="image/*" style="display: none;">
+            <button class="change-logo-btn" (click)="logoInput.click()">Cambiar Logo</button>
+          </div>
+          <div class="info-fields-grid">
+            <div class="form-field full-width">
+              <label for="businessName">Nombre del Negocio</label>
+              <input id="businessName" type="text" [(ngModel)]="businessInfo.name" (ngModelChange)="guardarInformacionNegocio()">
+            </div>
+            <div class="form-field">
+              <label for="businessAddress">Dirección</label>
+              <input id="businessAddress" type="text" [(ngModel)]="businessInfo.address" (ngModelChange)="guardarInformacionNegocio()">
+            </div>
+            <div class="form-field">
+              <label for="businessNeighborhood">Colonia</label>
+              <input id="businessNeighborhood" type="text" [(ngModel)]="businessInfo.neighborhood" (ngModelChange)="guardarInformacionNegocio()">
+            </div>
+            <div class="form-field full-width">
+              <label for="businessPhone">Teléfono</label>
+              <input id="businessPhone" type="text" [(ngModel)]="businessInfo.phone" (ngModelChange)="guardarInformacionNegocio()">
+            </div>
+            <div class="form-field">
+                <label for="businessCityState">Ciudad, Estado</label>
+                <input id="businessCityState" type="text" [(ngModel)]="businessInfo.cityState" (ngModelChange)="guardarInformacionNegocio()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista de Configuración del Sistema -->
+    <div *ngSwitchCase="'sistema'" class="system-settings-view">
+      <div class="settings-header">
+        <h2>Configuración General del Sistema</h2>
+        <button class="primary-button" (click)="saveSystemSettings()">
+          <i class="material-icons">save</i> Guardar Cambios
+        </button>
+      </div>
+
+      <div class="settings-grid">
+
+        <!-- Horarios de Operación -->
+        <div class="settings-card">
+          <h3 class="card-title">Horarios de Operación</h3>
+          <div class="form-group">
+            <label>Lunes a Viernes</label>
+            <div class="time-inputs">
+              <input type="time" [(ngModel)]="systemSettings.openingHours.weekdays.from">
+              <span>a</span>
+              <input type="time" [(ngModel)]="systemSettings.openingHours.weekdays.to">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Sábados</label>
+            <div class="time-inputs">
+              <input type="time" [(ngModel)]="systemSettings.openingHours.saturdays.from">
+              <span>a</span>
+              <input type="time" [(ngModel)]="systemSettings.openingHours.saturdays.to">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Domingos</label>
+            <div class="time-inputs">
+              <input type="time" [(ngModel)]="systemSettings.openingHours.sundays.from">
+              <span>a</span>
+              <input type="time" [(ngModel)]="systemSettings.openingHours.sundays.to">
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuración Regional y Fiscal -->
+        <div class="settings-card">
+          <h3 class="card-title">Regional y Fiscal</h3>
+          <div class="form-group-inline">
+            <label for="taxRate">Tasa de IVA (%)</label>
+            <input id="taxRate" type="number" [(ngModel)]="systemSettings.taxRate">
+          </div>
+          <div class="form-group-inline">
+            <label for="currencySymbol">Símbolo de Moneda</label>
+            <input id="currencySymbol" type="text" [(ngModel)]="systemSettings.regional.currencySymbol">
+          </div>
+          <div class="form-group-inline">
+            <label for="dateFormat">Formato de Fecha</label>
+            <select id="dateFormat" [(ngModel)]="systemSettings.regional.dateFormat">
+              <option value="dd/MM/yyyy">dd/MM/yyyy</option>
+              <option value="MM/dd/yyyy">MM/dd/yyyy</option>
+            </select>
+          </div>
+          <div class="form-group-inline">
+            <label for="timezone">Zona Horaria</label>
+            <select id="timezone" [(ngModel)]="systemSettings.regional.timezone">
+              <option value="America/Mexico_City">GTM-6 (Ciudad de México)</option>
+              <option value="America/New_York">GTM-5 (Nueva York)</option>
+              <option value="Europe/Madrid">GTM+1 (Madrid)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Configuración de Correo (SMTP) -->
+        <div class="settings-card full-width">
+          <h3 class="card-title">Configuración de Correo (SMTP)</h3>
+          <div class="form-grid-smtp">
+            <div class="form-group">
+              <label for="smtpServer">Servidor SMTP</label>
+              <input id="smtpServer" type="text" [(ngModel)]="systemSettings.smtp.server">
+            </div>
+            <div class="form-group">
+              <label for="smtpPort">Puerto</label>
+              <input id="smtpPort" type="number" [(ngModel)]="systemSettings.smtp.port">
+            </div>
+            <div class="form-group">
+              <label for="smtpUser">Usuario</label>
+              <input id="smtpUser" type="text" [(ngModel)]="systemSettings.smtp.user">
+            </div>
+            <div class="form-group">
+              <label for="smtpPass">Contraseña</label>
+              <input id="smtpPass" type="password" [(ngModel)]="systemSettings.smtp.pass">
+            </div>
+          </div>
+        </div>
+
+        <!-- Seguridad y Notificaciones -->
+        <div class="settings-card">
+          <h3 class="card-title">Seguridad y Notificaciones</h3>
+          <div class="form-group-inline">
+            <label for="sessionTimeout">Expiración de Sesión (min)</label>
+            <input id="sessionTimeout" type="number" [(ngModel)]="systemSettings.security.sessionTimeout">
+          </div>
+          <div class="form-group-inline">
+            <label>Activar correos</label>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="systemSettings.notifications.emailsEnabled">
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Mantenimiento -->
+        <div class="settings-card">
+          <h3 class="card-title">Mantenimiento</h3>
+          <div class="form-group">
+            <label>Limpieza de Datos</label>
+            <p class="description">Elimina archivos temporales y datos de caché para optimizar el rendimiento.</p>
+            <button class="secondary-button" (click)="clearCache()">
+              <i class="material-icons">delete_sweep</i> Limpiar Caché
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Vista de Permisos -->
+    <div *ngSwitchCase="'permisos'" class="permission-table-view card">
+      <div class="permission-header">
+        <div>
+          <h2 class="permission-table-title">PERMISOS EN EL SISTEMA</h2>
+          <p class="permission-description" *ngIf="!selectedUserForPermissions">
+            Selecciona un usuario desde la pestaña "Usuarios/Roles" para editar sus permisos.
+          </p>
+          <p class="permission-description" *ngIf="selectedUserForPermissions">
+            Editando permisos para: <strong>{{ selectedUserForPermissions.nombre }}</strong>
+          </p>
+        </div>
+        <button class="primary-button" (click)="savePermissions()" [disabled]="!selectedUserForPermissions">
+          <i class="fas fa-save"></i> Guardar Permisos
+        </button>
+      </div>
+
+      <div class="permission-table">
+        <div class="permission-table-header">
+          <div class="header-item option-col">Módulo del Sistema</div>
+          <div class="header-item">Ver</div>
+          <div class="header-item">Modificar</div>
+        </div>
+        <div class="permission-table-body">
+          <div *ngFor="let module of permissionModules" class="permission-table-row">
+            <div class="cell-item option-col">{{ module.name }}</div>
+            <div class="cell-item">
+              <input type="checkbox" 
+                     [disabled]="!module.permissions.includes('Ver') || !selectedUserForPermissions"
+                     [checked]="hasPermission(module.name, 'Ver')"
+                     (change)="togglePermission(module.name, 'Ver')">
+            </div>
+            <div class="cell-item">
+              <input type="checkbox" 
+                     [disabled]="!module.permissions.includes('Modificar') || !selectedUserForPermissions"
+                     [checked]="hasPermission(module.name, 'Modificar')"
+                     (change)="togglePermission(module.name, 'Modificar')">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista de Usuarios/Roles -->
+    <div *ngSwitchCase="'roles'" class="user-control-view card">
+      <div class="user-control-header">
+        <h2 class="user-control-title">Control de Usuarios y Roles</h2>
+        <button class="primary-button" (click)="openModal()">
+          <i class="material-icons">add</i> Crear Usuario
+        </button>
+      </div>
+
+      <div class="table-search-bar">
+        <i class="material-icons search-icon">search</i>
+        <input type="text" 
+               class="search-input" 
+               placeholder="Buscar por usuario, nombre o puesto..."
+               [(ngModel)]="userSearchTerm">
+      </div>
+
+      <div class="user-grid-container">
+        <div class="user-grid-header">
+          <div>Usuario</div>
+          <div>Nombre Completo</div>
+          <div>Puesto</div>
+          <div>Email</div>
+          <div>Teléfono</div>
+          <div>PC Asignada</div>
+          <div class="text-center">Permisos</div>
+          <div class="text-center">Editar</div>
+        </div>
+        <div class="user-grid-body">
+          <div *ngFor="let user of filteredUsers" class="user-grid-row">
+            <div>{{ user.usuario }}</div>
+            <div>{{ user.nombre }}</div>
+            <div>{{ user.puesto }}</div>
+            <div>{{ user.email }}</div>
+            <div>{{ user.telefono }}</div>
+            <div>{{ user.pc }}</div>
+            <div class="text-center">
+              <button class="action-btn permissions-btn" (click)="editUserPermissions(user)">
+                <i class="material-icons">shield</i>
+              </button>
+            </div>
+            <div class="text-center">
+              <button class="action-btn edit-btn" (click)="openModal(user)">
+                <i class="material-icons">edit</i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="user-control-footer">
+        <span class="user-count">{{ filteredUsers.length }} de {{ userData.length }} usuarios</span>
+      </div>
+
+    </div>
+
+    <!-- Vista por defecto para las otras secciones -->
+    <div *ngSwitchDefault class="admin-body">
+      <div class="card large-card">Inf. Negocio</div>
+      <div class="card large-card">Parámetros Diversos</div>
+      <div class="card full-width-card"></div>
+    </div>
+  </div>
+</div>
+
+<!-- User Edit/Create Modal - Re-enabled -->
+<app-user-modal 
+  *ngIf="isModalOpen" 
+  [user]="editingUser" 
+  (close)="closeModal()"
+  (save)="saveUser($event)">
+</app-user-modal> 

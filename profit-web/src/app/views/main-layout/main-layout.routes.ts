@@ -4,8 +4,7 @@ import { CategoryPlansComponent } from "../category-plans/category-plans.compone
 import { EnrollClientComponent } from "../enroll-client/enroll-client.component";
 import { AccessClientComponent } from "../access-client/access-client.component";
 import { ClientManagementComponent } from "../client-management/client-management.component";
-
-
+import { AdministrationComponent } from "../administration/administration.component";
 
 export const MAIN_LAYOUT_ROUTES: Route[] = [
     {
@@ -27,6 +26,10 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
             {
                 path: 'clientes/gestionar',
                 component: ClientManagementComponent,
+            },
+            {
+                path: 'administracion',
+                component: AdministrationComponent,
             },
         ]
     },
