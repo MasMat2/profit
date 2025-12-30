@@ -16,9 +16,7 @@ import { PlansService } from '../../services/plans.service';
 })
 export class AccessClientComponent implements OnInit {
 
-    newClient: Client = {
-        payment_details: { method: '', reference: '' }
-    };
+    newClient: Client = {};
     wizardStep = 1;
     accessComplete = false;
     invalidAccess = false;
@@ -58,8 +56,6 @@ export class AccessClientComponent implements OnInit {
    
     public newAccess(): void {
         this.accessComplete = false;
-        this.newClient = {
-            payment_details: { method: '', reference: '' }
-        };
+        this.newClient = {};
     }
 } 

@@ -2,7 +2,7 @@ import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Client } from '../../../../services/client.service';
-import { ModalService } from '../../../../services/modal.service';
+import { ModalService } from '../../../../services/shared/modal.service';
 import { Subscription } from 'rxjs';
 import { ClientService } from '../../../../services/client.service';
 
@@ -18,12 +18,10 @@ export class EditClientFormComponent implements OnInit, OnDestroy {
 
   @Output() clientChange = new EventEmitter<Client>();
 
-  editedClient: Client = {
-      payment_details: { method: '', reference: '' }
-  };
+  editedClient: Client = {};
 
+  
   // todo: homologate payment options
-  paymentMethods = ['Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 'Transferencia'];
   genders = ['Masculino', 'Femenino', 'Otro'];
 
   private saveSubscription!: Subscription;

@@ -188,16 +188,16 @@
                         <div class="payment-method">
                             <div class="form-field">
                                 <label for="paymentMethod">Método de Pago</label>
-                                <select id="paymentMethod" [(ngModel)]="newClient.payment_details.method" (ngModelChange)="guardarEstadoFormulario()">
+                                <select id="paymentMethod" [(ngModel)]="payment_details.method" (ngModelChange)="guardarEstadoFormulario()">
                                     <option [ngValue]="null" disabled>-- Elige un método --</option>
                                     <option value="Efectivo">Efectivo</option>
-                                    <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
+                                    <option value="Tarjeta de Crédito/Débito">Tarjeta de Crédito/Débito</option>
                                     <option value="Transferencia">Transferencia Bancaria</option>
                                 </select>
                             </div>
-                            <div class="form-field" *ngIf="newClient.payment_details?.method === 'Tarjeta' || newClient.payment_details?.method === 'Transferencia'">
+                            <div class="form-field" *ngIf="payment_details.method === 'Tarjeta de Crédito/Débito' || payment_details.method === 'Transferencia'">
                                 <label for="paymentReference">Referencia</label>
-                                <input id="paymentReference" type="text" [(ngModel)]="newClient.payment_details.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
+                                <input id="paymentReference" type="text" [(ngModel)]="payment_details.reference" (ngModelChange)="guardarEstadoFormulario()" placeholder="Ej. Últimos 4 dígitos, ID de transacción...">
                             </div>
                         </div>
 
@@ -221,15 +221,15 @@
                                 </div>
                             </div>
                         </div>
-                        <p><strong>Pago Registrado:</strong>{{ newClient.payment_details?.method }} (Ref: {{ newClient.payment_details?.reference || 'N/A' }})</p>
+                        <p><strong>Pago Registrado:</strong>{{ payment_details?.method }} (Ref: {{ payment_details?.reference || 'N/A' }})</p>
                     </div>
 
                     <app-contract-preview
                         [clientData]="newClient"
                         [plansData]="getContractPlansData()"
                         [totalPrice]="getTotalPrice()"
-                        [paymentMethod]="newClient.payment_details?.method || ''"
-                        [paymentReference]="newClient.payment_details?.reference || ''">
+                        [paymentMethod]="payment_details?.method || ''"
+                        [paymentReference]="payment_details?.reference || ''">
                     </app-contract-preview>
                 </div>
             </div>

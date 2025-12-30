@@ -92,33 +92,6 @@
           required></textarea>
       </div>
 
-      <h4 class="section-title">Información de Pago</h4>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="paymentMethod">Método de Pago Preferido <span class="required-asterisk" *ngIf="validateForm && paymentMethod.invalid">*</span></label>
-          <select
-            #paymentMethod="ngModel"
-            id="paymentMethod" 
-            class="form-input" 
-            [(ngModel)]="editedClient.payment_details.method"
-            required>
-            <option [value]="null">Seleccione...</option>
-            <option *ngFor="let method of paymentMethods" [value]="method">{{ method }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="paymentReference">Referencia de Pago</label>
-          <input 
-            type="text" 
-            id="paymentReference" 
-            class="form-input" 
-            [(ngModel)]="editedClient.payment_details.reference" 
-            placeholder="Número de tarjeta/cuenta (últimos 4 dígitos)">
-        </div>
-      </div>
-
       <div class="form-group full-width">
         <label for="medicalNotes">Notas Médicas</label>
         <textarea 

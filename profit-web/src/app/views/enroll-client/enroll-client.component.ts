@@ -21,9 +21,15 @@ import { ReceiptComponent, ReceiptData } from './receipt/receipt.component';
 })
 export class EnrollClientComponent implements OnInit {
 
-    newClient: Client = {
-        payment_details: { method: '', reference: '' }
+    // todo: implementar cobro
+    newClient: Client = {};
+
+    payment_details: any = {
+        method: '',
+        reference: ''
     };
+
+    paymentMethods: string[] = [];
 
     plans: ClientPlan[] = [];
 
@@ -119,8 +125,8 @@ export class EnrollClientComponent implements OnInit {
                 price: this.getPlanPrice(plan.plan_id)
             })),
             total: this.getTotalPrice(),
-            paymentMethod: this.newClient.payment_details?.method || 'No especificado',
-            paymentReference: this.newClient.payment_details?.reference
+            paymentMethod: this.payment_details.method || 'No especificado',
+            paymentReference: this.payment_details.reference
         };
 
         this.enrollmentComplete = true;
@@ -141,9 +147,7 @@ export class EnrollClientComponent implements OnInit {
 
     public resetWizard(): void {
 
-        this.newClient = {
-            payment_details: { method: '', reference: '' }
-        };
+        this.newClient = {};
         this.wizardStep = 1;
         this.selectedCategoryId = null;
         this.filteredPlans = [];

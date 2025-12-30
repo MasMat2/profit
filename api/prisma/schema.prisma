@@ -24,7 +24,6 @@ model clients {
   dob             DateTime?         @db.Date
   gender          String?           @db.VarChar(20)
   address         String?
-  payment_details Json?
   medical_notes   String?
   planes_clientes planes_clientes[]
 }

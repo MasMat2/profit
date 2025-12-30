@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ClientService } from '../../../services/client.service';
 import { SharedModalComponent } from '../../shared/shared-modal/shared-modal.component';
 import { MembershipService } from '../../../services/membership.service';
-import { ModalService } from '../../../services/modal.service';
+import { ModalService } from '../../../services/shared/modal.service';
 import { Client } from '../../../services/client.service';
 import { EditClientFormComponent } from './edit-client-form/edit-client-form.component';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -26,12 +26,7 @@ export class ClientDetailComponent implements OnInit
   isEditModalOpen: boolean = false;
 
 
-  client: Client = {
-    payment_details: {
-      method: null,
-      reference: ''
-    }
-  };
+  client: Client = {};
 
   payments: Payment[] = [];
   

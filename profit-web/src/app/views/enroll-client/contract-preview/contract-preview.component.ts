@@ -19,7 +19,7 @@ interface PlanData {
   styleUrls: ['./contract-preview.component.css']
 })
 export class ContractPreviewComponent {
-  @Input() clientData: Client = { payment_details: { method: '', reference: '' } };
+  @Input() clientData: Client = {};
   @Input() plansData: PlanData[] = [];
   @Input() totalPrice: number = 0;
   @Input() paymentMethod: string = '';
@@ -27,6 +27,11 @@ export class ContractPreviewComponent {
   
   @ViewChild('contractContent') contractContent!: ElementRef;
 
+  payment_details: any = {
+      method: '',
+      reference: ''
+  };
+  
   contractNumber: string = '';
   contractDate: Date = new Date();
 

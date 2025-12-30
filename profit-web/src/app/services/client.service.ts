@@ -2,11 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface PaymentDetails {
-  method: string | null;
-  reference: string;
-}
-
 export interface Client {
   id?: number;
   first_name?: string;
@@ -17,7 +12,6 @@ export interface Client {
   gender?: string;
   address?: string;
   plan_id?: number | null;
-  payment_details: PaymentDetails;
   medical_notes?: string;
 }
 
