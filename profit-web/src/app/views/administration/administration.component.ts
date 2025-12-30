@@ -65,12 +65,6 @@ export class AdministrationComponent implements OnInit {
       sundays: { from: '12:00', to: '12:00' } // Cerrado
     },
     taxRate: 16,
-    smtp: {
-      server: 'smtp.example.com',
-      port: 587,
-      user: 'user@example.com',
-      pass: ''
-    },
     regional: {
       currencySymbol: '$',
       timezone: 'America/Mexico_City',

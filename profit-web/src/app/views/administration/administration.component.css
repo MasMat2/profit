@@ -824,11 +824,6 @@
   font-size: 0.9rem;
   color: var(--text-color-secondary);
 }
-.form-grid-smtp {
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr 2fr;
-  gap: 1rem;
-}
 
 /* Estilos de Inputs y Selects */
 .system-settings-view input[type="text"],
