@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Client } from '../../../../services/client.service';
-import { ModalService } from '../../../../services/modal.service';
+import { Client } from '@services/client.service';
+import { ModalService } from '@services/shared/modal.service';
 import { Subscription } from 'rxjs';
-import { ClientService } from '../../../../services/client.service';
+import { ClientService } from '@services/client.service';
 
 @Component({
   standalone: true,

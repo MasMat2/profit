@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ModalService } from '../../../services/modal.service';
+import { ModalService } from '@services/shared/modal.service';
 
 @Component({
   standalone: true,
@@ -28,8 +28,8 @@ export class SharedModalComponent {
   }
 
   onSave() {
-    this.save.emit();
-    this.modalService.triggerSave();
+    this.save.emit(); // Avisarle al padre
+    this.modalService.triggerSave(); // Avisarle al hijo
   }
 
   onClose() {
