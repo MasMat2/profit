@@ -64,7 +64,7 @@ export class ClientController {
         periodo_inicio: fecha_inicio,
         periodo_fin: fecha_fin,
         cantidad: planDetails.price,
-        pago_metodo: null,
+        metodo_pago_id: null,
       }});
 
 

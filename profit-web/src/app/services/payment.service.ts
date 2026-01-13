@@ -13,6 +13,11 @@ export interface Payment {
   pago_metodo?: string;
 }
 
+export interface MetodoPago {
+  id?: number;
+  metodo?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,5 +29,9 @@ export class PaymentService {
   public consultarPorCliente(client_id: number): Observable<Payment[]> {
     return this.http.get<Payment[]>(this.dataUrl + 'consultarPorCliente', {params: {client_id}});
   }
-  
+
+  public consultarMetodosPago(): Observable<MetodoPago[]> {
+    return this.http.get<MetodoPago[]>(this.dataUrl + 'consultarMetodosPago');
+  }
+
 }

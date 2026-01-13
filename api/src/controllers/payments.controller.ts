@@ -25,4 +25,10 @@ export class PaymentsController {
     });
   }
 
+
+  @Get('api/payment/consultarMetodosPago')
+  consultarMetodosPago() {
+    return this.prismaService.metodos_pago.findMany();
+  }
+
 }

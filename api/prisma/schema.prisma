@@ -59,6 +59,13 @@ model pagos {
   periodo_inicio     DateTime        @db.Date
   periodo_fin        DateTime        @db.Date
   cantidad           Decimal         @db.Decimal(10, 2)
-  pago_metodo        String?         @db.VarChar(50)
+  metodo_pago_id     Int?
+  metodos_pago       metodos_pago?   @relation(fields: [metodo_pago_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   planes_clientes    planes_clientes @relation(fields: [planes_clientes_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model metodos_pago {
+  id     Int     @id @default(autoincrement())
+  metodo String  @db.VarChar(255)
+  pagos  pagos[]
 }
