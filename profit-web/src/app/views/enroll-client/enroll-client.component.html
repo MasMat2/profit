@@ -114,7 +114,7 @@
                             </div>
                             <div>
                                 <div class="form-field" *ngIf="selectedPlanId">
-                                    <button type="button" class="secondary-button" (click)="addPlanToClient()">
+                                    <button type="button" class="btn-secondary" (click)="addPlanToClient()">
                                         Agregar Plan
                                     </button>
                                 </div>
@@ -237,9 +237,9 @@
 
         <!-- Wizard Footer -->
         <div class="wizard-footer">
-            <button *ngIf="wizardStep > 1" class="secondary-button" (click)="previousStep()">Anterior</button>
-            <button *ngIf="wizardStep < steps.length" class="primary-button" (click)="nextStep()">Siguiente</button>
-            <button *ngIf="wizardStep === steps.length" class="primary-button" (click)="submitWizard()">Finalizar y Guardar</button>
+            <button *ngIf="wizardStep > 1" class="btn-secondary" (click)="previousStep()">Anterior</button>
+            <button *ngIf="wizardStep < steps.length" class="btn-primary" (click)="nextStep()">Siguiente</button>
+            <button *ngIf="wizardStep === steps.length" class="btn-primary" (click)="submitWizard()">Finalizar y Guardar</button>
         </div>
     </div>
 
@@ -251,10 +251,10 @@
             <h3>¡Cliente Inscrito con Éxito!</h3>
             <p>Se ha registrado a <strong>{{ lastEnrolledClientData?.clientName }}</strong>.</p>
             <div class="success-actions">
-                <button class="primary-button" (click)="generateTicket()">
+                <button class="btn-primary" (click)="generateTicket()">
                     <i class="fas fa-receipt"></i> Ver Recibo
                 </button>
-                <button class="secondary-button" (click)="startNewEnrollment()">
+                <button class="btn-secondary" (click)="startNewEnrollment()">
                     <i class="fas fa-plus"></i> Inscribir Otro Cliente
                 </button>
             </div>

@@ -13,6 +13,11 @@
   --primary-color-text: #FFFFFF;
   --primary-color-darker: #EA580C; /* Naranja más oscuro para hover */
 
+  --secondary-color: #E5E7EB;
+  --secondary-color-text: #111827;
+  --secondary-color-darker: #D1D5DB;
+  --secondary-color-text-disabled: #1118274d;
+
   /* Superficies */
   --surface-a: #FFFFFF;       /* Fondo de tarjetas, modales */
   --surface-b: #F3F4F6;       /* Fondo principal de la app */
@@ -57,10 +62,42 @@ body, html {
     color: var(--text-color);
 }
 
-/* --- VARIABLES DE COLOR --- */
-:root {
-    --primary-color: #F97316; /* Naranja (Tailwind Orange 500) */
-    --text-color-secondary: #6B7280; /* Secundario (gris) */
-  
-  }
-  
+
+.btn-primary, .btn-secondary {
+    border-radius: 8px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: var(--primary-color); /* Primary orange */
+  color: white;
+  margin-left: 10px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-color-darker); /* Lighter orange */
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color);
+  color: var(--secondary-color-text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--secondary-color-darker);
+}
+
+.btn-primary:active, .btn-secondary:active {
+    transform: scale(0.98);
+} 
+
+.btn-secondary:disabled {
+  color: var(--secondary-color-text-disabled);
+  cursor: initial;
+}
+
+
