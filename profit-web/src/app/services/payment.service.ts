@@ -10,7 +10,7 @@ export interface Payment {
   periodo_inicio?: Date;
   periodo_fin?: Date;
   cantidad?: number;
-  pago_metodo?: string;
+  metodos_pago?: MetodoPago;
 }
 
 export interface MetodoPago {
@@ -33,5 +33,5 @@ export class PaymentService {
   public consultarMetodosPago(): Observable<MetodoPago[]> {
     return this.http.get<MetodoPago[]>(this.dataUrl + 'consultarMetodosPago');
   }
-
+  
 }

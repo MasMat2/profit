@@ -20,7 +20,15 @@ export class PaymentsController {
           include: {
             plans: true
           }
+        }, 
+        metodos_pago: {
+          select: {
+            metodo: true
+          }
         }
+      },
+      orderBy: {
+        id: 'desc'
       }
     });
   }

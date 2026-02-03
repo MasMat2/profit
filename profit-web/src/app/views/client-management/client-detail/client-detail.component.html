@@ -79,7 +79,7 @@
                 <p>{{ p.periodo_fin | date:'yyyy-MM-dd' }}</p>
               </td>
               <td>{{ p.cantidad | currency }}</td>
-              <td><i [class]=""></i> {{ p.pago_metodo }}</td>
+              <td><i [class]=""></i> {{ p.metodos_pago?.metodo }}</td>
             </tr>
           </tbody>
         </table>
