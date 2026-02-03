@@ -66,9 +66,9 @@ export const MENU_CONFIG: MenuSection[] = [
             route: 'clientes/gestionar'
           },
           { 
-            id: 'gestionar-membresias', 
-            name: 'Gestión de Membresías',
-            route: 'clientes/membresias'
+            id: 'gestionar-comunicacion', 
+            name: 'Comunicación',
+            route: 'clientes/comunicacion'
           }
         ]
       }
