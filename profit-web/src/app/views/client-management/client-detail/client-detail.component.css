@@ -64,3 +64,25 @@
 .history-table .fa-credit-card { color: var(--blue-500); }
 .history-table .fa-money-bill-wave { color: var(--green-500); } 
 
+.edit-icon-button {
+  background-color: var(--primary-color);
+  color: var(--primary-color-text);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.6rem 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.edit-icon-button:hover {
+  background-color: var(--primary-color-darker);
+}
+
+.edit-icon-button i {
+  font-size: 1.1rem;
+}
+
