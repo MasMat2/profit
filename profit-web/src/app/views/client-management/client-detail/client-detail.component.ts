@@ -10,20 +10,29 @@ import { EditClientFormComponent } from './edit-client-form/edit-client-form.com
 import { firstValueFrom, Subscription } from 'rxjs';
 import { PaymentService, Payment } from '../../../services/payment.service';
 import { CustomSwitchComponent } from '../../shared/custom-switch/custom-switch.component';
+import { PaymentFormComponent } from './payment-form/payment-form.component';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent, EditClientFormComponent, CustomSwitchComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    SharedModalComponent, 
+    EditClientFormComponent, 
+    CustomSwitchComponent,
+    PaymentFormComponent],
   selector: 'app-client-detail',
   templateUrl: './client-detail.component.html',
   styleUrls: ['./client-detail.component.css']
 })
 export class ClientDetailComponent implements OnInit
 {
+
   @Input() email!: string;
   
   activeSubTab: 'memberships' | 'payments' = 'memberships';
   isEditModalOpen: boolean = false;
+  isPaymentModalOpen: boolean = false;
 
 
   client: Client = {};
@@ -31,6 +40,7 @@ export class ClientDetailComponent implements OnInit
   payments: Payment[] = [];
   
   memberships: any[] = [];
+  membershipId: number = 0;
 
   saveSubscription: Subscription;
 
@@ -83,7 +93,8 @@ export class ClientDetailComponent implements OnInit
               return 0;
           }
           )[0];
-          if (lastPayment.pago_fecha) {
+          
+          if (lastPayment.pago_fecha || (lastPayment.periodo_inicio && new Date(lastPayment.periodo_inicio) > new Date())) {
             membership.status = 'Activo';
           } else {
             membership.status = 'Expirado';
@@ -108,7 +119,18 @@ export class ClientDetailComponent implements OnInit
     // this.saveSubscription.unsubscribe();
   }
 
-  
+  openPaymentModal(membershipId: number) {
+    this.membershipId = membershipId;
+    this.isPaymentModalOpen = true;
+  }
 
+  closePaymentModal() {
+    this.isPaymentModalOpen = false;
+  }
 
-} 
+  async paymentSaved() {
+    this.closePaymentModal();
+    await this.consultarPagos();
+    await this.consultarMemberesias();
+  }
+}

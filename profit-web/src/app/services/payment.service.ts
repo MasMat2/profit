@@ -18,6 +18,11 @@ export interface MetodoPago {
   metodo?: string;
 }
 
+export interface PaymentInfo {
+  membership_id: number;
+  method: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,6 +37,10 @@ export class PaymentService {
 
   public consultarMetodosPago(): Observable<MetodoPago[]> {
     return this.http.get<MetodoPago[]>(this.dataUrl + 'consultarMetodosPago');
+  }
+
+  public guardarPago(paymentInfo: PaymentInfo): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'guardarPago', paymentInfo);
   }
   
 }

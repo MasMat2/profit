@@ -1,0 +1,23 @@
+<div class="edit-client-form">
+  <div class="form-grid">
+    <!-- Personal Information Section -->
+    <div class="form-section">
+      <h4 class="section-title">Método de Pago</h4>
+      
+      <div class="form-row">
+        <div class="form-group">
+            <div class="form-group">
+              <select 
+                id="paymentMethod" 
+                class="form-input" 
+                [(ngModel)]="payment_method">
+                <option [ngValue]="null" disabled>-- Seleccione --</option>
+                <option *ngFor="let method of payment_methods" [ngValue]="method.id">{{ method.metodo }}</option>
+              </select>
+            </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

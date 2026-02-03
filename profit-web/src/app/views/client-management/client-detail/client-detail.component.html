@@ -43,10 +43,11 @@
               <td><span class="status" [ngClass]="m.status">{{ m.status }}</span></td>
               <td>
                 <app-custom-switch
+                  [disabled]="!m.plans.monthly_payment"
                   [value]="true"></app-custom-switch>
               </td>
               <td>
-                <button class="secondary-button small">
+                <button [disabled]="m.status === 'Activo'" class="btn-secondary" (click)="openPaymentModal(m.id)">
                   Cobrar Ahora
                 </button>
               </td>
@@ -99,5 +100,19 @@
   <app-edit-client-form 
     [(client)]="client">
   </app-edit-client-form>
+  
+</app-shared-modal>
+
+<app-shared-modal
+  *ngIf="isPaymentModalOpen"
+  (close)="closePaymentModal()"
+  [size]="'medium'"
+  [modalTitle]="'Realizar Pago'"
+  [showSaveButton]="true">
+  
+  <app-payment-form
+    [membershipId]="membershipId"
+    (paymentSaved)="paymentSaved()">
+  </app-payment-form>
   
 </app-shared-modal>
