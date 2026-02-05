@@ -42,3 +42,10 @@ input:checked + .slider:before {
 }
 .slider.round { border-radius: 34px; }
 .slider.round:before { border-radius: 50%; }
+
+
+input:disabled + .slider {
+  opacity: 0.5;
+  cursor: default;
+  background-color: #e0e0e0;
+}

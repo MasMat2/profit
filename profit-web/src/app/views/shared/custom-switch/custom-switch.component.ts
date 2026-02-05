@@ -13,6 +13,7 @@ export class CustomSwitchComponent {
   @Input() name: string = '';
   @Input() value: boolean = false;
   @Output() valueChange = new EventEmitter<boolean>();
+  @Input() disabled: boolean = false;
 
   onInputChange(event: Event): void {
     const target = event.target as HTMLInputElement;

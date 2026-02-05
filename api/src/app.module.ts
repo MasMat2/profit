@@ -10,10 +10,11 @@ import { BusinessInfoController } from './controllers/business-info.controller';
 import { BusinessInfoService } from './services/business-info.service';
 import { UsersController } from './controllers/users.controller';
 import { UsersService } from './services/users.service';
+import { PaymentsService } from './services/payments.service';
 
 @Module({
   imports: [ConfigModule.forRoot()],
   controllers: [CategoryController, PlansController, ClientController, PaymentsController, MembershipsController, BusinessInfoController, UsersController],
-  providers: [PrismaService, BusinessInfoService, UsersService],
+  providers: [PrismaService, BusinessInfoService, UsersService, PaymentsService],
 })
 export class AppModule {}

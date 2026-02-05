@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+@Injectable() // NO providedIn: 'root' - allows component-level scoping
 export class ModalService {
   private saveTriggered = new Subject<void>();
   private closeTriggered = new Subject<void>();

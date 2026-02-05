@@ -10,7 +10,17 @@ export interface Payment {
   periodo_inicio?: Date;
   periodo_fin?: Date;
   cantidad?: number;
-  pago_metodo?: string;
+  metodos_pago?: MetodoPago;
+}
+
+export interface MetodoPago {
+  id?: number;
+  metodo?: string;
+}
+
+export interface PaymentInfo {
+  membership_id: number;
+  method: number;
 }
 
 @Injectable({
@@ -23,6 +33,14 @@ export class PaymentService {
 
   public consultarPorCliente(client_id: number): Observable<Payment[]> {
     return this.http.get<Payment[]>(this.dataUrl + 'consultarPorCliente', {params: {client_id}});
+  }
+
+  public consultarMetodosPago(): Observable<MetodoPago[]> {
+    return this.http.get<MetodoPago[]>(this.dataUrl + 'consultarMetodosPago');
+  }
+
+  public guardarPago(paymentInfo: PaymentInfo): Observable<void> {
+    return this.http.post<void>(this.dataUrl + 'guardarPago', paymentInfo);
   }
   
 }
