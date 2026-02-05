@@ -9,40 +9,54 @@
   <div [ngSwitch]="activeSection">
     <!-- Vista de Configuración de Empresa -->
     <div *ngSwitchCase="'empresa'" class="config-view">
+      <div class="settings-header">
+        <h2>Información del Negocio</h2>
+        <div>
+          <button class="primary-button" (click)="toggleEdicionEmpresa()" *ngIf="!editandoEmpresa">
+            <i class="material-icons">edit</i> Editar
+          </button>
+          <button class="secondary-button" (click)="cancelarEdicionEmpresa()" *ngIf="editandoEmpresa">
+            <i class="material-icons">close</i> Cancelar
+          </button>
+          <button class="primary-button" (click)="guardarInformacionNegocio()" *ngIf="editandoEmpresa">
+            <i class="material-icons">save</i> Guardar
+          </button>
+        </div>
+      </div>
       <div class="card">
         <h3 class="card-header">Información del Negocio</h3>
         <div class="business-info-grid">
           <div class="logo-area">
             <div class="logo-preview">
-                <img [src]="businessInfo.logoUrl" alt="Logo del Negocio" *ngIf="businessInfo.logoUrl">
+                <img [src]="businessInfo.logoUrl" alt="Logo" *ngIf="businessInfo.logoUrl">
                 <div class="logo-placeholder" *ngIf="!businessInfo.logoUrl">
                   <i class="material-icons">business</i>
                   <p>Sin logo</p>
                 </div>
             </div>
-            <input type="file" #logoInput (change)="onLogoSelected($event)" accept="image/*" style="display: none;">
-            <button class="change-logo-btn" (click)="logoInput.click()">Cambiar Logo</button>
+            <input type="file" #logoInput (change)="onLogoSelected($event)" accept="image/*" style="display: none;" [disabled]="!editandoEmpresa">
+            <button class="change-logo-btn" (click)="logoInput.click()" [disabled]="!editandoEmpresa">Cambiar Logo</button>
           </div>
           <div class="info-fields-grid">
             <div class="form-field full-width">
               <label for="businessName">Nombre del Negocio</label>
-              <input id="businessName" type="text" [(ngModel)]="businessInfo.name" (ngModelChange)="guardarInformacionNegocio()">
+              <input id="businessName" type="text" [(ngModel)]="businessInfo.name" [disabled]="!editandoEmpresa">
             </div>
             <div class="form-field">
               <label for="businessAddress">Dirección</label>
-              <input id="businessAddress" type="text" [(ngModel)]="businessInfo.address" (ngModelChange)="guardarInformacionNegocio()">
+              <input id="businessAddress" type="text" [(ngModel)]="businessInfo.address" [disabled]="!editandoEmpresa">
             </div>
             <div class="form-field">
               <label for="businessNeighborhood">Colonia</label>
-              <input id="businessNeighborhood" type="text" [(ngModel)]="businessInfo.neighborhood" (ngModelChange)="guardarInformacionNegocio()">
+              <input id="businessNeighborhood" type="text" [(ngModel)]="businessInfo.neighborhood" [disabled]="!editandoEmpresa">
             </div>
             <div class="form-field full-width">
               <label for="businessPhone">Teléfono</label>
-              <input id="businessPhone" type="text" [(ngModel)]="businessInfo.phone" (ngModelChange)="guardarInformacionNegocio()">
+              <input id="businessPhone" type="text" [(ngModel)]="businessInfo.phone" [disabled]="!editandoEmpresa">
             </div>
             <div class="form-field">
                 <label for="businessCityState">Ciudad, Estado</label>
-                <input id="businessCityState" type="text" [(ngModel)]="businessInfo.cityState" (ngModelChange)="guardarInformacionNegocio()">
+                <input id="businessCityState" type="text" [(ngModel)]="businessInfo.cityState" [disabled]="!editandoEmpresa">
             </div>
           </div>
         </div>
@@ -54,13 +68,11 @@
       <div class="settings-header">
         <h2>Configuración General del Sistema</h2>
         <button class="primary-button" (click)="saveSystemSettings()">
-          <i class="material-icons">save</i> Guardar Cambios
+          <i class="material-icons">save</i> Guardar
         </button>
       </div>
 
       <div class="settings-grid">
-
-        <!-- Horarios de Operación -->
         <div class="settings-card">
           <h3 class="card-title">Horarios de Operación</h3>
           <div class="form-group">
@@ -89,19 +101,18 @@
           </div>
         </div>
 
-        <!-- Configuración Regional y Fiscal -->
         <div class="settings-card">
           <h3 class="card-title">Regional y Fiscal</h3>
           <div class="form-group-inline">
-            <label for="taxRate">Tasa de IVA (%)</label>
+            <label for="taxRate">IVA (%)</label>
             <input id="taxRate" type="number" [(ngModel)]="systemSettings.taxRate">
           </div>
           <div class="form-group-inline">
-            <label for="currencySymbol">Símbolo de Moneda</label>
+            <label for="currencySymbol">Moneda</label>
             <input id="currencySymbol" type="text" [(ngModel)]="systemSettings.regional.currencySymbol">
           </div>
           <div class="form-group-inline">
-            <label for="dateFormat">Formato de Fecha</label>
+            <label for="dateFormat">Formato Fecha</label>
             <select id="dateFormat" [(ngModel)]="systemSettings.regional.dateFormat">
               <option value="dd/MM/yyyy">dd/MM/yyyy</option>
               <option value="MM/dd/yyyy">MM/dd/yyyy</option>
@@ -117,15 +128,14 @@
           </div>
         </div>
 
-        <!-- Seguridad y Notificaciones -->
         <div class="settings-card">
           <h3 class="card-title">Seguridad y Notificaciones</h3>
           <div class="form-group-inline">
-            <label for="sessionTimeout">Expiración de Sesión (min)</label>
+            <label for="sessionTimeout">Expiración Sesión (min)</label>
             <input id="sessionTimeout" type="number" [(ngModel)]="systemSettings.security.sessionTimeout">
           </div>
           <div class="form-group-inline">
-            <label>Activar correos</label>
+            <label>Correos</label>
             <label class="switch">
               <input type="checkbox" [(ngModel)]="systemSettings.notifications.emailsEnabled">
               <span class="slider round"></span>
@@ -133,18 +143,16 @@
           </div>
         </div>
         
-        <!-- Mantenimiento -->
         <div class="settings-card">
           <h3 class="card-title">Mantenimiento</h3>
           <div class="form-group">
             <label>Limpieza de Datos</label>
-            <p class="description">Elimina archivos temporales y datos de caché para optimizar el rendimiento.</p>
+            <p class="description">Elimina archivos temporales y caché.</p>
             <button class="secondary-button" (click)="clearCache()">
               <i class="material-icons">delete_sweep</i> Limpiar Caché
             </button>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -154,20 +162,20 @@
         <div>
           <h2 class="permission-table-title">PERMISOS EN EL SISTEMA</h2>
           <p class="permission-description" *ngIf="!selectedUserForPermissions">
-            Selecciona un usuario desde la pestaña "Usuarios/Roles" para editar sus permisos.
+            Selecciona un usuario desde "Usuarios/Roles" para editar permisos.
           </p>
           <p class="permission-description" *ngIf="selectedUserForPermissions">
-            Editando permisos para: <strong>{{ selectedUserForPermissions.nombre }}</strong>
+            Editando: <strong>{{ selectedUserForPermissions.nombre }}</strong>
           </p>
         </div>
         <button class="primary-button" (click)="savePermissions()" [disabled]="!selectedUserForPermissions">
-          <i class="fas fa-save"></i> Guardar Permisos
+          <i class="fas fa-save"></i> Guardar
         </button>
       </div>
 
       <div class="permission-table">
         <div class="permission-table-header">
-          <div class="header-item option-col">Módulo del Sistema</div>
+          <div class="header-item option-col">Módulo</div>
           <div class="header-item">Ver</div>
           <div class="header-item">Modificar</div>
         </div>
@@ -204,20 +212,20 @@
         <i class="material-icons search-icon">search</i>
         <input type="text" 
                class="search-input" 
-               placeholder="Buscar por usuario, nombre o puesto..."
+               placeholder="Buscar usuario..."
                [(ngModel)]="userSearchTerm">
       </div>
 
       <div class="user-grid-container">
         <div class="user-grid-header">
           <div>Usuario</div>
-          <div>Nombre Completo</div>
+          <div>Nombre</div>
           <div>Puesto</div>
           <div>Email</div>
           <div>Teléfono</div>
-          <div>PC Asignada</div>
+          <div>PC</div>
           <div class="text-center">Permisos</div>
-          <div class="text-center">Editar</div>
+          <div class="text-center">Acciones</div>
         </div>
         <div class="user-grid-body">
           <div *ngFor="let user of filteredUsers" class="user-grid-row">
@@ -236,6 +244,9 @@
               <button class="action-btn edit-btn" (click)="openModal(user)">
                 <i class="material-icons">edit</i>
               </button>
+              <button class="action-btn delete-btn" (click)="deleteUser(user)">
+                <i class="material-icons">delete</i>
+              </button>
             </div>
           </div>
         </div>
@@ -244,7 +255,6 @@
       <div class="user-control-footer">
         <span class="user-count">{{ filteredUsers.length }} de {{ userData.length }} usuarios</span>
       </div>
-
     </div>
 
     <!-- Vista por defecto para las otras secciones -->

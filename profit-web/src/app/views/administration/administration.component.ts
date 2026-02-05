@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { BusinessInfoService, BusinessInfo } from '../../services/business-info.service';
+import { UsersService, User, CreateUserDto, UpdateUserDto } from '../../services/users.service';
 import { UserModalComponent } from './user-modal.component';
 
 @Component({
   selector: 'app-administration',
   standalone: true,
-  imports: [CommonModule, FormsModule, UserModalComponent],
+  imports: [CommonModule, FormsModule, HttpClientModule, UserModalComponent],
   templateUrl: './administration.component.html',
   styleUrls: ['./administration.component.css']
 })
@@ -16,6 +19,8 @@ export class AdministrationComponent implements OnInit {
   editingUser: any = null;
   selectedUserForPermissions: any = null;
   userPermissions: { [userId: number]: { [moduleName: string]: string[] } } = {};
+  editandoEmpresa: boolean = false;
+  businessInfoOriginal: any = {};
 
   userSearchTerm: string = '';
   get filteredUsers() {
@@ -40,23 +45,26 @@ export class AdministrationComponent implements OnInit {
     logoUrl: 'assets/logo.png.png'
   };
 
-  // Permisos adaptados a la estructura real de la aplicación
-  permissionModules = [
+  // Configuración centralizada
+  private readonly PERMISSION_MODULES = [
     { name: 'Estadísticas', permissions: ['Ver'] },
     { name: 'Administración', permissions: ['Ver', 'Modificar'] },
-    { name: 'Planes y Clases', permissions: ['Ver', 'Modificar'] },
-    { name: 'Clientes', permissions: ['Ver', 'Modificar'] },
-    { name: 'Inscripción de Clientes', permissions: ['Ver', 'Modificar'] },
-    { name: 'Gestión de Membresías', permissions: ['Ver', 'Modificar'] },
-    { name: 'Productos y Stock', permissions: ['Ver', 'Modificar'] },
-    { name: 'Punto de Venta', permissions: ['Ver', 'Modificar'] }
+    { name: 'Monitor de Acceso', permissions: ['Ver'] },
+    { name: 'Acceso a Clientes', permissions: ['Ver', 'Modificar'] },
+    { name: 'Categoría / Planes', permissions: ['Ver', 'Crear', 'Modificar', 'Eliminar'] },
+    { name: 'Inscribir Cliente', permissions: ['Ver', 'Crear', 'Modificar'] },
+    { name: 'Gestionar Clientes', permissions: ['Ver', 'Modificar', 'Eliminar'] },
+    { name: 'Gestión de Membresías', permissions: ['Ver', 'Crear', 'Modificar', 'Eliminar'] },
+    { name: 'Productos y Stock', permissions: ['Ver', 'Crear', 'Modificar', 'Eliminar'] },
+    { name: 'Punto de Venta', permissions: ['Ver', 'Crear', 'Modificar'] },
+    { name: 'Carrito de Usuario', permissions: ['Ver', 'Crear', 'Modificar'] }
   ];
 
-  userData = [
-    { id: 1, usuario: 'ADMINISTRADOR', nombre: 'Admin General', puesto: 'ADMINISTRADOR', email: 'admin@profit.com', telefono: '555-0101', pc: 'BDKLAP', permisos: 'ADMINISTRADOR' },
-    { id: 2, usuario: 'VENTAS_01', nombre: 'Vendedor Principal', puesto: 'VENDEDOR', email: 'ventas@profit.com', telefono: '555-0102', pc: 'VENTASLAP', permisos: 'VENTAS' },
-    { id: 3, usuario: 'CAJERO_M', nombre: 'Cajero Matutino', puesto: 'CAJERO', email: 'caja@profit.com', telefono: '555-0103', pc: 'CAJA_01', permisos: 'PUNTO DE VENTA' }
-  ];
+  get permissionModules() {
+    return this.PERMISSION_MODULES;
+  }
+
+  userData: User[] = [];
 
   systemSettings = {
     openingHours: {
@@ -78,7 +86,10 @@ export class AdministrationComponent implements OnInit {
     }
   };
 
-  constructor() {}
+  constructor(
+    private businessInfoService: BusinessInfoService,
+    private usersService: UsersService
+  ) {}
 
   public ngOnInit(): void {
     this.loadDefaultPermissions();
@@ -88,24 +99,89 @@ export class AdministrationComponent implements OnInit {
   }
 
   public guardarInformacionNegocio() {
-    localStorage.setItem('businessInfo', JSON.stringify(this.businessInfo));
-    // Opcional: mostrar una notificación sutil de que se guardó.
-    console.log('Información del negocio guardada en localStorage.');
+    const payload: Partial<BusinessInfo> = {
+      name: this.businessInfo.name,
+      address: this.businessInfo.address,
+      neighborhood: this.businessInfo.neighborhood,
+      city_state: this.businessInfo.cityState,
+      phone: this.businessInfo.phone,
+      logo_url: this.businessInfo.logoUrl,
+      branch_number: this.businessInfo.branchNumber,
+    };
+    
+    this.businessInfoService.updateBusinessInfo(payload).subscribe({
+      next: (res) => {
+        console.log('Información del negocio guardada en backend:', res);
+        alert('Información del negocio guardada exitosamente.');
+        this.editandoEmpresa = false;
+      },
+      error: (err) => {
+        console.error('Error guardando información del negocio:', err);
+        // Fallback a localStorage si falla el backend
+        localStorage.setItem('businessInfo', JSON.stringify(this.businessInfo));
+        alert('Información guardada localmente.');
+      }
+    });
   }
 
   public cargarInformacionNegocio() {
-    const data = localStorage.getItem('businessInfo');
-    if (data) {
-      this.businessInfo = JSON.parse(data);
-      console.log('Información del negocio cargada desde localStorage.');
+    this.businessInfoService.getBusinessInfo().subscribe({
+      next: (data) => {
+        if (data) {
+          this.businessInfo = {
+            name: data.name,
+            address: data.address || '',
+            neighborhood: data.neighborhood || '',
+            cityState: data.city_state || '',
+            phone: data.phone || '',
+            branchNumber: data.branch_number || 1,
+            logoUrl: data.logo_url || 'assets/logo.png',
+          };
+          console.log('Información del negocio cargada desde backend.');
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando información del negocio:', err);
+        // Fallback a localStorage si falla el backend
+        const fallback = localStorage.getItem('businessInfo');
+        if (fallback) {
+          this.businessInfo = JSON.parse(fallback);
+        }
+      }
+    });
+  }
+
+  public toggleEdicionEmpresa() {
+    if (!this.editandoEmpresa) {
+      // Entrar en modo edición: guardar copia original
+      this.businessInfoOriginal = { ...this.businessInfo };
     }
+    this.editandoEmpresa = !this.editandoEmpresa;
+  }
+
+  public cancelarEdicionEmpresa() {
+    // Restaurar valores originales
+    this.businessInfo = { ...this.businessInfoOriginal };
+    this.editandoEmpresa = false;
   }
 
   public cargarUsuarios() {
-    const data = localStorage.getItem('userData');
-    if (data) {
-      this.userData = JSON.parse(data);
-    }
+    this.usersService.getUsers().subscribe({
+      next: (data) => {
+        this.userData = data;
+        console.log('Usuarios cargados desde backend.');
+        // Actualizar permisos después de cargar usuarios
+        this.loadDefaultPermissions();
+      },
+      error: (err) => {
+        console.error('Error cargando usuarios:', err);
+        // Fallback a localStorage si falla el backend
+        const fallback = localStorage.getItem('userData');
+        if (fallback) {
+          this.userData = JSON.parse(fallback);
+        }
+      }
+    });
   }
 
   public cargarConfiguracionSistema() {
@@ -122,24 +198,26 @@ export class AdministrationComponent implements OnInit {
     }
   }
 
-  // --- Lógica de Permisos ---
-  public loadDefaultPermissions() {
-    this.userData.forEach(user => {
-      this.userPermissions[user.id] = {};
-      this.permissionModules.forEach(module => {
-        // Por defecto, nadie tiene permisos
-        this.userPermissions[user.id][module.name] = [];
-      });
-      // Damos todos los permisos al admin como ejemplo
-      if (user.usuario === 'ADMINISTRADOR') {
-        Object.keys(this.userPermissions[user.id]).forEach(moduleName => {
-          const module = this.permissionModules.find(m => m.name === moduleName);
-          if (module) {
-            this.userPermissions[user.id][moduleName] = [...module.permissions];
-          }
-        });
-      }
+  // --- Lógica de Permisos simplificada ---
+  private initializeUserPermissions(user: User) {
+    if (!user.id) return;
+    
+    const userId = user.id;
+    this.userPermissions[userId] = {};
+    this.PERMISSION_MODULES.forEach(module => {
+      this.userPermissions[userId]![module.name] = [];
     });
+    
+    // Administrador tiene todos los permisos
+    if (user.usuario === 'ADMINISTRADOR') {
+      this.PERMISSION_MODULES.forEach(module => {
+        this.userPermissions[userId]![module.name] = [...module.permissions];
+      });
+    }
+  }
+
+  private loadDefaultPermissions() {
+    this.userData.forEach(user => this.initializeUserPermissions(user));
   }
 
   public editUserPermissions(user: any) {
@@ -148,21 +226,21 @@ export class AdministrationComponent implements OnInit {
   }
 
   public hasPermission(moduleName: string, permission: string): boolean {
-    if (!this.selectedUserForPermissions) return false;
-    const userId = this.selectedUserForPermissions.id;
-    return this.userPermissions[userId]?.[moduleName]?.includes(permission) || false;
+    return this.selectedUserForPermissions?.id && 
+           this.userPermissions[this.selectedUserForPermissions.id]?.[moduleName]?.includes(permission) || false;
   }
 
   public togglePermission(moduleName: string, permission: string) {
-    if (!this.selectedUserForPermissions) return;
-    const userId = this.selectedUserForPermissions.id;
-    const userModulePermissions = this.userPermissions[userId][moduleName];
+    if (!this.selectedUserForPermissions?.id) return;
     
-    const index = userModulePermissions.indexOf(permission);
+    const userId = this.selectedUserForPermissions.id;
+    const perms = this.userPermissions[userId][moduleName];
+    const index = perms.indexOf(permission);
+    
     if (index > -1) {
-      userModulePermissions.splice(index, 1); // Quitar permiso
+      perms.splice(index, 1);
     } else {
-      userModulePermissions.push(permission); // Añadir permiso
+      perms.push(permission);
     }
   }
 
@@ -171,10 +249,8 @@ export class AdministrationComponent implements OnInit {
       alert('No hay un usuario seleccionado.');
       return;
     }
-    const userName = this.selectedUserForPermissions.nombre;
-    console.log('Guardando permisos para:', userName, this.userPermissions[this.selectedUserForPermissions.id]);
-    alert(`Permisos guardados para ${userName}`);
-    this.selectedUserForPermissions = null; // Opcional: deseleccionar después de guardar
+    console.log('Permisos guardados para:', this.selectedUserForPermissions.nombre);
+    alert(`Permisos guardados para ${this.selectedUserForPermissions.nombre}`);
   }
 
   public saveSystemSettings() {
@@ -214,7 +290,7 @@ export class AdministrationComponent implements OnInit {
 
   // --- Lógica del Modal de Usuario ---
   public openModal(user: any = null) {
-    this.editingUser = user ? { ...user } : { id: 0, usuario: '', nombre: '', puesto: '', email: '', telefono: '', pc: '', permisos: '' };
+    this.editingUser = user ? { ...user } : { id: 0, usuario: '', nombre: '', puesto: '', email: '', telefono: '', pc: '', rol: '' };
     this.isModalOpen = true;
   }
 
@@ -223,21 +299,75 @@ export class AdministrationComponent implements OnInit {
     this.editingUser = null;
   }
 
-  public saveUser(user: any) {
-    if (this.editingUser.id === 0) { // New user
-      this.editingUser.id = this.getNewId();
-      this.userData.push(this.editingUser);
-    } else { // Existing user
-      const index = this.userData.findIndex(u => u.id === this.editingUser.id);
-      if (index !== -1) {
-        this.userData[index] = this.editingUser;
+  private handleUserOperation(operation: 'create' | 'update') {
+    const isCreate = operation === 'create';
+    const userData = {
+      usuario: this.editingUser.usuario,
+      nombre: this.editingUser.nombre,
+      puesto: this.editingUser.puesto,
+      email: this.editingUser.email,
+      telefono: this.editingUser.telefono,
+      pc: this.editingUser.pc,
+      rol: this.editingUser.rol
+    };
+
+    const serviceCall = isCreate ? 
+      this.usersService.createUser(userData) :
+      this.usersService.updateUser(this.editingUser.id, userData);
+
+    serviceCall.subscribe({
+      next: () => {
+        const message = isCreate ? 'Usuario creado exitosamente.' : 'Usuario actualizado exitosamente.';
+        alert(message);
+        this.cargarUsuarios();
+        this.closeModal();
+      },
+      error: () => {
+        const message = isCreate ? 'Error al crear usuario.' : 'Error al actualizar usuario.';
+        alert(message);
       }
+    });
+  }
+
+  public saveUser(user: any) {
+    this.handleUserOperation(user.id === 0 ? 'create' : 'update');
+  }
+
+  public deleteUser(user: any) {
+    if (user.usuario === 'ADMINISTRADOR') {
+      alert('El usuario administrador no puede ser eliminado por seguridad del sistema.');
+      return;
     }
-    localStorage.setItem('userData', JSON.stringify(this.userData));
-    this.closeModal();
+    
+    if (confirm(`¿Estás seguro de que deseas eliminar al usuario "${user.nombre}"? Esta acción no se puede deshacer.`)) {
+      this.usersService.deleteUser(user.id).subscribe({
+        next: () => {
+          alert(`Usuario "${user.nombre}" eliminado exitosamente.`);
+          this.cargarUsuarios();
+          this.cleanupUserData(user.id);
+        },
+        error: () => alert('Error al eliminar usuario.')
+      });
+    }
+  }
+
+  private cleanupUserData(userId: number) {
+    delete this.userPermissions[userId];
+    if (this.selectedUserForPermissions?.id === userId) {
+      this.selectedUserForPermissions = null;
+    }
   }
 
   public getNewId(): number {
-    return this.userData.length > 0 ? Math.max(...this.userData.map(u => u.id)) + 1 : 1;
+    return this.userData.length > 0 ? Math.max(...this.userData.map(u => u.id!)) + 1 : 1;
   }
-} 
+
+  // --- Utilidades simplificadas ---
+  private showSuccessMessage(message: string) {
+    alert(message);
+  }
+
+  private showErrorMessage(message: string) {
+    alert(message);
+  }
+}

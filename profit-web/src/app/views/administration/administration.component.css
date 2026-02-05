@@ -815,103 +815,53 @@
   justify-content: space-between;
   align-items: center;
 }
-.time-inputs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.time-inputs span {
-  font-size: 0.9rem;
-  color: var(--text-color-secondary);
-}
+.time-inputs { display: flex; align-items: center; gap: 0.5rem; }
+.time-inputs span { font-size: 0.9rem; color: var(--text-color-secondary); }
 
-/* Estilos de Inputs y Selects */
-.system-settings-view input[type="text"],
-.system-settings-view input[type="number"],
-.system-settings-view input[type="password"],
-.system-settings-view input[type="time"],
-.system-settings-view select {
-  width: 100%;
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--surface-d);
-  border-radius: var(--border-radius);
-  background-color: var(--surface-b);
-  font-size: 0.95rem;
-  color: var(--text-color);
-  transition: border-color 0.2s, box-shadow 0.2s;
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-group-inline { display: flex; justify-content: space-between; align-items: center; }
+.form-group label, .form-group-inline label {
+  font-weight: 500; color: var(--text-color-secondary); font-size: 0.9rem;
 }
-.system-settings-view input:focus, .system-settings-view select:focus {
-  outline: none;
-  border-color: var(--primary-color);
+.form-group .description { font-size: 0.85rem; color: var(--text-color-secondary); margin: 0; }
+.form-input, .form-select {
+  width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--surface-d);
+  border-radius: var(--border-radius); background-color: var(--surface-b);
+  font-size: 0.95rem; color: var(--text-color); transition: all 0.2s;
+}
+.form-input:focus, .form-select:focus {
+  outline: none; border-color: var(--primary-color);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent);
 }
-.form-group-inline input, .form-group-inline select {
-  max-width: 180px;
-}
+.form-group-inline .form-input, .form-group-inline .form-select { max-width: 180px; }
 
-/* Estilo para el botón secundario */
+.primary-button {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; background-color: #f97316; color: #ffffff;
+  border: none; border-radius: 6px; font-weight: 500; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.primary-button:hover { background-color: #ea580c; transform: translateY(-1px); }
 .secondary-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background-color: var(--surface-c);
-  color: var(--text-color);
-  border: 1px solid var(--surface-d);
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; background-color: var(--surface-c); color: var(--text-color);
+  border: 1px solid var(--surface-d); border-radius: var(--border-radius);
+  font-weight: 600; cursor: pointer; transition: all 0.2s ease;
 }
-.secondary-button:hover {
-  background-color: var(--surface-d);
-  border-color: var(--surface-border);
-}
+.secondary-button:hover { background-color: var(--surface-d); }
 
-/* Estilos para el Switch/Toggle */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 28px;
-}
-.switch input { 
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+.switch input { opacity: 0; width: 0; height: 0; }
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--surface-c);
-  transition: .4s;
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--surface-c); transition: .4s;
 }
 .slider:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
+  position: absolute; content: ""; height: 20px; width: 20px;
+  left: 4px; bottom: 4px; background-color: white; transition: .4s;
 }
-input:checked + .slider {
-  background-color: var(--primary-color);
-}
-input:focus + .slider {
-  box-shadow: 0 0 1px var(--primary-color);
-}
-input:checked + .slider:before {
-  transform: translateX(22px);
-}
-.slider.round {
-  border-radius: 34px;
-}
-.slider.round:before {
-  border-radius: 50%;
-} 
+input:checked + .slider { background-color: var(--primary-color); }
+input:focus + .slider { box-shadow: 0 0 1px var(--primary-color); }
+input:checked + .slider:before { transform: translateX(22px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
