@@ -68,10 +68,14 @@ export class PaymentsController {
         const fecha_inicio = new Date(pago.periodo_fin);
         fecha_inicio.setDate(fecha_inicio.getDate());
 
+        var membership_fecha_fin = new Date(membership.fecha_inicio!.getDate() + membership.plans.duration); // TODO: make fecha_inicio NOT nullable
+
+        if(membership_fecha_fin > fecha_inicio) {
           await this.paymentsService.createPayment(
             pago.planes_clientes_id,
             fecha_inicio
           );
+        }        
       }
 
 
