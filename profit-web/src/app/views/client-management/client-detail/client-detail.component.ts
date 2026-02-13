@@ -93,11 +93,13 @@ export class ClientDetailComponent implements OnInit
               return 0;
           }
           )[0];
-          
-          if (lastPayment.pago_fecha || (lastPayment.periodo_inicio && new Date(lastPayment.periodo_inicio) > new Date())) {
+
+          if(new Date(membership.fecha_fin) < new Date() && membership.plans.category_id != 4) {
+            membership.status = 'Inactivo';
+          } else if (lastPayment.pago_fecha || (lastPayment.periodo_inicio && new Date(lastPayment.periodo_inicio) > new Date())) {
             membership.status = 'Activo';
           } else {
-            membership.status = 'Expirado';
+            membership.status = 'Pendiente';
           }
         });
       });
