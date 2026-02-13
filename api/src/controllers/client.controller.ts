@@ -42,8 +42,38 @@ export class ClientController {
   }
 
   @Get('api/cliente/obtener-clientes')
-  obtenerClientes() {
-    return this.prismaService.clients.findMany();
+  async obtenerClientes() {
+
+    // obtener fecha_inicio membresia mas reciente con plan en categoria Inscripción
+    const clients = await this.prismaService.clients.findMany({
+      include: {
+        planes_clientes: {
+          where: {
+            plans: {
+              category: {
+                id: 4 // Categoria Inscripción TODO: Hacerlo mas robusto
+              }
+            }
+          },
+          select: {
+            fecha_inicio: true
+          },
+          orderBy: {
+            fecha_inicio: 'desc'
+          },
+          take: 1  // Only get the most recent one
+        }
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+
+    return clients.map(client => ({
+        ...client,
+        fecha_inscripcion: client.planes_clientes?.[0]?.fecha_inicio || null,
+        planes_clientes: undefined // Remove nested structure
+      }));
   }
 
   @Put('api/cliente/update')

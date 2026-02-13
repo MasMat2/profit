@@ -23,7 +23,7 @@
           <tr>
             <th>ID Cliente</th>
             <th>Nombre Completo</th>
-            <th>Fecha de Inicio</th>
+            <th>Fecha de Inscripción</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -33,7 +33,7 @@
             <td>{{ client.id }}</td>
             <td>{{ client.first_name }} {{ client.last_name }}</td>
             <!-- todo: get fecha de inscripcion -->
-            <td>25/01/2025</td>
+            <td>{{ client.fecha_inscripcion | date:'yyyy-MM-dd' }}</td>
             <td><span class="status" [ngClass]="'Activo'">Activo</span></td>
             <td class="actions">
               <button class="action-button view-button" (click)="viewClientContract()" title="Ver Contrato"><i class="fas fa-file-contract"></i></button>
