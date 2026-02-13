@@ -66,12 +66,12 @@ export class PaymentsController {
       if(membership?.plans.monthly_payment) {
 
         const fecha_inicio = new Date(pago.periodo_fin);
-        fecha_inicio.setDate(fecha_inicio.getDate() + 1);
+        fecha_inicio.setDate(fecha_inicio.getDate());
 
-        await this.paymentsService.createPayment(
-          pago.planes_clientes_id,
-          fecha_inicio
-        );
+          await this.paymentsService.createPayment(
+            pago.planes_clientes_id,
+            fecha_inicio
+          );
       }
 
 
