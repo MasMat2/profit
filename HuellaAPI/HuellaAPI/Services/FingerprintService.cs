@@ -17,7 +17,6 @@ public class FingerprintService
     {
         // 1. Import live scan
         byte[] sampleBytes = Convert.FromBase64String(base64Sample);
-
         var importResult = Importer.ImportFmd(
             sampleBytes,
             Constants.Formats.Fmd.DP_VERIFICATION,
@@ -25,45 +24,41 @@ public class FingerprintService
 
         if (importResult.ResultCode != Constants.ResultCode.DP_SUCCESS)
         {
-            message = "Muestra de huella inválida";
+            message = "Muestra inválida";
             return null;
         }
 
-        Fmd verifyFmd = importResult.Data;
-
-        // 2. Load ALL fingerprints from DB
+        // 2. Load ALL templates, keep index→socio map
         var allTemplates = GetAllTemplates();
+        if (allTemplates.Count == 0) { message = "Sin huellas registradas"; return null; }
 
-        if (allTemplates.Count == 0)
+        // Build parallel arrays — Identify returns index into this array
+        Fmd[] fmdArray = allTemplates
+            .Select(r => new Fmd(r.HuellaBytes, Constants.Formats.Fmd.DP_REGISTRATION))
+            .ToArray();
+
+        // 3. Identify — FPIR 21474 ≈ 0.001% false positive rate (from the table in docs)
+        // Last param = max candidates to return (1 = we only want the best match)
+        DataResult<Candidate[]> result = Comparison.Identify(
+            importResult.Data,  // live FMD
+            0,                  // view index
+            fmdArray,           // all enrolled FMDs
+            21474,              // FPIR threshold
+            1);                 // candidates to return
+
+        if (result.ResultCode != Constants.ResultCode.DP_SUCCESS || result.Data.Length == 0)
         {
-            message = "No hay huellas registradas";
+            message = "Huella no reconocida";
             return null;
         }
 
-        // 3. Compare against every record
-        var comparison = new Verification();
-        comparison.FARRequested = FAR_THRESHOLD;
+        // 4. Map candidate index back to socio
+        int matchedIndex = result.Data[0].FmdIndex;
+        var matched = allTemplates[matchedIndex];
 
-        foreach (var record in allTemplates)
-        {
-            try
-            {
-                var enrollFmd = new Fmd(record.HuellaBytes, Constants.Formats.Fmd.DP_REGISTRATION);
-                var result = comparison.Verify(verifyFmd, enrollFmd);
-
-                if (result.Verified)
-                {
-                    message = $"Socio identificado (dedo {record.Dedo})";
-                    return record.Socio;
-                }
-            }
-            catch { /* skip corrupt/incompatible template */ }
-        }
-
-        message = "Huella no reconocida";
-        return null;
+        message = $"Socio identificado (dedo {matched.Dedo})";
+        return matched.Socio;
     }
-
     private List<HuellaRecord> GetAllTemplates()
     {
         var list = new List<HuellaRecord>();
