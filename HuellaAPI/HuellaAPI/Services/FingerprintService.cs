@@ -2,23 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using DPFP;
-using DPFP.Processing;
 using DPFP.Verification;
 using MySql.Data.MySqlClient;
 
 public class FingerprintService
 {
-    // FAR threshold — 0.001 = 0.1% false accept rate, adjust as needed
     private const double FAR_THRESHOLD = 0.001;
 
-    private string ConnectionString => 
+    private string ConnectionString =>
         ConfigurationManager.ConnectionStrings["DB"].ConnectionString;
 
-    public bool Verify(int socio, string base64Sample, out string message)
+    // Returns the matched socio, or null if no match
+    public int? Identify(string base64Sample, out string message)
     {
-        // 1. Import the live scan from browser (INTERMEDIATE format)
+        // 1. Import live scan
         byte[] sampleBytes = Convert.FromBase64String(base64Sample);
-        
+
         var importResult = Importer.ImportFmd(
             sampleBytes,
             Constants.Formats.Fmd.DP_VERIFICATION,
@@ -26,70 +25,80 @@ public class FingerprintService
 
         if (importResult.ResultCode != Constants.ResultCode.DP_SUCCESS)
         {
-            message = "Invalid fingerprint sample";
-            return false;
+            message = "Muestra de huella inválida";
+            return null;
         }
 
         Fmd verifyFmd = importResult.Data;
 
-        // 2. Load all stored fingerprints for this member
-        var storedTemplates = GetTemplates(socio);
+        // 2. Load ALL fingerprints from DB
+        var allTemplates = GetAllTemplates();
 
-        if (storedTemplates.Count == 0)
+        if (allTemplates.Count == 0)
         {
-            message = "No registered fingerprints found";
-            return false;
+            message = "No hay huellas registradas";
+            return null;
         }
 
-        // 3. Compare against each registered finger (any match = pass)
+        // 3. Compare against every record
         var comparison = new Verification();
         comparison.FARRequested = FAR_THRESHOLD;
 
-        foreach (var (dedo, templateBytes) in storedTemplates)
+        foreach (var record in allTemplates)
         {
             try
             {
-                var enrollFmd = new Fmd(templateBytes, Constants.Formats.Fmd.DP_REGISTRATION);
+                var enrollFmd = new Fmd(record.HuellaBytes, Constants.Formats.Fmd.DP_REGISTRATION);
                 var result = comparison.Verify(verifyFmd, enrollFmd);
 
                 if (result.Verified)
                 {
-                    message = $"Match on finger {dedo}";
-                    return true;
+                    message = $"Socio identificado (dedo {record.Dedo})";
+                    return record.Socio;
                 }
             }
-            catch { /* skip corrupt template */ }
+            catch { /* skip corrupt/incompatible template */ }
         }
 
-        message = "No match found";
-        return false;
+        message = "Huella no reconocida";
+        return null;
     }
 
-    private List<(int dedo, byte[] bytes)> GetTemplates(int socio)
+    private List<HuellaRecord> GetAllTemplates()
     {
-        var list = new List<(int, byte[])>();
+        var list = new List<HuellaRecord>();
 
         using (var conn = new MySqlConnection(ConnectionString))
         using (var cmd = new MySqlCommand(
-            "SELECT dedo, huella FROM tbhuellas WHERE socio = @socio", conn))
+            "SELECT id, socio, dedo, huella FROM tbhuellas WHERE huella IS NOT NULL", conn))
         {
-            cmd.Parameters.AddWithValue("@socio", socio);
             conn.Open();
-
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())
                 {
-                    if (reader.IsDBNull(1)) continue;
+                    string huella = reader.GetString(3);
+                    if (string.IsNullOrEmpty(huella)) continue;
 
-                    string huella = reader.GetString(1);
-                    // huella is stored as Base64 text by One Touch SDK
-                    byte[] bytes = Convert.FromBase64String(huella);
-                    list.Add((reader.GetInt32(0), bytes));
+                    list.Add(new HuellaRecord
+                    {
+                        Id     = reader.GetInt32(0),
+                        Socio  = reader.GetInt32(1),
+                        Dedo   = reader.GetInt32(2),
+                        HuellaBytes = Convert.FromBase64String(huella)
+                    });
                 }
             }
         }
 
         return list;
+    }
+
+    private class HuellaRecord
+    {
+        public int Id    { get; set; }
+        public int Socio { get; set; }
+        public int Dedo  { get; set; }
+        public byte[] HuellaBytes { get; set; }
     }
 }

@@ -1,20 +1,24 @@
-using System.Net;
-using System.Net.Http;
-using System.Web.Http;
+public class IdentifyRequest
+{
+    public string Sample { get; set; }  // Base64 intermediate from browser
+}
 
 [RoutePrefix("api/huella")]
 public class HuellaController : ApiController
 {
     private readonly FingerprintService _fp = new FingerprintService();
 
-    [HttpPost, Route("verificar")]
-    public IHttpActionResult Verificar([FromBody] VerifyRequest req)
+    [HttpPost, Route("identificar")]
+    public IHttpActionResult Identificar([FromBody] IdentifyRequest req)
     {
         if (req == null || string.IsNullOrEmpty(req.Sample))
-            return BadRequest("Datos requeridos");
+            return BadRequest("Muestra requerida");
 
-        bool match = _fp.Verify(req.Socio, req.Sample, out string msg);
+        int? socio = _fp.Identify(req.Sample, out string mensaje);
 
-        return Ok(new { match, mensaje = msg });
+        if (socio == null)
+            return Content(HttpStatusCode.NotFound, new { match = false, mensaje });
+
+        return Ok(new { match = true, socio, mensaje });
     }
 }
