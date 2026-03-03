@@ -1,24 +1,31 @@
-public class IdentifyRequest
-{
-    public string Sample { get; set; }  // Base64 intermediate from browser
-}
+using System.Net;
+using System.Web.Http;
+using HuellaAPI.Services;
 
-[RoutePrefix("api/huella")]
-public class HuellaController : ApiController
+namespace HuellaAPI.Controllers
 {
-    private readonly FingerprintService _fp = new FingerprintService();
-
-    [HttpPost, Route("identificar")]
-    public IHttpActionResult Identificar([FromBody] IdentifyRequest req)
+    public class IdentifyRequest
     {
-        if (req == null || string.IsNullOrEmpty(req.Sample))
-            return BadRequest("Muestra requerida");
+        public string Sample { get; set; }
+    }
 
-        int? socio = _fp.Identify(req.Sample, out string mensaje);
+    [RoutePrefix("api/huella")]
+    public class HuellaController : ApiController
+    {
+        private readonly FingerprintService _fp = new FingerprintService();
 
-        if (socio == null)
-            return Content(HttpStatusCode.NotFound, new { match = false, mensaje });
+        [HttpPost, Route("identificar")]
+        public IHttpActionResult Identificar([FromBody] IdentifyRequest req)
+        {
+            if (req == null || string.IsNullOrEmpty(req.Sample))
+                return BadRequest("Muestra requerida");
 
-        return Ok(new { match = true, socio, mensaje });
+            int? socio = _fp.Identify(req.Sample, out string mensaje);
+
+            if (socio == null)
+                return Content(HttpStatusCode.NotFound, new { match = false, mensaje });
+
+            return Ok(new { match = true, socio, mensaje });
+        }
     }
 }
