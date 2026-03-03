@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { PaymentsService } from '../services/payments.service';
+import { SerialService } from '../services/serial.service';
 
 
 @Controller()
 export class ClientController {
-  constructor(private readonly prismaService: PrismaService, private readonly paymentsService: PaymentsService) {}
+  constructor(private readonly prismaService: PrismaService, private readonly paymentsService: PaymentsService, private readonly serialService: SerialService) {}
 
   @Get('api/cliente/consultar')
   consultarCliente(@Query() query: any) {
@@ -29,8 +30,6 @@ export class ClientController {
       const membershipCreated = await this.prismaService.planes_clientes.create({data: plan});
 
       // Create payment
-
-  
       
       await this.paymentsService.createPayment(
         membershipCreated.id,
@@ -39,6 +38,11 @@ export class ClientController {
     }
   
     return client;
+  }
+
+  @Get('api/cliente/acceder')
+  async acceder() {
+    return this.serialService.acceder();
   }
 
   @Get('api/cliente/obtener-clientes')
