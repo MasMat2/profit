@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Renderer2 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 interface MenuSection {
   title: string;
@@ -32,6 +32,8 @@ export class MainLayoutComponent {
   isDarkMode = false;
 
   isLoggedIn = false;
+
+  selectedComponent: string = 'dashboard';
 
   menuSections: MenuSection[] = [
     {
@@ -94,7 +96,19 @@ export class MainLayoutComponent {
   }
 
 
-  selectComponent(componentId: string) {
+  selectComponent(componentName: string) {
+    console.log(componentName);
+    this.selectedComponent = componentName;
+    this.activeMenu = componentName;
+
+    // Lógica para cerrar otros acordeones
+    Object.keys(this.accordions).forEach(key => {
+      const section = this.menuSections.find(s => s.items.some(i => i.id === key));
+      const item = section?.items.find(i => i.id === key);
+      if (item && item.children && !item.children.some(c => c.id === componentName)) {
+        // this.accordions[key] = false;
+      }
+    });
   }
 
   toggleAccordion(componentId: string) {
