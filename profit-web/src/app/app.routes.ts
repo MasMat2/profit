@@ -1,11 +1,9 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { MainLayoutComponent } from './main-layout/main-layout.component';
-
 export const routes: Routes = [
   {
     path: '',
-    component: MainLayoutComponent,
+    loadChildren: () => import('./main-layout/main-layout.routes').then(m => m.MAIN_LAYOUT_ROUTES)
   }
 ];
 

@@ -1,13 +1,17 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MenuSection, MENU_CONFIG } from '../config/menu.config';
+import { MENU_CONFIG, MenuSection } from '../config/menu.config';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    RouterModule,
+  ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })
