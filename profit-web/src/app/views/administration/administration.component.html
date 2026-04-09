@@ -1,0 +1,189 @@
+<div class="administration-container">
+  <div class="content-header">
+    <h1>Administración</h1>
+    <p class="subtitle">Configuración de información del negocio</p>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle"></i> {{ successMessage }}
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Parámetros Operativos (Always Visible) -->
+  <div class="business-info-card">
+    <div class="card-header">
+      <h2>Parametros Generales</h2>
+    </div>
+
+    <div class="card-content">
+      <form>
+        <div class="form-row">
+          <div class="form-fields">
+            <div class="form-row-inline">
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    id="paqvisvence" 
+                    [(ngModel)]="businessInfo.paqvisvence"
+                    name="paqvisvence"
+                    [value]="1"
+                  >
+                  <span>Paquete Visita Vence</span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label for="diaspaqvisvence">Días Paquete Vigencia</label>
+                <input 
+                  type="number" 
+                  id="diaspaqvisvence" 
+                  [(ngModel)]="businessInfo.diaspaqvisvence"
+                  name="diaspaqvisvence"
+                  min="1"
+                  placeholder="15"
+                >
+              </div>
+              
+            </div>
+
+            <div class="form-group">
+              <label for="aplicadescdias">Descuento Días</label>
+              <input 
+                type="number" 
+                id="aplicadescdias" 
+                [(ngModel)]="businessInfo.aplicadescdias"
+                name="aplicadescdias"
+                min="0"
+                placeholder="10"
+              >
+            </div>
+
+            <div class="form-group">
+              <button type="button" class="btn-secondary-outline" (click)="openPaymentMethodsModal()">
+                <i class="fas fa-credit-card"></i> Gestionar Formas de Pago
+              </button>
+            </div>
+
+        </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Datos del Negocio (Collapsible) -->
+  <div class="business-info-card collapsible-section">
+    <div class="card-header" (click)="toggleBusinessInfo()">
+      <h2>Información del Negocio</h2>
+    </div>
+
+    <div class="card-content" [class.collapsed]="isBusinessInfoCollapsed">
+      <form>
+        <div class="form-row">
+          <div class="form-fields">
+            <div class="form-group">
+              <label for="businessName">Nombre del Negocio</label>
+              <input 
+                type="text" 
+                id="businessName" 
+                [(ngModel)]="businessInfo.businessName"
+                name="businessName"
+                placeholder="NOMBRE DE SU NEGOCIO"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="address">Dirección</label>
+              <input 
+                type="text" 
+                id="address" 
+                [(ngModel)]="businessInfo.address"
+                name="address"
+                placeholder="DIRECCION"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="colony">Colonia</label>
+              <input 
+                type="text" 
+                id="colony" 
+                [(ngModel)]="businessInfo.colony"
+                name="colony"
+                placeholder="COLONIA"
+              >
+            </div>
+
+            <div class="form-row-inline">
+              <div class="form-group">
+                <label for="city">Ciudad</label>
+                <input 
+                  type="text" 
+                  id="city" 
+                  [(ngModel)]="businessInfo.city"
+                  name="city"
+                  placeholder="CIUDAD, ESTADO"
+                >
+              </div>
+              <div class="form-group">
+                <label for="state">Estado</label>
+                <input 
+                  type="text" 
+                  id="state" 
+                  [(ngModel)]="businessInfo.state"
+                  name="state"
+                  placeholder="ESTADO"
+                >
+              </div>
+            </div>
+
+            <div class="form-row-inline">
+              <div class="form-group">
+                <label for="phone">Teléfonos</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  [(ngModel)]="businessInfo.phone"
+                  name="phone"
+                  placeholder="MI TELEFONO"
+                >
+              </div>
+              <div class="form-group form-group-small">
+                <label for="branchNumber">Número de Sucursal</label>
+                <input 
+                  type="number" 
+                  id="branchNumber" 
+                  [(ngModel)]="businessInfo.branchNumber"
+                  name="branchNumber"
+                  min="1"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+      </form>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-primary" (click)="saveBusinessInfo()" [disabled]="isLoading">
+      <i class="fas fa-save"></i> {{ isLoading ? 'Guardando...' : 'Guardar Información' }}
+    </button>
+  </div>
+</div>
+
+<!-- Payment Methods Modal -->
+<app-payment-methods-modal 
+  [isOpen]="isPaymentMethodsModalOpen" 
+  (close)="closePaymentMethodsModal()">
+</app-payment-methods-modal>
