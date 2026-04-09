@@ -1,0 +1,121 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onBackdropClick($event)">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2>Formas de Pago</h2>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="successMessage" class="alert alert-success">
+        <i class="fas fa-check-circle"></i> {{ successMessage }}
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- Add Button -->
+      <div class="action-bar" *ngIf="!showForm">
+        <button class="btn-primary" (click)="openAddForm()">
+          <i class="fas fa-plus"></i> Agregar Forma de Pago
+        </button>
+      </div>
+
+      <!-- Form Section -->
+      <div class="form-section" *ngIf="showForm">
+        <h3>{{ isEditing ? 'Editar' : 'Nueva' }} Forma de Pago</h3>
+        <form (ngSubmit)="savePaymentMethod()">
+          <div class="form-group">
+            <label for="nomfp">Nombre *</label>
+            <input 
+              type="text" 
+              id="nomfp" 
+              [(ngModel)]="editingMethod.nomfp"
+              name="nomfp"
+              placeholder="Efectivo, Tarjeta, Transferencia..."
+              required
+            >
+          </div>
+
+          <div class="form-row-inline">
+            <div class="form-group">
+              <label for="c_formapago">Clave Forma Pago</label>
+              <input 
+                type="text" 
+                id="c_formapago" 
+                [(ngModel)]="editingMethod.c_formapago"
+                name="c_formapago"
+                placeholder="Clave SAT"
+                maxlength="10"
+              >
+            </div>
+            <div class="form-group">
+              <label for="c_moneda">Moneda</label>
+              <input 
+                type="text" 
+                id="c_moneda" 
+                [(ngModel)]="editingMethod.c_moneda"
+                name="c_moneda"
+                placeholder="MXN"
+                maxlength="10"
+              >
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" (click)="cancelForm()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="isLoading">
+              <i class="fas fa-save"></i> {{ isLoading ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- List Section -->
+      <div class="list-section" *ngIf="!showForm">
+        <div *ngIf="isLoading && paymentMethods.length === 0" class="loading-state">
+          <div class="spinner-small"></div>
+          <p>Cargando formas de pago...</p>
+        </div>
+
+        <div *ngIf="!isLoading && paymentMethods.length === 0" class="empty-state">
+          <i class="fas fa-credit-card"></i>
+          <p>No hay formas de pago registradas</p>
+          <p class="subtitle">Agrega tu primera forma de pago</p>
+        </div>
+
+        <div class="payment-methods-table" *ngIf="paymentMethods.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Clave</th>
+                <th>Moneda</th>
+                <th class="actions-column">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let method of paymentMethods">
+                <td class="method-name">{{ method.nomfp }}</td>
+                <td>{{ method.c_formapago || '-' }}</td>
+                <td>{{ method.c_moneda || 'MXN' }}</td>
+                <td class="actions-column">
+                  <button class="btn-icon btn-edit" (click)="openEditForm(method)" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon btn-delete" (click)="deletePaymentMethod(method.id)" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

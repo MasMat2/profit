@@ -1,4 +1,9 @@
 /* Estilos para el Acordeón */
+
+.main-content{
+  flex-grow: 1;
+}
+
 .accordion-header {
   display: flex;
   justify-content: space-between;
