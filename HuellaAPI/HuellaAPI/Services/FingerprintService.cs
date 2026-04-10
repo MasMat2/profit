@@ -76,15 +76,27 @@ public int? Identify(string base64Sample, out string message)
             {
                 while (reader.Read())
                 {
-                    string huella = reader.GetString(3);
-                    if (string.IsNullOrEmpty(huella)) continue;
+                    string huellaStr = reader.GetString(3);
+                    if (string.IsNullOrEmpty(huellaStr)) continue;
+
+                    // Convertir string a bytes (base de datos antigua usa encoding Latin1/Windows-1252)
+                    byte[] huellaBytes = System.Text.Encoding.GetEncoding("ISO-8859-1").GetBytes(huellaStr);
+
+                        // Importar desde formato binario
+                        var importResult = Importer.ImportFmd(
+                            huellaBytes,
+                            Constants.Formats.Fmd.DP_REGISTRATION,
+                            Constants.Formats.Fmd.DP_REGISTRATION
+                        );
+                    if (importResult.ResultCode != Constants.ResultCode.DP_SUCCESS)
+                        continue; // Saltar huellas corruptas
 
                     list.Add(new HuellaRecord
                     {
                         Id     = reader.GetInt32(0),
                         Socio  = reader.GetInt32(1),
                         Dedo   = reader.GetInt32(2),
-                        HuellaFmd = Fmd.DeserializeXml(huella)
+                        HuellaFmd = importResult.Data
                     });
                 }
             }
@@ -98,7 +110,7 @@ public int? Identify(string base64Sample, out string message)
         public int Id    { get; set; }
         public int Socio { get; set; }
         public int Dedo  { get; set; }
-        public byte[] HuellaFmd { get; set; }
+        public Fmd HuellaFmd { get; set; }
     }
 }
 }
