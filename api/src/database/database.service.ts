@@ -1,48 +1,37 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import * as mysql from 'mysql2/promise';
 import { Kysely, MysqlDialect } from 'kysely'
-import { createPool } from 'mysql2'
+import { createPool, Pool } from 'mysql2'
+import { DB } from './database.types';
 
 @Injectable()
 export class DatabaseService implements OnModuleInit, OnModuleDestroy {
-  private connection: mysql.Connection;
-  private dialect: MysqlDialect;
+  private pool: Pool;
+  private db: Kysely<DB>;
 
   async onModuleInit() {
-    this.connection = await mysql.createConnection({
+    
+    this.pool = createPool({
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT ?? '3306'),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
     });
-    
-    // this.dialect = new MysqlDialect({
-    //   pool: createPool({
-    //     database: process.env.DB_NAME,
-    //     host: process.env.DB_HOST || 'localhost',
-    //     user: process.env.DB_USER,
-    //     password: process.env.DB_PASSWORD,
-    //     port: parseInt(process.env.DB_PORT ?? '3306'),
-    //     connectionLimit: 10,
-    //   })
-    // })
 
-    // const db = new Kysely<Database>({
-    //   dialect: this.dialect,
-    // })
+
+    this.db = new Kysely<DB>({
+      dialect: new MysqlDialect({
+        pool: this.pool,
+      }),
+    });
   }
 
   async onModuleDestroy() {
-    await this.connection.end();
+    await this.db.destroy();
   }
 
-  async query(sql: string, params?: any[]) {
-    const [rows] = await this.connection.query(sql, params);
-    return rows;
-  }
-
-  getConnection() {
-    return this.connection;
+  getKysely() {
+    return this.db;
   }
 }
