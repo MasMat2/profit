@@ -1,0 +1,462 @@
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Header con Tabs -->
+    <div class="modal-header">
+      <h2>{{ partner ? 'Editar Socio' : 'Nuevo Socio' }}</h2>
+      <button class="btn-close" (click)="onCancel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="tabs-container">
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'datos'"
+        (click)="setActiveTab('datos')">
+        <i class="fas fa-user"></i>
+        Datos Generales
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'suscripciones'"
+        (click)="setActiveTab('suscripciones')"
+        [disabled]="!partner"
+      >
+        <i class="fas fa-calendar-alt"></i>
+        Suscripciones
+      </button>
+      <button 
+        class="tab" 
+        [class.active]="activeTab === 'ventas'"
+        (click)="setActiveTab('ventas')"
+        [disabled]="!partner"
+      >
+        <i class="fas fa-shopping-cart"></i>
+        Ventas
+      </button>
+    </div>
+
+    <!-- Contenido del Modal -->
+    <div class="modal-body">
+      <!-- TAB: Datos Generales -->
+      <div class="tab-content" *ngIf="activeTab === 'datos'">
+        <div class="content-grid">
+          <!-- Sección Izquierda: Perfil -->
+          <div class="profile-section">
+            <div class="profile-card">
+              <div class="logo-display">
+                <img src="assets/logo.png" alt="Profit-Syslam Logo" />
+              </div>
+
+              <div class="profile-info" *ngIf="partner">
+                <div class="partner-id">ID: {{ partner.id }}</div>
+                
+                <div class="badges">
+                  <span class="badge" [ngClass]="getStatusBadgeClass(partner.estatus)">
+                    {{ partner.estatus }}
+                  </span>
+                  <span class="badge badge-scholarship" *ngIf="partner.becado">
+                    Becado
+                  </span>
+                </div>
+
+                <div class="balance-card">
+                  <div class="balance-label">Saldo Actual</div>
+                  <div class="balance-amount" [class.positive]="partner.saldo >= 0" [class.negative]="partner.saldo < 0">
+                    {{ formatCurrency(partner.saldo) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sección Central: Formulario -->
+          <div class="form-section">
+            <form [formGroup]="partnerForm">
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label>Nombre Completo *</label>
+                  <input 
+                    type="text" 
+                    class="form-control"
+                    formControlName="nombre"
+                    [class.invalid]="isFieldInvalid('nombre')"
+                  />
+                  <span class="error-message" *ngIf="isFieldInvalid('nombre')">
+                    {{ getFieldError('nombre') }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Teléfono *</label>
+                  <input 
+                    type="tel" 
+                    class="form-control"
+                    formControlName="telefono"
+                    placeholder="10 dígitos"
+                    [class.invalid]="isFieldInvalid('telefono')"
+                  />
+                  <span class="error-message" *ngIf="isFieldInvalid('telefono')">
+                    {{ getFieldError('telefono') }}
+                  </span>
+                </div>
+
+                <div class="form-group">
+                  <label>Correo Electrónico *</label>
+                  <input 
+                    type="email" 
+                    class="form-control"
+                    formControlName="correo"
+                    [class.invalid]="isFieldInvalid('correo')"
+                  />
+                  <span class="error-message" *ngIf="isFieldInvalid('correo')">
+                    {{ getFieldError('correo') }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Sexo *</label>
+                  <div class="radio-group">
+                    <label class="radio-label">
+                      <input type="radio" formControlName="sexo" value="M" />
+                      <span>Masculino</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" formControlName="sexo" value="F" />
+                      <span>Femenino</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Fecha de Nacimiento *</label>
+                  <input 
+                    type="date" 
+                    class="form-control"
+                    formControlName="fechaNacimiento"
+                    [class.invalid]="isFieldInvalid('fechaNacimiento')"
+                  />
+                  <span class="error-message" *ngIf="isFieldInvalid('fechaNacimiento')">
+                    {{ getFieldError('fechaNacimiento') }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Estatus *</label>
+                  <select class="form-control" formControlName="estatus">
+                    <option *ngFor="let status of availableStatuses" [value]="status">
+                      {{ status }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" formControlName="becado" />
+                    <span>Socio Becado</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label>Comentarios</label>
+                  <textarea 
+                    class="form-control" 
+                    rows="3"
+                    formControlName="comentarios"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label>Periodicidad de Pago *</label>
+                  <select class="form-control" formControlName="periodicidad">
+                    <option *ngFor="let period of availablePeriods" [value]="period">
+                      {{ period }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Sección de Cobro Inicial -->
+              <div class="payment-card" *ngIf="!partner || partner.id === 0">
+                <div class="payment-card-header">
+                  <i class="fas fa-cash-register"></i>
+                  <h4>Cobro Inicial (Inscripción)</h4>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Monto de Inscripción *</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      formControlName="montoInscripcion"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      (input)="calculateTotal()"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label>Descuento General</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      formControlName="descuentoInscripcion"
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      (input)="calculateTotal()"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full-width">
+                    <label>Método de Pago *</label>
+                    <select class="form-control" formControlName="metodoPago">
+                      <option value="">Seleccionar...</option>
+                      <option value="Efectivo">Efectivo</option>
+                      <option value="Tarjeta">Tarjeta</option>
+                      <option value="Transferencia">Transferencia</option>
+                      <option value="Mixto">Mixto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Desglose de Totales -->
+                <div class="totals-breakdown">
+                  <div class="breakdown-row" *ngIf="totalInscripcion > 0">
+                    <span class="label">Inscripción:</span>
+                    <span class="value">{{ formatCurrency(totalInscripcion) }}</span>
+                  </div>
+                  <div class="breakdown-row" *ngIf="assignedClasses.length > 0">
+                    <span class="label">Clases ({{ assignedClasses.length }}):</span>
+                    <span class="value">{{ formatCurrency(getTotalClases()) }}</span>
+                  </div>
+                  <div class="breakdown-row subtotal-row" *ngIf="getSubtotal() > 0">
+                    <span class="label">Subtotal:</span>
+                    <span class="value">{{ formatCurrency(getSubtotal()) }}</span>
+                  </div>
+                  <div class="breakdown-row discount-row" *ngIf="getDescuentoGeneral() > 0">
+                    <span class="label">Descuento:</span>
+                    <span class="value discount-value">- {{ formatCurrency(getDescuentoGeneral()) }}</span>
+                  </div>
+                  <div class="breakdown-row grand-total">
+                    <span class="label"><strong>GRAN TOTAL:</strong></span>
+                    <span class="value grand-total-amount">{{ formatCurrency(getGranTotal()) }}</span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Sección Derecha: Pagos y Clases -->
+          <div class="payment-section">
+            <div class="section-card classes-card">
+              <div class="card-header">
+                <h3>Clases Asignadas</h3>
+                <button class="btn-secondary btn-sm" (click)="openClassAssignment()">
+                  <i class="fas fa-plus"></i>
+                  Asignar
+                </button>
+              </div>
+              
+              <div class="classes-list" *ngIf="assignedClasses.length > 0">
+                <div class="assigned-class-item" *ngFor="let clase of assignedClasses">
+                  <div class="class-header-row">
+                    <div class="class-name-badge">
+                      <i class="fas fa-dumbbell"></i>
+                      <span class="class-name">{{ clase.nombre }}</span>
+                    </div>
+                    <div class="class-price-section">
+                      <span class="period-badge">{{ clase.periodicidad }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="class-category-tag">{{ clase.categoria }}</div>
+                  
+                  <!-- Desglose de Cobros -->
+                  <div class="payment-breakdown">
+                    <div class="payment-row">
+                      <span class="label">Precio {{ clase.periodicidad }}:</span>
+                      <span class="value">{{ formatCurrency(clase.precio) }}</span>
+                    </div>
+                    <div class="payment-row discount" *ngIf="clase.descuento > 0">
+                      <span class="label">Descuento:</span>
+                      <span class="value negative">- {{ formatCurrency(clase.descuento) }}</span>
+                    </div>
+                    <div class="payment-row" *ngIf="clase.cobrarInscripcion">
+                      <span class="label">Inscripción:</span>
+                      <span class="value">{{ formatCurrency(clase.montoInscripcion) }}</span>
+                    </div>
+                    <div class="payment-row total">
+                      <span class="label"><strong>Total a Pagar:</strong></span>
+                      <span class="value total-amount">{{ formatCurrency(clase.total) }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="class-details-row">
+                    <div class="detail-item">
+                      <i class="fas fa-clock"></i>
+                      <span>{{ clase.horario }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="fas fa-user"></i>
+                      <span>{{ clase.instructor }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="class-days" *ngIf="clase.dias && clase.dias.length > 0">
+                    <span class="day-badge" *ngFor="let dia of clase.dias">{{ dia }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="empty-state-small" *ngIf="assignedClasses.length === 0">
+                <i class="fas fa-dumbbell"></i>
+                <p>Sin clases asignadas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Suscripciones -->
+      <div class="tab-content" *ngIf="activeTab === 'suscripciones'">
+        <div class="subscriptions-content">
+          <div class="table-container" *ngIf="partner && partner.suscripciones.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Descripción</th>
+                  <th>Importe</th>
+                  <th>Descuento</th>
+                  <th>Total</th>
+                  <th>Saldo</th>
+                  <th>Estatus</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let sub of partner.suscripciones">
+                  <td>{{ formatDate(sub.fecha) }}</td>
+                  <td>
+                    {{ sub.descripcion }}
+                    <span class="badge-small badge-warning" *ngIf="sub.esInscripcion">Inscripción</span>
+                  </td>
+                  <td>{{ formatCurrency(sub.importe) }}</td>
+                  <td>{{ formatCurrency(sub.descuento) }}</td>
+                  <td><strong>{{ formatCurrency(sub.total) }}</strong></td>
+                  <td [class.text-danger]="sub.saldo > 0">{{ formatCurrency(sub.saldo) }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'badge-active': sub.pagado && !sub.cancelado,
+                      'badge-warning': !sub.pagado && !sub.cancelado,
+                      'badge-suspended': sub.cancelado
+                    }">
+                      {{ sub.cancelado ? 'Cancelada' : (sub.pagado ? 'Pagada' : 'Pendiente') }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" *ngIf="!partner || partner.suscripciones.length === 0">
+            <i class="fas fa-calendar-times"></i>
+            <p>No hay suscripciones registradas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Ventas -->
+      <div class="tab-content" *ngIf="activeTab === 'ventas'">
+        <div class="sales-content">
+          <div class="table-container" *ngIf="partner && partner.ventas.length > 0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
+                  <th>Total</th>
+                  <th>Forma de Pago</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let sale of partner.ventas">
+                  <td>{{ sale.id }}</td>
+                  <td>{{ formatDate(sale.fecha) }}</td>
+                  <td>{{ sale.concepto }}</td>
+                  <td>{{ sale.cantidad }}</td>
+                  <td>{{ formatCurrency(sale.precio) }}</td>
+                  <td>{{ formatCurrency(sale.total) }}</td>
+                  <td>{{ sale.formaPago }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-state" *ngIf="!partner || partner.ventas.length === 0">
+            <i class="fas fa-shopping-bag"></i>
+            <p>No hay ventas registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <div class="footer-left">
+        <button 
+          class="btn-danger" 
+          (click)="onDelete()"
+          *ngIf="partner && partner.id !== 0"
+          title="Eliminar socio">
+          <i class="fas fa-trash-alt"></i>
+          Eliminar Socio
+        </button>
+      </div>
+      <div class="footer-right">
+        <button class="btn-secondary" (click)="onCancel()">
+          Cancelar
+        </button>
+        <button 
+          class="btn-primary" 
+          (click)="onSubmit()"
+          [disabled]="partnerForm.invalid"
+        >
+          <i class="fas fa-save"></i>
+          {{ partner ? 'Guardar Cambios' : 'Crear Socio' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sub-Modal de Asignación de Clases -->
+<app-class-assignment-modal
+  *ngIf="showClassAssignmentModal && partner"
+  [partner]="partner"
+  (close)="closeClassAssignment()"
+></app-class-assignment-modal>
+
+<!-- Modal de Ticket de Cobro -->
+<app-payment-ticket-modal
+  *ngIf="showTicketModal && ticketData"
+  [ticket]="ticketData"
+  (close)="closeTicketModal()"
+></app-payment-ticket-modal>

@@ -13,18 +13,18 @@ export interface MenuSection {
 
 export const MENU_CONFIG: MenuSection[] = [
   {
-    title: 'PRINCIPAL',
+    title: 'ADMINISTRACIÓN',
     items: [
       { 
-        id: 'estadisticas', 
-        name: 'Estadísticas', 
-        icon: 'fas fa-chart-line',
-        route: 'estadisticas'
+        id: 'reportes', 
+        name: 'Reportes', 
+        icon: 'fas fa-chart-bar',
+        route: 'reportes'
       },
       { 
-        id: 'administracion', 
-        name: 'Administración', 
-        icon: 'fas fa-building',
+        id: 'configuracion', 
+        name: 'Configuración', 
+        icon: 'fas fa-cog',
         route: 'administracion'
       },
       { 
@@ -39,11 +39,6 @@ export const MENU_CONFIG: MenuSection[] = [
         icon: 'fas fa-user',
         route: 'acceso-clientes'
       },
-    ]
-  },
-  {
-    title: 'GESTIÓN',
-    items: [
       { 
         id: 'categoria-planes', 
         name: 'Categoría/Planes', 
@@ -51,26 +46,10 @@ export const MENU_CONFIG: MenuSection[] = [
         route: 'categoria-planes'
       },
       { 
-        id: 'clientes-accordion', 
-        name: 'Clientes', 
+        id: 'catalogo-socios', 
+        name: 'Catálogo de Socios', 
         icon: 'fas fa-users',
-        children: [
-          { 
-            id: 'inscribir-cliente', 
-            name: 'Inscribir Cliente',
-            route: 'clientes/inscribir'
-          },
-          { 
-            id: 'gestionar-clientes', 
-            name: 'Gestionar Clientes',
-            route: 'clientes/gestionar'
-          },
-          { 
-            id: 'gestionar-membresias', 
-            name: 'Gestión de Membresías',
-            route: 'clientes/membresias'
-          }
-        ]
+        route: 'catalogo-socios'
       }
     ]
   },
@@ -78,10 +57,10 @@ export const MENU_CONFIG: MenuSection[] = [
     title: 'INVENTARIO Y VENTAS',
     items: [
       { 
-        id: 'productos', 
-        name: 'Productos y Stock', 
+        id: 'catalogo-productos', 
+        name: 'Catálogo de Productos', 
         icon: 'fas fa-box-open',
-        route: 'productos'
+        route: 'catalogo-productos'
       },
       { 
         id: 'punto-venta', 
@@ -90,10 +69,16 @@ export const MENU_CONFIG: MenuSection[] = [
         route: 'punto-venta'
       },
       { 
-        id: 'carrito-usuario', 
-        name: 'Carrito de Usuario', 
-        icon: 'fas fa-shopping-cart',
-        route: 'carrito-usuario'
+        id: 'ventas-credito', 
+        name: 'Ventas a Crédito', 
+        icon: 'fas fa-credit-card',
+        route: 'ventas-credito'
+      },
+      { 
+        id: 'registro-tickets', 
+        name: 'Registro de Tickets', 
+        icon: 'fas fa-receipt',
+        route: 'registro-tickets'
       }
     ]
   }

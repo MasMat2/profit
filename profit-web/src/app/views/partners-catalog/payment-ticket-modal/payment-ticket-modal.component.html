@@ -1,0 +1,106 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="ticket-modal-container" (click)="$event.stopPropagation()">
+    <!-- Botones de acción (no se imprimen) -->
+    <div class="modal-actions no-print">
+      <button class="btn-print" (click)="onPrint()">
+        <i class="fas fa-print"></i>
+        Imprimir Ticket
+      </button>
+      <button class="btn-close" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Contenido del Ticket -->
+    <div class="ticket-content">
+      <!-- Header -->
+      <div class="ticket-header">
+        <div class="logo-section">
+          <img src="assets/logo.png" alt="Profit-Syslam Logo" class="ticket-logo" />
+        </div>
+        <h1 class="ticket-title">TICKET DE COBRO</h1>
+        <div class="ticket-info">
+          <p><strong>Socio:</strong> {{ ticket.socioNombre }}</p>
+          <p><strong>ID:</strong> #{{ ticket.socioId }}</p>
+          <p><strong>Fecha:</strong> {{ formatDate(ticket.fecha) }}</p>
+        </div>
+      </div>
+
+      <div class="ticket-divider"></div>
+
+      <!-- Detalles de Cobro -->
+      <div class="ticket-details">
+        <h2 class="section-title">
+          <i class="fas fa-cash-register"></i>
+          Cobro Inicial (Inscripción)
+        </h2>
+
+        <!-- Inscripción -->
+        <div class="detail-row" *ngIf="ticket.montoInscripcion > 0">
+          <span class="label">Inscripción:</span>
+          <span class="value">{{ formatCurrency(ticket.montoInscripcion) }}</span>
+        </div>
+
+        <!-- Clases -->
+        <div class="classes-section" *ngIf="ticket.clases.length > 0">
+          <div class="detail-row classes-header">
+            <span class="label"><strong>Clases ({{ ticket.clases.length }}):</strong></span>
+            <span class="value"><strong>{{ formatCurrency(ticket.totalClases) }}</strong></span>
+          </div>
+          <div class="class-item" *ngFor="let clase of ticket.clases">
+            <div class="class-name">
+              <i class="fas fa-dumbbell"></i>
+              {{ clase.nombre }}
+            </div>
+            <div class="class-detail">
+              <span class="period-badge">{{ clase.periodicidad }}</span>
+              <span class="class-price">{{ formatCurrency(clase.total) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-divider"></div>
+
+        <!-- Subtotal -->
+        <div class="detail-row subtotal-row">
+          <span class="label">Subtotal:</span>
+          <span class="value">{{ formatCurrency(ticket.subtotal) }}</span>
+        </div>
+
+        <!-- Descuento -->
+        <div class="detail-row discount-row" *ngIf="ticket.descuento > 0">
+          <span class="label">Descuento:</span>
+          <span class="value discount-value">- {{ formatCurrency(ticket.descuento) }}</span>
+        </div>
+
+        <div class="ticket-divider-bold"></div>
+
+        <!-- Total -->
+        <div class="detail-row total-row">
+          <span class="label">GRAN TOTAL:</span>
+          <span class="value total-value">{{ formatCurrency(ticket.total) }}</span>
+        </div>
+
+        <!-- Método de Pago -->
+        <div class="payment-method">
+          <i class="fas fa-credit-card"></i>
+          <span>Método de Pago: <strong>{{ ticket.metodoPago }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="ticket-footer">
+        <p>¡Gracias por su preferencia!</p>
+        <p class="footer-note">Conserve este ticket como comprobante de pago</p>
+      </div>
+    </div>
+
+    <!-- Botón Cerrar (no se imprime) -->
+    <div class="modal-footer no-print">
+      <button class="btn-primary" (click)="onClose()">
+        <i class="fas fa-check"></i>
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
