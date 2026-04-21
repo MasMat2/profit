@@ -46,7 +46,7 @@ export const MENU_CONFIG: MenuSection[] = [
     items: [
       { 
         id: 'categoria-planes', 
-        name: 'Categoría/Planes', 
+        name: 'Clases', 
         icon: 'fas fa-layer-group',
         route: 'categoria-planes'
       },

@@ -1,0 +1,241 @@
+<div class="plan-container" *ngIf="!isLoading">
+  <!-- Mensajes -->
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <!-- Encabezado -->
+  <div class="plan-header">
+    <div class="plan-title-section">
+      <select class="plan-selector" [(ngModel)]="selectedClassId" (change)="onClassChange()" name="classSelector">
+        <option *ngFor="let clase of clases" [ngValue]="clase.id">
+          {{ clase.nomclase }}
+        </option>
+      </select>
+    </div>
+    <button class="btn-add-plan" title="Agregar nueva clase" (click)="openAddClassModal()">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+
+  <!-- Secciones principales en grid -->
+  <div class="plan-sections">
+    
+    <!-- Sección 1: Configuración -->
+    <div class="section-card" *ngIf="currentClass">
+      <h3 class="section-header">Configuración</h3>
+      <div class="config-content">
+        <div class="form-field">
+          <label>Nombre de la Clase</label>
+          <input type="text" class="form-input" [(ngModel)]="currentClass.nomclase" name="nomclase" placeholder="Nombre de la clase">
+        </div>
+
+        <div class="form-field">
+          <div class="checkbox-field">
+            <input type="checkbox" id="controlHrCheck" [(ngModel)]="controlHr" name="controlHrCheck">
+            <label for="controlHrCheck">Control de horario</label>
+          </div>
+        </div>
+        
+        <div class="form-field">
+          <div class="checkbox-field">
+            <input type="checkbox" id="limitCheck" [(ngModel)]="limiteSocios" name="limitCheck">
+            <label for="limitCheck">Límite de Socios</label>
+            <input type="number" class="limit-input" [disabled]="!limiteSocios" [(ngModel)]="currentClass.cntlimite" name="memberLimit" placeholder="0">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <div class="checkbox-field">
+            <input type="checkbox" id="ticketCheck" [(ngModel)]="imprimirTicket" name="ticketCheck">
+            <label for="ticketCheck">Imprimir ticket de asistencia</label>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <div class="checkbox-field">
+            <input type="checkbox" id="activeCheck" [(ngModel)]="currentClass.activa" name="activeCheck">
+            <label for="activeCheck">Clase activa</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 2: Precios -->
+    <div class="section-card" *ngIf="currentClass">
+      <h3 class="section-header">Precios</h3>
+      <div class="prices-content">
+        <table class="prices-table">
+          <thead>
+            <tr>
+              <th>PERIODO</th>
+              <th>PRECIO NORMAL</th>
+              <th>DESCUENTO</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let precio of precios; let i = index">
+              <td class="period-cell">{{ precio.periodo }}</td>
+              <td>
+                <!-- Modo lectura -->
+                <span *ngIf="!isEditingPrice(i)" class="price-display">
+                  {{ formatCurrency(precio.precioNormal) }}
+                </span>
+                <!-- Modo edición -->
+                <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
+                  <span class="currency-symbol">$</span>
+                  <input 
+                    type="number" 
+                    class="price-input" 
+                    [(ngModel)]="precio.precioNormal"
+                    [name]="'precio_' + i"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00">
+                </div>
+              </td>
+              <td>
+                <!-- Modo lectura -->
+                <span *ngIf="!isEditingPrice(i)" class="price-display">
+                  {{ formatCurrency(precio.descuento) }}
+                </span>
+                <!-- Modo edición -->
+                <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
+                  <span class="currency-symbol">$</span>
+                  <input 
+                    type="number" 
+                    class="price-input" 
+                    [(ngModel)]="precio.descuento"
+                    [name]="'descuento_' + i"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00">
+                </div>
+              </td>
+              <td class="action-cell">
+                <i 
+                  [class]="isEditingPrice(i) ? 'fas fa-check edit-icon editing' : 'fas fa-pen edit-icon'"
+                  (click)="toggleEditPrice(i)"
+                  [title]="isEditingPrice(i) ? 'Confirmar' : 'Editar'">
+                </i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="inscription-fee">
+          <label>
+            <input type="checkbox" [(ngModel)]="cobrarInscripcion" name="cobrarInscripcion">
+            Cobrar Inscripción
+          </label>
+          <input type="number" class="fee-input" [disabled]="!cobrarInscripcion" [(ngModel)]="currentClass.prinsc" name="montoInscripcion" placeholder="0.00">
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 3: Información Adicional -->
+    <div class="section-card" *ngIf="currentClass">
+      <h3 class="section-header">Información Adicional</h3>
+      <div class="config-content">
+        <div class="info-row">
+          <span class="info-label">ID de Clase:</span>
+          <span class="info-value">{{ currentClass.clase }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Estado:</span>
+          <span class="info-value" [class.active]="currentClass.activa === 1" [class.inactive]="currentClass.activa === 0">
+            {{ currentClass.activa === 1 ? 'Activa' : 'Inactiva' }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="currentClass.fecmod">
+          <span class="info-label">Última modificación:</span>
+          <span class="info-value">{{ currentClass.fecmod | date:'short' }}</span>
+        </div>
+        
+        <div class="note-section">
+          <p class="note-text">
+            <i class="material-icons">info</i>
+            Los horarios programados para esta clase se gestionan en el módulo de Horarios.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Botones de acción al final -->
+  <div class="action-buttons" *ngIf="currentClass">
+    <button class="btn-delete" (click)="openDeleteConfirmModal()">Eliminar Clase</button>
+    <div class="action-right">
+      <button class="btn-cancel" (click)="cancelChanges()">Cancelar</button>
+      <button class="btn-save" (click)="saveChanges()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div class="loader-container" *ngIf="isLoading">
+  <div class="loader"></div>
+  <p>Cargando...</p>
+</div>
+
+<!-- Modal para agregar nueva clase -->
+<div class="modal-overlay" *ngIf="showAddClassModal" (click)="closeAddClassModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Agregar Nueva Clase</h2>
+      <button class="btn-close" (click)="closeAddClassModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label for="newClassName">Nombre de la Clase</label>
+        <input 
+          type="text" 
+          id="newClassName"
+          class="form-input" 
+          [(ngModel)]="newClassName" 
+          name="newClassName"
+          placeholder="Ej: Yoga, CrossFit, Spinning..."
+          (keyup.enter)="createNewClass()">
+      </div>
+      <p class="modal-note">
+        <i class="fas fa-info-circle"></i>
+        Los precios y configuración se pueden editar después de crear la clase.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeAddClassModal()">Cancelar</button>
+      <button class="btn-save" (click)="createNewClass()">Crear Clase</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal-overlay" *ngIf="showDeleteConfirmModal" (click)="closeDeleteConfirmModal()">
+  <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header warning">
+      <div class="warning-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <h2>Confirmar Eliminación</h2>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-message">
+        ¿Estás seguro de que deseas eliminar la clase <strong>{{ currentClass?.nomclase }}</strong>?
+      </p>
+      <p class="confirm-warning">
+        <i class="fas fa-info-circle"></i>
+        Esta acción no se puede deshacer. Todos los datos asociados a esta clase se perderán.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeDeleteConfirmModal()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="confirmDelete()">
+        <i class="fas fa-trash-alt"></i>
+        Eliminar Clase
+      </button>
+    </div>
+  </div>
+</div>
