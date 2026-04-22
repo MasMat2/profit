@@ -24,6 +24,8 @@ export class MainLayoutComponent {
 
   isDarkMode = false;
 
+  isSidebarCollapsed = false;
+
   isLoggedIn = false;
 
   selectedComponent: string = 'dashboard';
@@ -47,6 +49,11 @@ export class MainLayoutComponent {
     }
 
     this.loadMenuState();
+
+    const savedSidebar = localStorage.getItem('sidebarCollapsed');
+    if (savedSidebar === 'true') {
+      this.isSidebarCollapsed = true;
+    }
   }
 
 
@@ -86,6 +93,11 @@ export class MainLayoutComponent {
     this.accordions[componentId] = !this.accordions[componentId];
     // guardar el estado del menu
     localStorage.setItem("selectedAccordion", componentId);
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', String(this.isSidebarCollapsed));
   }
 
   toggleTheme(): void {
