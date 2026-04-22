@@ -51,6 +51,7 @@ export class ClassesComponent implements OnInit {
   selectedClassId: number = 0;
   currentClass: ClassModel | null = null;
   isLoading = false;
+  isLoadingDetails = false;
   isEditing = false;
   successMessage = '';
   errorMessage = '';
@@ -87,17 +88,17 @@ export class ClassesComponent implements OnInit {
   }
 
   loadClassDetails(id: number): void {
-    this.isLoading = true;
+    this.isLoadingDetails = true;
     this.classesService.getClassById(id).subscribe({
       next: (data: ClassModel) => {
         this.currentClass = data;
         this.updatePreciosDisplay();
-        this.isLoading = false;
+        this.isLoadingDetails = false;
       },
       error: (error) => {
         console.error('Error loading class details:', error);
         this.errorMessage = 'Error al cargar los detalles de la clase';
-        this.isLoading = false;
+        this.isLoadingDetails = false;
       }
     });
   }
@@ -118,6 +119,14 @@ export class ClassesComponent implements OnInit {
   onClassChange(): void {
     if (this.selectedClassId && this.selectedClassId > 0) {
       this.loadClassDetails(this.selectedClassId);
+    }
+  }
+
+  selectClass(id: number): void {
+    if (id !== this.selectedClassId) {
+      this.selectedClassId = id;
+      this.editingPriceIndex = null;
+      this.loadClassDetails(id);
     }
   }
 

@@ -1,41 +1,52 @@
-<div class="plan-container" *ngIf="!isLoading">
-  <!-- Mensajes -->
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-  <!-- Encabezado -->
-  <div class="plan-header">
-    <div class="plan-title-section">
-      <select class="plan-selector" [(ngModel)]="selectedClassId" (change)="onClassChange()" name="classSelector">
-        <option *ngFor="let clase of clases" [ngValue]="clase.id">
-          {{ clase.nomclase }}
-        </option>
-      </select>
-    </div>
-    <button class="btn-add-plan" title="Agregar nueva clase" (click)="openAddClassModal()">
-      <i class="fas fa-plus"></i>
-    </button>
+<div class="classes-wrapper">
+  <!-- Alerts -->
+  <div class="alerts-container">
+    <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
   </div>
 
-  <!-- Secciones principales en grid -->
-  <div class="plan-sections">
-    
-    <!-- Sección 1: Configuración -->
-    <div class="section-card" *ngIf="currentClass">
+  <!-- Loader -->
+  <div class="loader-container" *ngIf="isLoading">
+    <div class="loader"></div>
+    <p>Cargando...</p>
+  </div>
+
+  <!-- Main layout: sidebar + panels as equal-height siblings -->
+  <div class="classes-layout" *ngIf="!isLoading">
+
+    <!-- Sidebar: lista de clases -->
+    <div class="classes-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Listado de Clases</span>
+        <button class="btn-add-plan" title="Agregar nueva clase" (click)="openAddClassModal()">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      <ul class="classes-list">
+        <li
+          *ngFor="let clase of clases"
+          class="class-item"
+          [class.active]="clase.id === selectedClassId"
+          (click)="selectClass(clase.id)">
+          {{ clase.nomclase }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Panel 1: Configuración + Información Adicional -->
+    <div class="section-card" *ngIf="currentClass" [class.panel-loading]="isLoadingDetails">
       <h3 class="section-header">Configuración</h3>
       <div class="config-content">
         <div class="form-field">
           <label>Nombre de la Clase</label>
           <input type="text" class="form-input" [(ngModel)]="currentClass.nomclase" name="nomclase" placeholder="Nombre de la clase">
         </div>
-
         <div class="form-field">
           <div class="checkbox-field">
             <input type="checkbox" id="controlHrCheck" [(ngModel)]="controlHr" name="controlHrCheck">
             <label for="controlHrCheck">Control de horario</label>
           </div>
         </div>
-        
         <div class="form-field">
           <div class="checkbox-field">
             <input type="checkbox" id="limitCheck" [(ngModel)]="limiteSocios" name="limitCheck">
@@ -43,25 +54,46 @@
             <input type="number" class="limit-input" [disabled]="!limiteSocios" [(ngModel)]="currentClass.cntlimite" name="memberLimit" placeholder="0">
           </div>
         </div>
-
         <div class="form-field">
           <div class="checkbox-field">
             <input type="checkbox" id="ticketCheck" [(ngModel)]="imprimirTicket" name="ticketCheck">
             <label for="ticketCheck">Imprimir ticket de asistencia</label>
           </div>
         </div>
-
         <div class="form-field">
           <div class="checkbox-field">
             <input type="checkbox" id="activeCheck" [(ngModel)]="currentClass.activa" name="activeCheck">
             <label for="activeCheck">Clase activa</label>
           </div>
         </div>
+
+        <!-- Información Adicional (merged) -->
+        <div class="section-divider"></div>
+        <div class="info-row">
+          <span class="info-label">ID de Clase:</span>
+          <span class="info-value">{{ currentClass.clase }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Estado:</span>
+          <span class="info-value" [class.active]="currentClass.activa === 1" [class.inactive]="currentClass.activa === 0">
+            {{ currentClass.activa === 1 ? 'Activa' : 'Inactiva' }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="currentClass.fecmod">
+          <span class="info-label">Última modificación:</span>
+          <span class="info-value">{{ currentClass.fecmod | date:'short' }}</span>
+        </div>
+        <div class="note-section">
+          <p class="note-text">
+            <i class="material-icons">info</i>
+            Los horarios programados para esta clase se gestionan en el módulo de Horarios.
+          </p>
+        </div>
       </div>
     </div>
 
-    <!-- Sección 2: Precios -->
-    <div class="section-card" *ngIf="currentClass">
+    <!-- Panel 2: Precios -->
+    <div class="section-card" *ngIf="currentClass" [class.panel-loading]="isLoadingDetails">
       <h3 class="section-header">Precios</h3>
       <div class="prices-content">
         <table class="prices-table">
@@ -77,16 +109,14 @@
             <tr *ngFor="let precio of precios; let i = index">
               <td class="period-cell">{{ precio.periodo }}</td>
               <td>
-                <!-- Modo lectura -->
                 <span *ngIf="!isEditingPrice(i)" class="price-display">
                   {{ formatCurrency(precio.precioNormal) }}
                 </span>
-                <!-- Modo edición -->
                 <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
                   <span class="currency-symbol">$</span>
-                  <input 
-                    type="number" 
-                    class="price-input" 
+                  <input
+                    type="number"
+                    class="price-input"
                     [(ngModel)]="precio.precioNormal"
                     [name]="'precio_' + i"
                     step="0.01"
@@ -95,16 +125,14 @@
                 </div>
               </td>
               <td>
-                <!-- Modo lectura -->
                 <span *ngIf="!isEditingPrice(i)" class="price-display">
                   {{ formatCurrency(precio.descuento) }}
                 </span>
-                <!-- Modo edición -->
                 <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
                   <span class="currency-symbol">$</span>
-                  <input 
-                    type="number" 
-                    class="price-input" 
+                  <input
+                    type="number"
+                    class="price-input"
                     [(ngModel)]="precio.descuento"
                     [name]="'descuento_' + i"
                     step="0.01"
@@ -113,7 +141,7 @@
                 </div>
               </td>
               <td class="action-cell">
-                <i 
+                <i
                   [class]="isEditingPrice(i) ? 'fas fa-check edit-icon editing' : 'fas fa-pen edit-icon'"
                   (click)="toggleEditPrice(i)"
                   [title]="isEditingPrice(i) ? 'Confirmar' : 'Editar'">
@@ -122,7 +150,6 @@
             </tr>
           </tbody>
         </table>
-        
         <div class="inscription-fee">
           <label>
             <input type="checkbox" [(ngModel)]="cobrarInscripcion" name="cobrarInscripcion">
@@ -133,50 +160,16 @@
       </div>
     </div>
 
-    <!-- Sección 3: Información Adicional -->
-    <div class="section-card" *ngIf="currentClass">
-      <h3 class="section-header">Información Adicional</h3>
-      <div class="config-content">
-        <div class="info-row">
-          <span class="info-label">ID de Clase:</span>
-          <span class="info-value">{{ currentClass.clase }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Estado:</span>
-          <span class="info-value" [class.active]="currentClass.activa === 1" [class.inactive]="currentClass.activa === 0">
-            {{ currentClass.activa === 1 ? 'Activa' : 'Inactiva' }}
-          </span>
-        </div>
-        <div class="info-row" *ngIf="currentClass.fecmod">
-          <span class="info-label">Última modificación:</span>
-          <span class="info-value">{{ currentClass.fecmod | date:'short' }}</span>
-        </div>
-        
-        <div class="note-section">
-          <p class="note-text">
-            <i class="material-icons">info</i>
-            Los horarios programados para esta clase se gestionan en el módulo de Horarios.
-          </p>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- Botones de acción al final -->
-  <div class="action-buttons" *ngIf="currentClass">
+  <!-- Action buttons (outside layout so they don't affect panel heights) -->
+  <div class="action-buttons" *ngIf="!isLoading && currentClass">
     <button class="btn-delete" (click)="openDeleteConfirmModal()">Eliminar Clase</button>
     <div class="action-right">
       <button class="btn-cancel" (click)="cancelChanges()">Cancelar</button>
       <button class="btn-save" (click)="saveChanges()">Guardar Cambios</button>
     </div>
   </div>
-</div>
-
-<!-- Loader -->
-<div class="loader-container" *ngIf="isLoading">
-  <div class="loader"></div>
-  <p>Cargando...</p>
 </div>
 
 <!-- Modal para agregar nueva clase -->
