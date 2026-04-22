@@ -53,21 +53,9 @@
         </div>
         <div class="form-field">
           <div class="checkbox-field">
-            <input type="checkbox" id="controlHrCheck" [(ngModel)]="controlHr" name="controlHrCheck">
-            <label for="controlHrCheck">Control de horario</label>
-          </div>
-        </div>
-        <div class="form-field">
-          <div class="checkbox-field">
             <input type="checkbox" id="limitCheck" [(ngModel)]="limiteSocios" name="limitCheck">
             <label for="limitCheck">Límite de Socios</label>
             <input type="number" class="limit-input" [disabled]="!limiteSocios" [(ngModel)]="currentClass.cntlimite" name="memberLimit" placeholder="0">
-          </div>
-        </div>
-        <div class="form-field">
-          <div class="checkbox-field">
-            <input type="checkbox" id="ticketCheck" [(ngModel)]="imprimirTicket" name="ticketCheck">
-            <label for="ticketCheck">Imprimir ticket de asistencia</label>
           </div>
         </div>
         <div class="form-field">
