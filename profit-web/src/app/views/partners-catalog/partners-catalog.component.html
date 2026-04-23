@@ -1,7 +1,5 @@
 <div class="partners-catalog-container">
-  <!-- Contenido Principal -->
   <main class="main-content">
-    <!-- Header -->
     <div class="catalog-header">
       <div class="header-title">
         <i class="fas fa-users"></i>
@@ -13,234 +11,20 @@
       </button>
     </div>
 
-    <!-- Barra de Búsqueda y Filtros -->
-    <div class="search-bar">
-      <!-- Búsqueda -->
-      <div class="search-input-wrapper">
-        <i class="fas fa-search"></i>
-        <input 
-          type="text" 
-          class="search-input"
-          placeholder="Buscar por nombre, correo o teléfono..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-        />
-      </div>
-
-      <!-- Filtros en Chips -->
-      <div class="filters-section">
-        <div class="filters-label">
-          <i class="fas fa-sliders-h"></i>
-          <span>Filtros:</span>
-        </div>
-
-        <div class="filters-chips">
-          <!-- Estatus -->
-          <div class="filter-group">
-            <button 
-              class="chip-filter"
-              [class.active]="isStatusSelected(PartnerStatus.ACTIVO)"
-              (click)="toggleStatus(PartnerStatus.ACTIVO)">
-              <i class="fas fa-check-circle"></i>
-              Activos
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isStatusSelected(PartnerStatus.INACTIVO)"
-              (click)="toggleStatus(PartnerStatus.INACTIVO)">
-              <i class="fas fa-times-circle"></i>
-              Inactivos
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isStatusSelected(PartnerStatus.SUSPENDIDO)"
-              (click)="toggleStatus(PartnerStatus.SUSPENDIDO)">
-              <i class="fas fa-pause-circle"></i>
-              Suspendidos
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isBecado === true"
-              (click)="toggleBecado()">
-              <i class="fas fa-graduation-cap"></i>
-              Becados
-            </button>
-          </div>
-
-          <div class="filter-divider"></div>
-
-          <!-- Periodicidad -->
-          <div class="filter-group">
-            <button 
-              class="chip-filter"
-              [class.active]="isPeriodSelected('Mensual')"
-              (click)="togglePeriod('Mensual')">
-              <i class="fas fa-calendar"></i>
-              Mensual
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isPeriodSelected('Trimestral')"
-              (click)="togglePeriod('Trimestral')">
-              <i class="fas fa-calendar-alt"></i>
-              Trimestral
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isPeriodSelected('Semestral')"
-              (click)="togglePeriod('Semestral')">
-              <i class="fas fa-calendar-week"></i>
-              Semestral
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="isPeriodSelected('Anual')"
-              (click)="togglePeriod('Anual')">
-              <i class="fas fa-calendar-check"></i>
-              Anual
-            </button>
-          </div>
-
-          <div class="filter-divider"></div>
-
-          <!-- Saldo -->
-          <div class="filter-group">
-            <button 
-              class="chip-filter"
-              [class.active]="hasSaldo === true"
-              (click)="toggleSaldo(true)">
-              <i class="fas fa-dollar-sign"></i>
-              Con Saldo
-            </button>
-            <button 
-              class="chip-filter"
-              [class.active]="hasSaldo === false"
-              (click)="toggleSaldo(false)">
-              <i class="fas fa-check-double"></i>
-              Al Corriente
-            </button>
-          </div>
-        </div>
-
-        <!-- Botón Limpiar Filtros -->
-        <button 
-          class="btn-clear-filters" 
-          *ngIf="getActiveFiltersCount() > 0"
-          (click)="clearFilters()">
-          <i class="fas fa-times"></i>
-          Limpiar ({{ getActiveFiltersCount() }})
-        </button>
-      </div>
-
-      <!-- Contador de Resultados y Ordenamiento -->
-      <div class="results-row">
-        <div class="results-count">
-          <i class="fas fa-users"></i>
-          {{ filteredPartners.length }} socios encontrados
-        </div>
-
-        <div class="sort-controls">
-          <span class="sort-label">
-            <i class="fas fa-sort-alpha-down"></i>
-            Ordenar:
-          </span>
-          <button 
-            class="sort-btn"
-            [class.active]="sortOrder === 'asc'"
-            (click)="setSortOrder('asc')"
-            title="Ordenar A-Z">
-            <i class="fas fa-sort-alpha-down"></i>
-            A-Z
-          </button>
-          <button 
-            class="sort-btn"
-            [class.active]="sortOrder === 'desc'"
-            (click)="setSortOrder('desc')"
-            title="Ordenar Z-A">
-            <i class="fas fa-sort-alpha-up"></i>
-            Z-A
-          </button>
-          <button 
-            class="sort-btn clear-sort"
-            (click)="setSortOrder('none')"
-            title="Quitar ordenamiento"
-            *ngIf="sortOrder !== 'none'">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabla de Socios -->
-    <div class="partners-table-container">
-      <table class="partners-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Sexo</th>
-            <th>Teléfono</th>
-            <th>Correo Electrónico</th>
-            <th>Estatus</th>
-            <th>Saldo</th>
-            <th>F. Registro</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr 
-            *ngFor="let partner of filteredPartners" 
-            (click)="openPartnerModal(partner)"
-            class="partner-row"
-          >
-            <td>{{ partner.id }}</td>
-            <td class="partner-name">
-              <div class="name-cell">
-                <div class="partner-avatar">
-                  <i class="fas fa-user"></i>
-                </div>
-                <div>
-                  <div class="name">{{ partner.nombre }}</div>
-                  <span class="badge badge-scholarship" *ngIf="partner.becado">Becado</span>
-                </div>
-              </div>
-            </td>
-            <td>{{ partner.sexo === 'M' ? 'Masculino' : 'Femenino' }}</td>
-            <td>{{ partner.telefono }}</td>
-            <td>{{ partner.correo }}</td>
-            <td>
-              <span class="badge" [ngClass]="getStatusBadgeClass(partner.estatus)">
-                {{ partner.estatus }}
-              </span>
-            </td>
-            <td class="amount" [class.positive]="partner.saldo >= 0" [class.negative]="partner.saldo < 0">
-              {{ formatCurrency(partner.saldo) }}
-            </td>
-            <td>{{ formatDate(partner.fechaRegistro) }}</td>
-            <td class="actions" (click)="$event.stopPropagation()">
-              <button class="btn-icon" (click)="openPartnerModal(partner)" title="Ver detalles">
-                <i class="fas fa-eye"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div class="empty-state" *ngIf="filteredPartners.length === 0">
-        <i class="fas fa-users"></i>
-        <p>No se encontraron socios</p>
-        <button class="btn-primary" (click)="openNewPartnerModal()">
-          <i class="fas fa-plus"></i>
-          Crear Primer Socio
-        </button>
-      </div>
+    <div class="grid-container">
+      <app-grid
+        [rowData]="partners"
+        [columnDefs]="columnDefs"
+        [rowHeight]="60"
+        (rowClicked)="openPartnerModal($event)"
+      />
     </div>
   </main>
 </div>
 
-<!-- Modal de Gestión -->
-<app-partner-modal
-  *ngIf="showModal"
-  [partner]="selectedPartner"
-  (close)="closeModal()"
-></app-partner-modal>
+@if (showModal) {
+  <app-partner-modal
+    [partner]="selectedPartner"
+    (close)="closeModal()"
+  />
+}
