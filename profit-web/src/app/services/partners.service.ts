@@ -8,7 +8,7 @@ import { Partner, PartnerFilter, PartnerStatus, PaymentPeriod, ClassCategory, Av
   providedIn: 'root'
 })
 export class PartnersService {
-  private apiUrl = 'http://localhost:3000/api/socios';
+  private apiUrl = '/socios';
 
   constructor(private http: HttpClient) { }
 
