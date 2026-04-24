@@ -24,6 +24,8 @@ export class MainLayoutComponent {
 
   isDarkMode = false;
 
+  isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+
   isLoggedIn = false;
 
   selectedComponent: string = 'dashboard';
@@ -80,6 +82,11 @@ export class MainLayoutComponent {
     if (savedComponent) {
       this.selectComponent(savedComponent);
     }
+  }
+
+  toggleSidebar() {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', String(this.isSidebarCollapsed));
   }
 
   toggleAccordion(componentId: string) {
