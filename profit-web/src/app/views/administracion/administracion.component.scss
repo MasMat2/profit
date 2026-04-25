@@ -1,62 +1,7 @@
-.component-page {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 24px 32px;
-  border-bottom: 1px solid var(--surface-border);
-  background-color: var(--surface-a);
-
-  .page-header-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #F97316, #ea580c);
-    color: #fff;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.35);
-  }
-
-  .page-header-text {
-    display: flex;
-    flex-direction: column;
-  }
-
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin: 0 0 0.25rem 0;
-  }
-
-  .page-subtitle {
-    color: var(--text-color-secondary);
-    font-size: 0.875rem;
-    margin: 0;
-  }
-}
-
-.page-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px 32px;
-  background-color: #F9FAFB;
-}
-
-.content-wrapper {
-  max-width: 80vw;
-}
+// Component-specific layout styles.
+// Shared page-level classes (.component-page, .page-header, .page-content,
+// .card, .form-field, .btn-save, .feedback-msg, etc.) live in
+// src/styles/_shared.scss and are available globally.
 
 .cards-row {
   display: flex;
@@ -69,52 +14,6 @@
   }
 }
 
-.card {
-  background: var(--surface-a);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin: 0 0 1.25rem 0;
-}
-
-.form-field {
-  margin-bottom: 1rem;
-
-  label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-color);
-    margin-bottom: 0.375rem;
-  }
-
-  input {
-    width: 100%;
-    padding: 0.625rem 0.875rem;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--border-radius);
-    background: var(--surface-a);
-    color: var(--text-color);
-    font-size: 0.9rem;
-    font-family: inherit;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px var(--focus-ring-color);
-    }
-  }
-}
-
 .params-grid {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -122,94 +21,6 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
-
-.checkbox-field {
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-color);
-    user-select: none;
-
-    input[type='checkbox'] {
-      width: 1rem;
-      height: 1rem;
-      accent-color: var(--primary-color);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-  }
-}
-
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-
-.actions-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-}
-
-.btn-save {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: var(--border-radius);
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover:not(:disabled) {
-    background: var(--primary-color-darker);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-.loading-state {
-  padding: 2rem;
-  text-align: center;
-  color: var(--text-color-secondary);
-}
-
-.feedback-msg {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  border-radius: var(--border-radius);
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
-
-  &.success {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-  }
-
-  &.error {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
-  }
-}
-
 
 @media (max-width: 768px) {
   .cards-row {
@@ -222,15 +33,7 @@
 }
 
 @media (max-width: 600px) {
-  // .administracion-page {
-  //   padding: 1rem;
-  // }
-
   .params-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .two-col {
     grid-template-columns: 1fr;
   }
 }
