@@ -77,6 +77,12 @@
             <label>Descuento Días</label>
             <input type="number" [(ngModel)]="parametros.aplicadescdias" [ngModelOptions]="{ standalone: true }" min="0" />
           </div>
+
+          <button class="btn-outline btn-formas-pago" (click)="openFormasPagoModal()">
+            <i class="fas fa-credit-card"></i>
+            Gestionar Formas de Pago
+          </button>
+
         </div>
 
 

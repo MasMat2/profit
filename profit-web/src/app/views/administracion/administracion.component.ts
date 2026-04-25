@@ -64,4 +64,9 @@ export class AdministracionComponent implements OnInit {
       },
     });
   }
+
+  openFormasPagoModal(): void {
+    // TODO: Implementar lógica para abrir el modal de formas de pago
+    console.log('Abrir modal de formas de pago');
+  }
 }
