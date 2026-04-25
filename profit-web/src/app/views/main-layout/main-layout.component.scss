@@ -30,12 +30,12 @@
 
 .main-layout {
     display: flex;
-    height: 100%;
+    height: 100vh;
 }
 
 
 .sidebar {
-    width: 260px;
+    width: 22vw;
     flex-shrink: 0;
     background-color: var(--surface-b); /* Color de fondo azul-grisáceo claro */
     border-right: 1px solid var(--surface-border);
@@ -43,6 +43,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    box-sizing: border-box;
     transition: width 0.3s ease, padding 0.3s ease;
     overflow: hidden;
 }
