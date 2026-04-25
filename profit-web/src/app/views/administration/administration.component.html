@@ -1,7 +1,6 @@
 <div class="administration-container">
   <div class="content-header">
     <h1>Administración</h1>
-    <p class="subtitle">Configuración de información del negocio</p>
   </div>
 
   <div *ngIf="successMessage" class="alert alert-success">
@@ -16,75 +15,14 @@
     <div class="spinner"></div>
   </div>
 
-  <!-- Parámetros Operativos (Always Visible) -->
-  <div class="business-info-card">
-    <div class="card-header">
-      <h2>Parametros Generales</h2>
-    </div>
+  <div class="sections-grid">
+    <!-- Información del Negocio (Primera Sección) -->
+    <div class="business-info-card">
+      <div class="card-header">
+        <h2>Información del Negocio</h2>
+      </div>
 
-    <div class="card-content">
-      <form>
-        <div class="form-row">
-          <div class="form-fields">
-            <div class="form-row-inline">
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    id="paqvisvence" 
-                    [(ngModel)]="businessInfo.paqvisvence"
-                    name="paqvisvence"
-                    [value]="1"
-                  >
-                  <span>Paquete Visita Vence</span>
-                </label>
-              </div>
-              <div class="form-group">
-                <label for="diaspaqvisvence">Días Paquete Vigencia</label>
-                <input 
-                  type="number" 
-                  id="diaspaqvisvence" 
-                  [(ngModel)]="businessInfo.diaspaqvisvence"
-                  name="diaspaqvisvence"
-                  min="1"
-                  placeholder="15"
-                >
-              </div>
-              
-            </div>
-
-            <div class="form-group">
-              <label for="aplicadescdias">Descuento Días</label>
-              <input 
-                type="number" 
-                id="aplicadescdias" 
-                [(ngModel)]="businessInfo.aplicadescdias"
-                name="aplicadescdias"
-                min="0"
-                placeholder="10"
-              >
-            </div>
-
-            <div class="form-group">
-              <button type="button" class="btn-secondary-outline" (click)="openPaymentMethodsModal()">
-                <i class="fas fa-credit-card"></i> Gestionar Formas de Pago
-              </button>
-            </div>
-
-        </div>
-
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Datos del Negocio (Collapsible) -->
-  <div class="business-info-card collapsible-section">
-    <div class="card-header" (click)="toggleBusinessInfo()">
-      <h2>Información del Negocio</h2>
-    </div>
-
-    <div class="card-content" [class.collapsed]="isBusinessInfoCollapsed">
+      <div class="card-content">
       <form>
         <div class="form-row">
           <div class="form-fields">
@@ -162,6 +100,66 @@
 
 
       </form>
+    </div>
+  </div>
+
+    <!-- Parámetros Generales (Segunda Sección) -->
+    <div class="business-info-card">
+      <div class="card-header">
+        <h2>Parámetros Generales</h2>
+      </div>
+
+      <div class="card-content">
+        <form>
+          <div class="form-row">
+            <div class="form-fields">
+              <div class="form-row-inline">
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input 
+                      type="checkbox" 
+                      id="paqvisvence" 
+                      [(ngModel)]="businessInfo.paqvisvence"
+                      name="paqvisvence"
+                      [value]="1"
+                    >
+                    <span>Paquete Visita Vence</span>
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label for="diaspaqvisvence">Días Paquete Vigencia</label>
+                  <input 
+                    type="number" 
+                    id="diaspaqvisvence" 
+                    [(ngModel)]="businessInfo.diaspaqvisvence"
+                    name="diaspaqvisvence"
+                    min="1"
+                    placeholder="15"
+                  >
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="aplicadescdias">Descuento Días</label>
+                <input 
+                  type="number" 
+                  id="aplicadescdias" 
+                  [(ngModel)]="businessInfo.aplicadescdias"
+                  name="aplicadescdias"
+                  min="0"
+                  placeholder="10"
+                >
+              </div>
+
+              <div class="form-group">
+                <button type="button" class="btn-secondary-outline" (click)="openPaymentMethodsModal()">
+                  <i class="fas fa-credit-card"></i> Gestionar Formas de Pago
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 

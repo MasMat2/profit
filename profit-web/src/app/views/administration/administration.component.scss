@@ -1,7 +1,22 @@
 .administration-container {
   padding: 1.5rem;
-  max-width: 800px;
+  max-width: 1400px;
   position: relative;
+}
+
+.sections-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .loading-overlay {
@@ -58,19 +73,38 @@
 }
 
 .content-header {
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-color);
-    margin: 0 0 0.25rem 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    &::before {
+      content: '\f1ad';
+      font-family: 'Font Awesome 5 Free';
+      font-weight: 900;
+      width: 40px;
+      height: 40px;
+      background-color: var(--primary-color);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.25rem;
+    }
   }
 
   .subtitle {
     color: var(--text-color-secondary);
     font-size: 0.875rem;
     margin: 0;
+    padding-left: 3.25rem;
   }
 }
 
@@ -79,28 +113,27 @@
   border-radius: var(--border-radius);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  margin-bottom: 1rem;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  border: 1px solid var(--surface-border);
+  height: fit-content;
 }
 
 .card-header {
-  background-color: var(--primary-color-text);
-  padding: 0.75rem 1.25rem;
+  background-color: transparent;
+  padding: 1.25rem 1.5rem 0.75rem 1.5rem;
+  border-bottom: 3px solid var(--primary-color);
   
   h2 {
-    color: var(--primary-color);
-    font-size: 0.875rem;
-    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.125rem;
+    font-weight: 700;
     margin: 0;
-    letter-spacing: 0.5px;
+    letter-spacing: 0;
   }
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1.75rem 1.5rem;
+  background-color: var(--surface-a);
 }
 
 .form-row {
