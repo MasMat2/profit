@@ -1,0 +1,105 @@
+<div class="component-page"> <!-- Necessary pattern -->
+  <div class="page-header"> <!-- Necessary pattern -->
+    <div class="page-header-icon">
+      <i class="fas fa-layer-group"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Administración</h1>
+      <p class="page-subtitle">Configuración de información del negocio</p>
+    </div>
+  </div>
+
+  <div class="page-content"> <!-- Necessary pattern -->
+    <div class="content-wrapper">
+      <div *ngIf="isLoadingParametros" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i> Cargando...
+      </div>
+
+      <ng-container *ngIf="!isLoadingParametros">
+
+        <div class="cards-row">
+
+        <!-- Información del Negocio -->
+        <div class="card">
+          <h2 class="section-title">Información del Negocio</h2>
+
+          <div class="form-field">
+            <label>Nombre del Negocio</label>
+            <input type="text" [(ngModel)]="parametros.empresa" [ngModelOptions]="{ standalone: true }" placeholder="Nombre del negocio" />
+          </div>
+
+          <div class="form-field">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="parametros.dir1" [ngModelOptions]="{ standalone: true }" placeholder="Dirección" />
+          </div>
+
+          <div class="form-field">
+            <label>Colonia</label>
+            <input type="text" [(ngModel)]="parametros.dir2" [ngModelOptions]="{ standalone: true }" placeholder="Colonia" />
+          </div>
+
+          <div class="form-field">
+            <label>Ciudad, Estado</label>
+            <input type="text" [(ngModel)]="parametros.dir3" [ngModelOptions]="{ standalone: true }" placeholder="Ciudad, Estado" />
+          </div>
+
+          <div class="two-col">
+            <div class="form-field">
+              <label>Teléfonos</label>
+              <input type="text" [(ngModel)]="parametros.tels" [ngModelOptions]="{ standalone: true }" placeholder="Teléfonos" />
+            </div>
+            <div class="form-field">
+              <label>Número de Sucursal</label>
+              <input type="number" [(ngModel)]="parametros.sucursal" [ngModelOptions]="{ standalone: true }" min="1" />
+            </div>
+          </div>
+        </div>
+        <!-- Parámetros Generales -->
+        <div class="card">
+          <h2 class="section-title">Parametros Generales</h2>
+
+          <div class="params-grid">
+            <div class="checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="paqvisvenceChecked" [ngModelOptions]="{ standalone: true }" />
+                <span class="checkmark"></span>
+                Paquete Visita Vence
+              </label>
+            </div>
+
+            <div class="form-field">
+              <label>Días Paquete Vigencia</label>
+              <input type="number" [(ngModel)]="parametros.diaspaqvisvence" [ngModelOptions]="{ standalone: true }" min="0" />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Descuento Días</label>
+            <input type="number" [(ngModel)]="parametros.aplicadescdias" [ngModelOptions]="{ standalone: true }" min="0" />
+          </div>
+        </div>
+
+
+        </div><!-- /.cards-row -->
+
+        <!-- Feedback messages -->
+        <div class="feedback-msg success" *ngIf="saveSuccess">
+          <i class="fas fa-check-circle"></i> Información guardada correctamente.
+        </div>
+        <div class="feedback-msg error" *ngIf="saveError">
+          <i class="fas fa-exclamation-circle"></i> Error al guardar. Intente de nuevo.
+        </div>
+
+        <!-- Save button -->
+        <div class="actions-row">
+          <button class="btn-save" (click)="guardarInformacion()" [disabled]="isSavingParametros">
+            <i class="fas fa-save"></i>
+            {{ isSavingParametros ? 'Guardando...' : 'Guardar Información' }}
+          </button>
+        </div>
+
+      </ng-container>
+    </div><!-- /.content-wrapper -->
+  </div>
+
+</div>
