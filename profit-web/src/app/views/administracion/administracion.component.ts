@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AdministracionService, Parametros } from '../../services/administracion.service';
+import { MenuService } from '../../services/menu.service';
 
 @Component({
   selector: 'app-administracion',
@@ -27,7 +29,16 @@ export class AdministracionComponent implements OnInit {
     this.parametros.paqvisvence = val ? 1 : 0;
   }
 
-  constructor(private administracionService: AdministracionService) {}
+  pageIcon: string;
+
+  constructor(
+    private administracionService: AdministracionService,
+    private menuService: MenuService,
+    private route: ActivatedRoute
+  ) {
+    const segment = this.route.snapshot.url[0]?.path;
+    this.pageIcon = this.menuService.getIconByRoute(segment);
+  }
 
   ngOnInit(): void {
     this.loadParametros();
