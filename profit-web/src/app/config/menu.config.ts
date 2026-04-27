@@ -78,23 +78,19 @@ export const MENU_CONFIG: MenuSection[] = [
     title: 'INVENTARIO Y VENTAS',
     items: [
       { 
-        id: 'productos', 
-        name: 'Productos y Stock', 
-        icon: 'fas fa-box-open',
-        route: 'productos'
-      },
-      { 
         id: 'punto-venta', 
-        name: 'Punto de Venta', 
+        name: 'Punto de venta', 
         icon: 'fas fa-cash-register',
         route: 'punto-venta'
       },
+     
       { 
-        id: 'carrito-usuario', 
-        name: 'Carrito de Usuario', 
-        icon: 'fas fa-shopping-cart',
-        route: 'carrito-usuario'
-      }
+        id: 'registro-tickets', 
+        name: 'Registro de tickets', 
+        icon: 'fas fa-ticket-alt',
+        route: 'registro-tickets'
+      },
+    
     ]
   }
 ];

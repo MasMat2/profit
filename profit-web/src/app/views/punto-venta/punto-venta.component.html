@@ -1,0 +1,385 @@
+<div class="punto-venta-wrapper">
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i class="fas fa-cash-register"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Punto de Venta</h1>
+      <p class="page-subtitle">Sistema de ventas y cobro</p>
+    </div>
+  </div>
+
+  <div class="punto-venta-container">
+    <!-- Panel de Categorías -->
+    <div class="categorias-panel">
+    <div class="panel-header-actions">
+      <h3 class="panel-title">CATEGORÍAS</h3>
+      <button class="btn-agregar-mini" (click)="mostrarModalCategoria = true" title="Agregar categoría">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    <div class="categorias-lista">
+      <button 
+        class="categoria-btn" 
+        [class.active]="categoriaSeleccionada === null"
+        (click)="seleccionarCategoria(null)">
+        <i class="fas fa-th-large"></i>
+        <span>Todos</span>
+      </button>
+      <button 
+        *ngFor="let categoria of categorias"
+        class="categoria-btn"
+        [class.active]="categoriaSeleccionada === categoria.id"
+        (click)="seleccionarCategoria(categoria.id)">
+        <i [class]="categoria.icono || 'fas fa-box'"></i>
+        <span>{{ categoria.nombre }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel de Productos -->
+  <div class="productos-panel">
+    <div class="panel-header-actions">
+      <h3 class="panel-title">
+        {{ obtenerNombreCategoria() }}
+      </h3>
+      <button 
+        class="btn-agregar-mini" 
+        (click)="abrirModalProducto()"
+        [disabled]="categoriaSeleccionada === null"
+        title="Agregar producto">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    <div class="productos-grid">
+      <div 
+        *ngFor="let producto of productosFiltrados" 
+        class="producto-card"
+        (click)="agregarAlCarrito(producto)"
+        [class.sin-stock]="producto.stock === 0">
+        <div class="producto-imagen">{{ producto.imagen || '📦' }}</div>
+        <div class="producto-info">
+          <h4 class="producto-nombre">{{ producto.nombre }}</h4>
+          <p class="producto-precio">${{ producto.precio.toFixed(2) }}</p>
+          <p class="producto-stock">Stock: {{ producto.stock }}</p>
+        </div>
+      </div>
+      
+      <div *ngIf="productosFiltrados.length === 0" class="sin-productos">
+        <i class="fas fa-inbox"></i>
+        <p>No hay productos en esta categoría</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Ticket/Carrito -->
+  <div class="ticket-panel">
+    <div class="ticket-header">
+      <h3 class="panel-title">TICKET DE VENTA</h3>
+    </div>
+
+    <!-- Búsqueda de Cliente -->
+    <div class="cliente-busqueda">
+      <label>Cliente/Socio:</label>
+      <div class="busqueda-container">
+        <input 
+          type="text" 
+          [(ngModel)]="buscarCliente"
+          (focus)="mostrarListaClientes = true"
+          (input)="mostrarListaClientes = true"
+          placeholder="Buscar cliente..."
+          class="input-buscar-cliente">
+        <button 
+          *ngIf="clienteSeleccionado" 
+          class="btn-limpiar-cliente"
+          (click)="limpiarCliente()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- Lista de clientes filtrados -->
+      <div class="lista-clientes" *ngIf="mostrarListaClientes && !clienteSeleccionado">
+        <div 
+          *ngFor="let cliente of filtrarClientes()"
+          class="cliente-item"
+          (click)="seleccionarCliente(cliente)">
+          <i class="fas fa-user"></i>
+          <span>{{ cliente.nombreCompleto }}</span>
+        </div>
+        <div *ngIf="clientes.length === 0" class="sin-resultados">
+          <i class="fas fa-spinner fa-spin"></i> Cargando clientes...
+        </div>
+        <div *ngIf="clientes.length > 0 && filtrarClientes().length === 0" class="sin-resultados">
+          No se encontraron coincidencias
+        </div>
+      </div>
+
+      <!-- Cliente seleccionado -->
+      <div class="cliente-seleccionado" *ngIf="clienteSeleccionado">
+        <i class="fas fa-user-check"></i>
+        <span>{{ clienteSeleccionado.nombreCompleto }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-items">
+      <div *ngIf="carrito.length === 0" class="carrito-vacio">
+        <i class="fas fa-shopping-cart"></i>
+        <p>Selecciona productos para comenzar la venta</p>
+      </div>
+
+      <div *ngFor="let item of carrito; let i = index" class="ticket-item">
+        <button class="btn-eliminar" (click)="eliminarDelCarrito(i)">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="item-info">
+          <p class="item-nombre">{{ item.producto.nombre }}</p>
+          <div class="item-cantidad">
+            <button 
+              class="btn-cantidad" 
+              (click)="modificarCantidad(item, item.cantidad - 1)">-</button>
+            <input 
+              type="number" 
+              [(ngModel)]="item.cantidad"
+              (ngModelChange)="modificarCantidad(item, item.cantidad)"
+              min="1"
+              [max]="item.producto.stock"
+              class="input-cantidad">
+            <button 
+              class="btn-cantidad"
+              (click)="modificarCantidad(item, item.cantidad + 1)">+</button>
+          </div>
+          <p class="item-precio">${{ item.producto.precio.toFixed(2) }} c/u</p>
+          <p class="item-subtotal">${{ item.subtotal.toFixed(2) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ticket-totales">
+      <div class="total-row">
+        <span>Subtotal:</span>
+        <span>${{ total.toFixed(2) }}</span>
+      </div>
+      <div class="total-row descuento-row">
+        <span>Descuento:</span>
+        <input 
+          type="number" 
+          [(ngModel)]="descuento"
+          (ngModelChange)="aplicarDescuento()"
+          min="0"
+          [max]="total"
+          step="0.01"
+          class="input-descuento"
+          placeholder="0.00">
+      </div>
+      <div class="total-row total-final">
+        <span>TOTAL:</span>
+        <span>${{ totalConDescuento.toFixed(2) }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-acciones">
+      <button 
+        class="btn-limpiar"
+        (click)="limpiarVenta()"
+        [disabled]="carrito.length === 0">
+        <i class="fas fa-trash"></i>
+        Limpiar
+      </button>
+      <button 
+        class="btn-cobrar"
+        (click)="abrirModalCobro()"
+        [disabled]="carrito.length === 0">
+        <i class="fas fa-cash-register"></i>
+        COBRAR
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Cobro -->
+  <div class="modal-overlay" *ngIf="mostrarModalCobro" (click)="cerrarModalCobro()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>PROCESAR COBRO</h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModalCobro()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="cobro-total">
+        <span>Total a cobrar:</span>
+        <span class="monto-total">${{ totalConDescuento.toFixed(2) }}</span>
+      </div>
+
+      <div class="form-group">
+        <label>Forma de Pago</label>
+        <select [(ngModel)]="formaPago" class="select-forma-pago">
+          <option *ngFor="let forma of formasPago" [value]="forma">{{ forma }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Monto Recibido</label>
+        <input 
+          type="number"
+          [(ngModel)]="abonado"
+          (ngModelChange)="calcularCambio()"
+          min="0"
+          step="0.01"
+          class="input-abonado"
+          placeholder="0.00">
+      </div>
+
+      <div class="cobro-cambio" *ngIf="cambio >= 0">
+        <span>Su cambio:</span>
+        <span class="monto-cambio">${{ cambio.toFixed(2) }}</span>
+      </div>
+
+      <div class="form-group" *ngIf="formaPago !== 'EFECTIVO'">
+        <label>Referencia / No. Transacción</label>
+        <input 
+          type="text"
+          [(ngModel)]="referencia"
+          class="input-referencia"
+          placeholder="Ej: 1234567890">
+      </div>
+
+      <div class="form-group">
+        <label>Comentarios (Opcional)</label>
+        <textarea 
+          [(ngModel)]="comentarios"
+          class="textarea-comentarios"
+          rows="3"
+          placeholder="Notas adicionales..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar-modal" (click)="cerrarModalCobro()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-procesar-cobro" 
+        (click)="procesarCobro()"
+        [disabled]="abonado < totalConDescuento">
+        <i class="fas fa-check"></i>
+        PROCESAR VENTA
+      </button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Modal Crear Categoría -->
+<div class="modal-overlay" *ngIf="mostrarModalCategoria" (click)="cerrarModalCategoria()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3>NUEVA CATEGORÍA</h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModalCategoria()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre de la Categoría *</label>
+        <input 
+          type="text"
+          [(ngModel)]="nuevaCategoria.nombre"
+          class="input-abonado"
+          placeholder="Ej: Suplementos">
+      </div>
+      <div class="form-group">
+        <label>Color (Hex)</label>
+        <input 
+          type="text"
+          [(ngModel)]="nuevaCategoria.color"
+          class="input-abonado"
+          placeholder="#F97316">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar-modal" (click)="cerrarModalCategoria()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-procesar-cobro" 
+        (click)="crearCategoria()"
+        [disabled]="!nuevaCategoria.nombre">
+        <i class="fas fa-check"></i>
+        CREAR
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Producto -->
+<div class="modal-overlay" *ngIf="mostrarModalProducto" (click)="cerrarModalProducto()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3>NUEVO PRODUCTO</h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModalProducto()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre del Producto *</label>
+        <input 
+          type="text"
+          [(ngModel)]="nuevoProducto.nombre"
+          class="input-abonado"
+          placeholder="Ej: Proteína Whey">
+      </div>
+      <div class="form-group">
+        <label>Precio de Venta *</label>
+        <input 
+          type="number"
+          [(ngModel)]="nuevoProducto.precio"
+          class="input-abonado"
+          min="0"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Stock Inicial</label>
+        <input 
+          type="number"
+          [(ngModel)]="nuevoProducto.stock"
+          class="input-abonado"
+          min="0"
+          placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Costo</label>
+        <input 
+          type="number"
+          [(ngModel)]="nuevoProducto.costo"
+          class="input-abonado"
+          min="0"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Emoji/Icono</label>
+        <input 
+          type="text"
+          [(ngModel)]="nuevoProducto.emoji"
+          class="input-abonado"
+          placeholder="📦">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar-modal" (click)="cerrarModalProducto()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-procesar-cobro" 
+        (click)="crearProducto()"
+        [disabled]="!nuevoProducto.nombre || !nuevoProducto.precio">
+        <i class="fas fa-check"></i>
+        CREAR
+      </button>
+    </div>
+  </div>
+</div>

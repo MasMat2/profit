@@ -13,6 +13,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.AdministracionComponent
                     ),
             },
+            {
+                path: 'punto-venta',
+                loadComponent: () =>
+                    import('../punto-venta/punto-venta.component').then(
+                        (m) => m.PuntoVentaComponent
+                    ),
+            },
         ]
     },
 ];
