@@ -1,0 +1,259 @@
+<div class="registro-tickets-wrapper">
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i class="fas fa-ticket-alt"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Registro de Tickets</h1>
+      <p class="page-subtitle">Consulta y gestión de mensualidades y ventas</p>
+    </div>
+  </div>
+
+  <div class="registro-tickets-container">
+    <div class="tabs-container">
+      <button 
+        class="tab-btn" 
+        [class.active]="tabActiva === 'mensualidades'"
+        (click)="cambiarTab('mensualidades')">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Mensualidades</span>
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="tabActiva === 'ventas'"
+        (click)="cambiarTab('ventas')">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Ventas</span>
+      </button>
+    </div>
+
+    <div class="tab-content" *ngIf="tabActiva === 'mensualidades'">
+      <div class="content-header">
+        <div class="busqueda-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            class="input-busqueda" 
+            placeholder="Buscar por folio, cliente o descripción..."
+            [(ngModel)]="busquedaMensualidad"
+            (input)="filtrarMensualidades()">
+        </div>
+        <button class="btn-refrescar" (click)="cargarMensualidades()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+
+      <div class="tabla-wrapper">
+        <div class="loading-state" *ngIf="cargandoMensualidades">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando mensualidades...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoMensualidades && mensualidadesFiltradas.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No se encontraron mensualidades</p>
+        </div>
+
+        <table class="tabla-registros" *ngIf="!cargandoMensualidades && mensualidadesFiltradas.length > 0">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Importe</th>
+              <th>Descuento</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mens of mensualidadesFiltradas" 
+                class="fila-registro"
+                [class.cancelado]="mens.cancelado === 1">
+              <td class="folio">{{ mens.idmens }}</td>
+              <td>{{ mens.nombreSocio || 'N/A' }}</td>
+              <td>{{ formatearFecha(mens.fecha) }}</td>
+              <td class="descripcion">{{ mens.descrip }}</td>
+              <td class="monto">{{ formatearMoneda(mens.importe) }}</td>
+              <td class="monto">{{ formatearMoneda(mens.descuento) }}</td>
+              <td class="monto-total">{{ formatearMoneda(mens.total) }}</td>
+              <td>
+                <span class="badge-estado" 
+                      [style.background-color]="mens.cancelado === 1 ? '#6B7280' : getColorEstado(mens)">
+                  {{ mens.cancelado === 1 ? 'CANCELADO' : getEstadoPago(mens) }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-accion" (click)="abrirModalMensualidad(mens)" title="Imprimir ticket">
+                  <i class="fas fa-print"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="tabActiva === 'ventas'">
+      <div class="content-header">
+        <div class="busqueda-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            class="input-busqueda" 
+            placeholder="Buscar por folio o cliente..."
+            [(ngModel)]="busquedaTicket"
+            (input)="filtrarTickets()">
+        </div>
+        <button class="btn-refrescar" (click)="cargarTickets()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+
+      <div class="tabla-wrapper">
+        <div class="loading-state" *ngIf="cargandoTickets">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando tickets...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoTickets && ticketsFiltrados.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No se encontraron tickets de venta</p>
+        </div>
+
+        <table class="tabla-registros" *ngIf="!cargandoTickets && ticketsFiltrados.length > 0">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Importe</th>
+              <th>Descuento</th>
+              <th>IVA</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of ticketsFiltrados" 
+                class="fila-registro" 
+                [class.cancelado]="ticket.cancelado === 1">
+              <td class="folio">{{ ticket.ticket }}</td>
+              <td>{{ ticket.nombreSocio || 'N/A' }}</td>
+              <td>{{ formatearFecha(ticket.fecha) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.importe) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.descuento) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.iva) }}</td>
+              <td class="monto-total">{{ formatearMoneda(ticket.total) }}</td>
+              <td>
+                <span class="badge-estado" 
+                      [style.background-color]="ticket.cancelado === 1 ? '#6B7280' : getColorEstado(ticket)">
+                  {{ ticket.cancelado === 1 ? 'CANCELADO' : getEstadoPago(ticket) }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-accion" (click)="abrirModalTicket(ticket)" title="Imprimir ticket">
+                  <i class="fas fa-print"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarModalImprimir" (click)="cerrarModal()">
+  <div class="modal-imprimir" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-print"></i>
+        Imprimir {{ tipoRegistro === 'mensualidad' ? 'Mensualidad' : 'Ticket de Venta' }}
+      </h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div id="contenido-impresion" class="ticket-impresion">
+        <div class="ticket-header">
+          <h2>{{ tipoRegistro === 'mensualidad' ? 'MENSUALIDAD' : 'TICKET DE VENTA' }}</h2>
+          <p><strong>Folio:</strong> {{ getFolio() }}</p>
+          <p><strong>Fecha:</strong> {{ formatearFecha(registroSeleccionado?.fecha) }}</p>
+        </div>
+
+        <div class="ticket-info">
+          <div class="ticket-row">
+            <strong>Cliente:</strong>
+            <span>{{ registroSeleccionado?.nombreSocio || 'N/A' }}</span>
+          </div>
+          
+          <div class="ticket-row" *ngIf="tipoRegistro === 'mensualidad'">
+            <strong>Descripción:</strong>
+            <span>{{ registroSeleccionado?.descrip }}</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="ticket-detalles">
+          <div class="ticket-row">
+            <strong>Importe:</strong>
+            <span>{{ formatearMoneda(registroSeleccionado?.importe) }}</span>
+          </div>
+          <div class="ticket-row">
+            <strong>Descuento:</strong>
+            <span>{{ formatearMoneda(registroSeleccionado?.descuento) }}</span>
+          </div>
+          <div class="ticket-row" *ngIf="tipoRegistro === 'ticket'">
+            <strong>IVA:</strong>
+            <span>{{ formatearMoneda(registroSeleccionado?.iva) }}</span>
+          </div>
+          <div class="ticket-row" *ngIf="tipoRegistro === 'ticket' && registroSeleccionado?.ieps > 0">
+            <strong>IEPS:</strong>
+            <span>{{ formatearMoneda(registroSeleccionado?.ieps) }}</span>
+          </div>
+        </div>
+
+        <div class="ticket-total">
+          <div class="ticket-row">
+            <strong>TOTAL:</strong>
+            <strong>{{ formatearMoneda(registroSeleccionado?.total) }}</strong>
+          </div>
+          <div class="ticket-row" *ngIf="registroSeleccionado?.saldo > 0">
+            <strong>Saldo Pendiente:</strong>
+            <strong>{{ formatearMoneda(registroSeleccionado?.saldo) }}</strong>
+          </div>
+        </div>
+
+        <div class="ticket-footer">
+          <p>¡Gracias por su preferencia!</p>
+          <p>{{ formatearFecha(fechaActual) }}</p>
+        </div>
+      </div>
+
+      <div class="modal-vista-previa">
+        <p class="text-info">
+          <i class="fas fa-info-circle"></i>
+          Vista previa del ticket a imprimir
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModal()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button class="btn-imprimir" (click)="imprimirTicket()">
+        <i class="fas fa-print"></i>
+        Imprimir
+      </button>
+    </div>
+  </div>
+</div>

@@ -16,8 +16,6 @@ export class PuntoVentaService {
     'default': 'fas fa-box'
   };
 
-  private ventas: VentaDto[] = [];
-
   async getCategorias(): Promise<CategoriaDto[]> {
     const categorias = await this.db.getKysely()
       .selectFrom('tbcategorias')
@@ -192,42 +190,146 @@ export class PuntoVentaService {
   }
 
   async registrarVenta(venta: VentaDto): Promise<{ success: boolean; ventaId: number; mensaje: string; clienteNombre?: string }> {
-    const ventaId = this.ventas.length + 1;
-    this.ventas.push({ ...venta });
-
-    // Actualizar stock de productos en la base de datos
-    for (const item of venta.productos) {
+    try {
       const { sql } = await import('kysely');
-      await this.db.getKysely()
-        .updateTable('tbproductos')
-        .set({
-          existencia: sql`existencia - ${item.cantidad}`
-        })
-        .where('id', '=', item.productoId)
-        .execute();
-    }
-
-    // Obtener nombre del cliente si existe
-    let clienteNombre: string | undefined;
-    if (venta.clienteId) {
-      const cliente = await this.db.getKysely()
-        .selectFrom('tbsocios')
-        .select('nomsocio')
-        .where('id', '=', venta.clienteId)
+      
+      // Obtener el siguiente número de ticket
+      const maxTicket = await this.db.getKysely()
+        .selectFrom('tbtickets')
+        .select(({ fn }) => fn.max('ticket').as('maxticket'))
         .executeTakeFirst();
       
-      clienteNombre = cliente?.nomsocio;
+      const nuevoTicket = (maxTicket?.maxticket ? Number(maxTicket.maxticket) : 0) + 1;
+      
+      // Calcular IVA (16%)
+      const iva = venta.total * 0.16 / 1.16;
+      const importe = venta.total - iva;
+      
+      // Insertar el ticket principal
+      const ticketResult = await this.db.getKysely()
+        .insertInto('tbtickets')
+        .values({
+          ticket: nuevoTicket,
+          socio: venta.clienteId || 0,
+          fecha: new Date(),
+          importe: importe,
+          descuento: venta.descuento || 0,
+          iva: iva,
+          ieps: 0,
+          total: venta.total,
+          pagado: 1,
+          saldo: 0,
+          cancelado: 0,
+          credito: 0,
+          usuario: 1,
+          corte: 0,
+          fecpag: new Date(),
+          autcan: 0,
+          motivo: '',
+          factura: '',
+          plazocred: null,
+          fechacred: null,
+          notas: venta.comentarios || null,
+          impdesc: venta.descuento || 0,
+          usumod: 1,
+          usunvo: 1,
+          fecmod: new Date(),
+          fecnvo: new Date(),
+          envia: 0
+        })
+        .executeTakeFirstOrThrow();
+      
+      // Insertar los detalles del ticket y actualizar stock
+      for (const item of venta.productos) {
+        // Insertar detalle
+        await this.db.getKysely()
+          .insertInto('tbdettickets')
+          .values({
+            ticket: nuevoTicket,
+            producto: item.productoId,
+            cnt: item.cantidad,
+            venta: item.precio,
+            costo: 0,
+            importe: item.subtotal,
+            descuento: 0,
+            iva: item.subtotal * 0.16 / 1.16,
+            ieps: 0,
+            geniva: 1,
+            cancelado: 0,
+            corte: 0,
+            almacen: 0,
+            combo: 0,
+            visitas: 0,
+            paqvisitas: 0,
+            plazocred: 0,
+            campre: 0,
+            autcp: 0,
+            motcp: '',
+            nomotros: '',
+            porcieps: 0,
+            precioreal: item.precio,
+            idreg: 0,
+            usumod: 1,
+            usunvo: 1,
+            fecmod: new Date(),
+            fecnvo: new Date(),
+            envia: 0
+          })
+          .execute();
+        
+        // Actualizar stock
+        await this.db.getKysely()
+          .updateTable('tbproductos')
+          .set({
+            existencia: sql`existencia - ${item.cantidad}`
+          })
+          .where('id', '=', item.productoId)
+          .execute();
+      }
+      
+      // Obtener nombre del cliente si existe
+      let clienteNombre: string | undefined;
+      if (venta.clienteId) {
+        const cliente = await this.db.getKysely()
+          .selectFrom('tbsocios')
+          .select('nomsocio')
+          .where('id', '=', venta.clienteId)
+          .executeTakeFirst();
+        
+        clienteNombre = cliente?.nomsocio;
+      }
+      
+      return {
+        success: true,
+        ventaId: nuevoTicket,
+        mensaje: 'Venta registrada exitosamente',
+        clienteNombre
+      };
+    } catch (error) {
+      console.error('Error al registrar venta:', error);
+      throw error;
     }
-
-    return {
-      success: true,
-      ventaId,
-      mensaje: 'Venta registrada exitosamente',
-      clienteNombre
-    };
   }
 
-  getVentas(): VentaDto[] {
-    return this.ventas;
+  async getVentas() {
+    const tickets = await this.db.getKysely()
+      .selectFrom('tbtickets as t')
+      .leftJoin('tbsocios as s', 's.socio', 't.socio')
+      .select([
+        't.ticket',
+        't.socio',
+        's.nomsocio as nombreSocio',
+        't.fecha',
+        't.importe',
+        't.descuento',
+        't.total',
+        't.iva',
+        't.cancelado'
+      ])
+      .orderBy('t.fecha', 'desc')
+      .limit(50)
+      .execute();
+
+    return tickets;
   }
 }
