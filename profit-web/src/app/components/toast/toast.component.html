@@ -1,0 +1,16 @@
+<div class="toast-container">
+  <div
+    *ngFor="let toast of toasts$ | async; trackBy: trackById"
+    class="toast"
+    [class.success]="toast.type === 'success'"
+    [class.error]="toast.type === 'error'"
+    [class.dismissing]="toast.dismissing"
+  >
+    <i class="toast-icon fas"
+       [class.fa-check-circle]="toast.type === 'success'"
+       [class.fa-exclamation-circle]="toast.type === 'error'">
+    </i>
+    <span class="toast-message">{{ toast.message }}</span>
+    <button class="toast-close" (click)="dismiss(toast)" aria-label="Cerrar">&times;</button>
+  </div>
+</div>

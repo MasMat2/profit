@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdministracionService, Parametros } from '../../services/administracion.service';
 import { MenuService } from '../../services/menu.service';
+import { ToastService } from '../../services/shared/toast.service';
 
 @Component({
   selector: 'app-administracion',
@@ -18,9 +19,6 @@ export class AdministracionComponent implements OnInit {
   isLoadingParametros = false;
   isSavingParametros = false;
 
-  saveSuccess = false;
-  saveError = false;
-
   get paqvisvenceChecked(): boolean {
     return this.parametros.paqvisvence === 1;
   }
@@ -34,7 +32,8 @@ export class AdministracionComponent implements OnInit {
   constructor(
     private administracionService: AdministracionService,
     private menuService: MenuService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toast: ToastService
   ) {
     const segment = this.route.snapshot.url[0]?.path;
     this.pageIcon = this.menuService.getIconByRoute(segment);
@@ -59,19 +58,15 @@ export class AdministracionComponent implements OnInit {
 
   guardarInformacion(): void {
     this.isSavingParametros = true;
-    this.saveSuccess = false;
-    this.saveError = false;
 
     this.administracionService.updateParametros(this.parametros).subscribe({
       next: () => {
         this.isSavingParametros = false;
-        this.saveSuccess = true;
-        setTimeout(() => (this.saveSuccess = false), 3000);
+        this.toast.show('Información guardada correctamente', 'success');
       },
       error: () => {
         this.isSavingParametros = false;
-        this.saveError = true;
-        setTimeout(() => (this.saveError = false), 3000);
+        this.toast.show('Error al guardar. Intente de nuevo.', 'error');
       },
     });
   }
