@@ -31,3 +31,15 @@ http://194.238.29.232/
 UPDATE mysql.user SET Password=PASSWORD('Fum4s!Crick0Fu+Maryjuana') WHERE User='root';
 FLUSH PRIVILEGES;
 EXIT;
+
+
+# Autorizar IPs para acceder a la bd
+
+1. Acceder al servidor
+ssh root@194.238.29.232
+
+2. Agregar regla iptables
+sudo iptables -I DOCKER-USER -p tcp --dport 3306 -s 212.227.239.14 -j ACCEPT
+
+3. Guardar reglas
+sudo netfilter-persistent save
