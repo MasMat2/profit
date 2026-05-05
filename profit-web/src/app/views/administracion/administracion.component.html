@@ -102,3 +102,12 @@
   </div>
 
 </div>
+
+<app-shared-modal
+  *ngIf="isFormasPagoModalOpen"
+  modalTitle="Formas de Pago"
+  [size]="'medium'"
+  [showSaveButton]="false"
+  (close)="closeFormasPagoModal()">
+  <app-formas-pago></app-formas-pago>
+</app-shared-modal>

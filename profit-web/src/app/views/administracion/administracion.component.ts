@@ -4,12 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdministracionService, Parametros } from '../../services/administracion.service';
 import { MenuService } from '../../services/menu.service';
+import { SharedModalComponent } from '../shared/shared-modal/shared-modal.component';
+import { FormasPagoComponent } from './formas-pago/formas-pago.component';
 import { ToastService } from '../../services/shared/toast.service';
 
 @Component({
   selector: 'app-administracion',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SharedModalComponent, FormasPagoComponent],
   templateUrl: './administracion.component.html',
   styleUrls: ['./administracion.component.scss'],
 })
@@ -28,6 +30,7 @@ export class AdministracionComponent implements OnInit {
   }
 
   pageIcon: string;
+  isFormasPagoModalOpen = false;
 
   constructor(
     private administracionService: AdministracionService,
@@ -72,7 +75,10 @@ export class AdministracionComponent implements OnInit {
   }
 
   openFormasPagoModal(): void {
-    // TODO: Implementar lógica para abrir el modal de formas de pago
-    console.log('Abrir modal de formas de pago');
+    this.isFormasPagoModalOpen = true;
+  }
+
+  closeFormasPagoModal(): void {
+    this.isFormasPagoModalOpen = false;
   }
 }

@@ -1,0 +1,98 @@
+
+<!-- Add Button -->
+<div class="action-bar">
+  <button class="btn-save" (click)="openAddForm()">
+    <i class="fas fa-plus"></i> Agregar Forma de Pago
+  </button>
+</div>
+
+<!-- List Section -->
+<div class="list-section">
+  <div *ngIf="isLoadingFormasPago && formasPago.length === 0" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoadingFormasPago && formasPago.length === 0" class="empty-state">
+    <i class="fas fa-credit-card"></i>
+    <p>No se encontraron formas de pago</p>
+    <!-- <p class="subtitle">Intenta agregar una nueva forma de pago</p> -->
+  </div>
+
+  <div class="formas-pago-table" *ngIf="formasPago.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Clave</th>
+          <th>Moneda</th>
+          <th class="actions-column">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let formaPago of formasPago">
+          <td class="forma-pago-name">{{ formaPago.nomfp }}</td>
+          <td>{{ formaPago.c_formapago || '-' }}</td>
+          <td>{{ formaPago.c_moneda || 'MXN' }}</td>
+          <td class="actions-column">
+            <button class="btn-icon btn-edit" (click)="openEditForm(formaPago)" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon btn-delete" (click)="deleteFormaPago(formaPago.id)" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<!-- Add / Edit modal -->
+<app-shared-modal
+  *ngIf="showForm"
+  [modalTitle]="isEditing ? 'Editar' : 'Nueva' + ' Forma de Pago'"
+  [size]="'small'"
+  [showSaveButton]="true"
+  (save)="saveFormaPago()"
+  (close)="closeForm()">
+
+    <div class="form-field">
+      <label for="nomfp">Nombre *</label>
+      <input 
+        type="text" 
+        id="nomfp" 
+        [(ngModel)]="editingFormaPago.nomfp"
+        name="nomfp"
+        placeholder="Efectivo, Tarjeta, Transferencia..."
+        required
+      >
+    </div>
+
+    <div class="form-row-inline">
+      <div class="form-field">
+        <label for="c_formapago">Clave Forma Pago</label>
+        <input 
+          type="text" 
+          id="c_formapago" 
+          [(ngModel)]="editingFormaPago.c_formapago"
+          name="c_formapago"
+          placeholder="Clave SAT"
+          maxlength="10"
+        >
+      </div>
+      <div class="form-field">
+        <label for="c_moneda">Moneda</label>
+        <input 
+          type="text" 
+          id="c_moneda" 
+          [(ngModel)]="editingFormaPago.c_moneda"
+          name="c_moneda"
+          placeholder="MXN"
+          maxlength="10"
+        >
+      </div>
+    </div>
+
+</app-shared-modal>
