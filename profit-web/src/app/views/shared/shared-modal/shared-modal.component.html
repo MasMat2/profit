@@ -1,0 +1,17 @@
+<div class="modal-backdrop" (click)="onClose()">
+  <div class="modal-content" [ngClass]="size"(click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ modalTitle }}
+      </h2>
+      <button class="close-button" (click)="onClose()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <ng-content></ng-content>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="onClose()">Cancelar</button>
+      <button *ngIf="showSaveButton" class="btn-save" (click)="onSave()">Guardar</button>
+    </div>
+  </div>
+</div>
