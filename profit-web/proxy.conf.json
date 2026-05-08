@@ -1,0 +1,32 @@
+{
+  "/administracion": {
+    "target": "http://localhost:3000/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/registro-tickets": {
+    "target": "http://localhost:3000/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/estadisticas": {
+    "target": "http://localhost:3000/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/punto-venta": {
+    "target": "http://localhost:3000/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/clases": {
+    "target": "http://localhost:3000/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}

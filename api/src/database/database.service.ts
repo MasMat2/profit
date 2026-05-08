@@ -16,8 +16,23 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      connectionLimit: 10,
+      waitForConnections: true,
+      queueLimit: 0,
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 0,
+      connectTimeout: 60000,
+      maxIdle: 10,
+      idleTimeout: 60000,
     });
 
+    this.pool.on('error', (err) => {
+      console.error('Error inesperado en el pool de conexiones MySQL:', err);
+    });
+
+    this.pool.on('connection', (connection) => {
+      console.log('Nueva conexión establecida al pool MySQL');
+    });
 
     this.db = new Kysely<DB>({
       dialect: new MysqlDialect({

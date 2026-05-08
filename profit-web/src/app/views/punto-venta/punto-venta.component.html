@@ -34,6 +34,12 @@
         (click)="seleccionarCategoria(categoria.id)">
         <i [class]="categoria.icono || 'fas fa-box'"></i>
         <span>{{ categoria.nombre }}</span>
+        <button 
+          class="btn-eliminar-categoria" 
+          (click)="eliminarCategoria(categoria.id, $event)"
+          title="Eliminar categoría">
+          <i class="fas fa-minus"></i>
+        </button>
       </button>
     </div>
   </div>
@@ -58,6 +64,20 @@
         class="producto-card"
         (click)="agregarAlCarrito(producto)"
         [class.sin-stock]="producto.stock === 0">
+        <div class="producto-acciones">
+          <button 
+            class="btn-editar-producto" 
+            (click)="abrirModalEditarProducto(producto, $event)"
+            title="Editar producto">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button 
+            class="btn-eliminar-producto" 
+            (click)="eliminarProducto(producto.id, $event)"
+            title="Eliminar producto">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
         <div class="producto-imagen">{{ producto.imagen || '📦' }}</div>
         <div class="producto-info">
           <h4 class="producto-nombre">{{ producto.nombre }}</h4>
@@ -86,10 +106,10 @@
         <input 
           type="text" 
           [(ngModel)]="buscarCliente"
-          (focus)="mostrarListaClientes = true"
-          (input)="mostrarListaClientes = true"
-          placeholder="Buscar cliente..."
-          class="input-buscar-cliente">
+          (focus)="onBuscarClienteInput()"
+          (input)="onBuscarClienteInput()"
+          placeholder="Buscar cliente (mínimo 2 caracteres)..."
+          class="input-cliente">
         <button 
           *ngIf="clienteSeleccionado" 
           class="btn-limpiar-cliente"
@@ -100,18 +120,21 @@
       
       <!-- Lista de clientes filtrados -->
       <div class="lista-clientes" *ngIf="mostrarListaClientes && !clienteSeleccionado">
+        <div *ngIf="cargandoClientes" class="sin-resultados">
+          <i class="fas fa-spinner fa-spin"></i> Buscando clientes...
+        </div>
         <div 
-          *ngFor="let cliente of filtrarClientes()"
+          *ngFor="let cliente of clientesFiltrados"
           class="cliente-item"
           (click)="seleccionarCliente(cliente)">
           <i class="fas fa-user"></i>
           <span>{{ cliente.nombreCompleto }}</span>
         </div>
-        <div *ngIf="clientes.length === 0" class="sin-resultados">
-          <i class="fas fa-spinner fa-spin"></i> Cargando clientes...
-        </div>
-        <div *ngIf="clientes.length > 0 && filtrarClientes().length === 0" class="sin-resultados">
+        <div *ngIf="!cargandoClientes && clientesFiltrados.length === 0 && buscarCliente.length >= 2" class="sin-resultados">
           No se encontraron coincidencias
+        </div>
+        <div *ngIf="!cargandoClientes && buscarCliente.length < 2 && buscarCliente.length > 0" class="sin-resultados">
+          Escribe al menos 2 caracteres para buscar
         </div>
       </div>
 
@@ -383,3 +406,81 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Editar Producto -->
+<div class="modal-overlay" *ngIf="mostrarModalEditarProducto" (click)="cerrarModalEditarProducto()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3>EDITAR PRODUCTO</h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModalEditarProducto()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre del Producto *</label>
+        <input 
+          type="text"
+          [(ngModel)]="productoEditado.nombre"
+          class="input-abonado"
+          placeholder="Ej: Proteína Whey">
+      </div>
+      <div class="form-group">
+        <label>Precio de Venta *</label>
+        <input 
+          type="number"
+          [(ngModel)]="productoEditado.precio"
+          class="input-abonado"
+          min="0"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Stock Disponible</label>
+        <input 
+          type="number"
+          [(ngModel)]="productoEditado.stock"
+          class="input-abonado"
+          min="0"
+          placeholder="0">
+      </div>
+      <div class="form-group">
+        <label>Costo</label>
+        <input 
+          type="number"
+          [(ngModel)]="productoEditado.costo"
+          class="input-abonado"
+          min="0"
+          step="0.01"
+          placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label>Emoji/Icono</label>
+        <input 
+          type="text"
+          [(ngModel)]="productoEditado.emoji"
+          class="input-abonado"
+          placeholder="📦">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar-modal" (click)="cerrarModalEditarProducto()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-procesar-cobro" 
+        (click)="actualizarProducto()"
+        [disabled]="!productoEditado.nombre || !productoEditado.precio">
+        <i class="fas fa-save"></i>
+        GUARDAR
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Ticket para Imprimir -->
+<app-ticket-print 
+  [show]="mostrarTicket"
+  [ticketData]="ticketData"
+  (onClose)="cerrarTicket()">
+</app-ticket-print>

@@ -43,10 +43,15 @@
             <input type="text" [(ngModel)]="parametros.dir3" [ngModelOptions]="{ standalone: true }" placeholder="Ciudad, Estado" />
           </div>
 
+          <div class="form-field">
+            <label>Teléfonos</label>
+            <input type="text" [(ngModel)]="parametros.tels" [ngModelOptions]="{ standalone: true }" placeholder="Teléfonos" />
+          </div>
+
           <div class="two-col">
             <div class="form-field">
-              <label>Teléfonos</label>
-              <input type="text" [(ngModel)]="parametros.tels" [ngModelOptions]="{ standalone: true }" placeholder="Teléfonos" />
+              <label>RFC</label>
+              <input type="text" [(ngModel)]="parametros.rfc" [ngModelOptions]="{ standalone: true }" placeholder="RFC" maxlength="13" />
             </div>
             <div class="form-field">
               <label>Número de Sucursal</label>

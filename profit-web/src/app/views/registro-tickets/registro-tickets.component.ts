@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { NotificationService } from '../../shared/services/notification.service';
+import { TicketPrintComponent, TicketData } from '../../shared/components/ticket-print/ticket-print.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface Mensualidad {
   idmens: number;
@@ -38,11 +42,11 @@ interface Ticket {
 @Component({
   selector: 'app-registro-tickets',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TicketPrintComponent],
   templateUrl: './registro-tickets.component.html',
   styleUrls: ['./registro-tickets.component.scss']
 })
-export class RegistroTicketsComponent implements OnInit {
+export class RegistroTicketsComponent implements OnInit, OnDestroy {
   tabActiva: 'mensualidades' | 'ventas' = 'mensualidades';
   
   mensualidades: Mensualidad[] = [];
@@ -54,43 +58,65 @@ export class RegistroTicketsComponent implements OnInit {
   busquedaMensualidad: string = '';
   busquedaTicket: string = '';
   
-  mostrarModalImprimir: boolean = false;
+  mostrarModalCobro: boolean = false;
   registroSeleccionado: any = null;
-  tipoRegistro: 'mensualidad' | 'ticket' = 'mensualidad';
+  
+  mostrarTicket: boolean = false;
+  ticketData: TicketData | null = null;
+  
+  // Datos para el cobro
+  montoCobro: number = 0;
+  formaPago: string = 'Efectivo';
+  referencia: string = '';
+  comentariosCobro: string = '';
   
   cargandoMensualidades: boolean = false;
   cargandoTickets: boolean = false;
+  busquedaMensualidadRealizada: boolean = false;
+  busquedaTicketRealizada: boolean = false;
 
   private apiUrl = '/registro-tickets';
+  private busquedaMensualidadSubject = new Subject<string>();
+  private busquedaTicketSubject = new Subject<string>();
+  private readonly MINIMO_CARACTERES = 2;
+  private readonly DEBOUNCE_TIME = 500;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private notificationService: NotificationService
+  ) {}
 
   get fechaActual(): Date {
     return new Date();
   }
 
   ngOnInit() {
-    this.cargarMensualidades();
-    this.cargarTickets();
+    this.busquedaMensualidadSubject
+      .pipe(
+        debounceTime(this.DEBOUNCE_TIME),
+        distinctUntilChanged()
+      )
+      .subscribe(busqueda => {
+        this.realizarBusquedaMensualidades(busqueda);
+      });
+
+    this.busquedaTicketSubject
+      .pipe(
+        debounceTime(this.DEBOUNCE_TIME),
+        distinctUntilChanged()
+      )
+      .subscribe(busqueda => {
+        this.realizarBusquedaTickets(busqueda);
+      });
+  }
+
+  ngOnDestroy() {
+    this.busquedaMensualidadSubject.complete();
+    this.busquedaTicketSubject.complete();
   }
 
   cambiarTab(tab: 'mensualidades' | 'ventas') {
     this.tabActiva = tab;
-  }
-
-  cargarMensualidades() {
-    this.cargandoMensualidades = true;
-    this.http.get<Mensualidad[]>(`${this.apiUrl}/mensualidades`).subscribe({
-      next: (data) => {
-        this.mensualidades = data;
-        this.mensualidadesFiltradas = data;
-        this.cargandoMensualidades = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar mensualidades:', err);
-        this.cargandoMensualidades = false;
-      }
-    });
   }
 
   cargarTickets() {
@@ -110,125 +136,123 @@ export class RegistroTicketsComponent implements OnInit {
 
   filtrarMensualidades() {
     const busqueda = this.busquedaMensualidad.toLowerCase().trim();
-    if (!busqueda) {
-      this.mensualidadesFiltradas = this.mensualidades;
+    
+    if (!busqueda || busqueda.length < this.MINIMO_CARACTERES) {
+      this.mensualidadesFiltradas = [];
+      this.busquedaMensualidadRealizada = false;
       return;
     }
     
-    this.mensualidadesFiltradas = this.mensualidades.filter(m => 
-      m.nombreSocio?.toLowerCase().includes(busqueda) ||
-      m.idmens.toString().includes(busqueda) ||
-      m.descrip?.toLowerCase().includes(busqueda)
-    );
+    this.busquedaMensualidadSubject.next(busqueda);
+  }
+
+  private realizarBusquedaMensualidades(busqueda: string) {
+    this.busquedaMensualidadRealizada = true;
+    this.cargandoMensualidades = true;
+    
+    this.http.get<Mensualidad[]>(`${this.apiUrl}/mensualidades`, {
+      params: { busqueda }
+    }).subscribe({
+      next: (data) => {
+        this.mensualidades = data;
+        this.mensualidadesFiltradas = data;
+        this.cargandoMensualidades = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar mensualidades:', err);
+        this.notificationService.error('Error al buscar mensualidades');
+        this.cargandoMensualidades = false;
+        this.mensualidadesFiltradas = [];
+      }
+    });
   }
 
   filtrarTickets() {
     const busqueda = this.busquedaTicket.toLowerCase().trim();
-    if (!busqueda) {
-      this.ticketsFiltrados = this.tickets;
+    
+    if (!busqueda || busqueda.length < this.MINIMO_CARACTERES) {
+      this.ticketsFiltrados = [];
+      this.busquedaTicketRealizada = false;
       return;
     }
     
-    this.ticketsFiltrados = this.tickets.filter(t => 
-      t.nombreSocio?.toLowerCase().includes(busqueda) ||
-      t.ticket.toString().includes(busqueda)
-    );
+    this.busquedaTicketSubject.next(busqueda);
+  }
+
+  private realizarBusquedaTickets(busqueda: string) {
+    this.busquedaTicketRealizada = true;
+    this.cargandoTickets = true;
+    
+    this.http.get<Ticket[]>(`${this.apiUrl}/tickets`, {
+      params: { busqueda }
+    }).subscribe({
+      next: (data) => {
+        this.tickets = data;
+        this.ticketsFiltrados = data;
+        this.cargandoTickets = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar tickets:', err);
+        this.notificationService.error('Error al buscar tickets');
+        this.cargandoTickets = false;
+        this.ticketsFiltrados = [];
+      }
+    });
   }
 
   abrirModalMensualidad(mensualidad: Mensualidad) {
-    this.registroSeleccionado = mensualidad;
-    this.tipoRegistro = 'mensualidad';
-    this.mostrarModalImprimir = true;
+    // Preparar datos para el ticket de mensualidad
+    this.ticketData = {
+      folio: mensualidad.idmens,
+      fecha: new Date(mensualidad.fecha),
+      cliente: mensualidad.nombreSocio || 'Cliente General',
+      productos: [
+        {
+          nombre: mensualidad.descrip || 'Mensualidad',
+          cantidad: 1,
+          precio: mensualidad.total,
+          subtotal: mensualidad.total
+        }
+      ],
+      subtotal: mensualidad.importe,
+      descuento: mensualidad.descuento,
+      iva: 0,
+      total: mensualidad.total,
+      formaPago: String(mensualidad.modopago || 'Efectivo'),
+      pagado: mensualidad.pagado,
+      cambio: 0
+    };
+    this.mostrarTicket = true;
   }
 
   abrirModalTicket(ticket: Ticket) {
-    this.registroSeleccionado = ticket;
-    this.tipoRegistro = 'ticket';
-    this.mostrarModalImprimir = true;
+    // Preparar datos para el ticket de venta
+    this.ticketData = {
+      folio: ticket.ticket,
+      fecha: new Date(ticket.fecha),
+      cliente: ticket.nombreSocio || 'Cliente General',
+      productos: [
+        {
+          nombre: 'Venta',
+          cantidad: 1,
+          precio: ticket.total,
+          subtotal: ticket.total
+        }
+      ],
+      subtotal: ticket.importe,
+      descuento: ticket.descuento,
+      iva: ticket.iva,
+      total: ticket.total,
+      formaPago: ticket.credito ? 'Crédito' : 'Contado',
+      pagado: ticket.pagado,
+      cambio: 0
+    };
+    this.mostrarTicket = true;
   }
 
-  cerrarModal() {
-    this.mostrarModalImprimir = false;
-    this.registroSeleccionado = null;
-  }
-
-  imprimirTicket() {
-    const contenido = document.getElementById('contenido-impresion');
-    if (!contenido) return;
-
-    const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
-    if (!ventanaImpresion) return;
-
-    ventanaImpresion.document.write(`
-      <html>
-        <head>
-          <title>Imprimir ${this.tipoRegistro === 'mensualidad' ? 'Mensualidad' : 'Ticket'}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: 'Courier New', monospace; 
-              padding: 20px; 
-              font-size: 12px;
-              max-width: 300px;
-              margin: 0 auto;
-            }
-            .ticket-header { 
-              text-align: center; 
-              border-bottom: 2px dashed #000; 
-              padding-bottom: 10px; 
-              margin-bottom: 10px;
-            }
-            .ticket-header h2 { font-size: 16px; margin-bottom: 5px; }
-            .ticket-info { margin-bottom: 10px; }
-            .ticket-row { 
-              display: flex; 
-              justify-content: space-between; 
-              margin: 3px 0; 
-            }
-            .ticket-row strong { font-weight: bold; }
-            .divider { 
-              border-top: 1px dashed #000; 
-              margin: 10px 0; 
-            }
-            .ticket-total { 
-              border-top: 2px dashed #000; 
-              padding-top: 10px; 
-              margin-top: 10px;
-              font-size: 14px;
-              font-weight: bold;
-            }
-            .ticket-footer { 
-              text-align: center; 
-              margin-top: 15px; 
-              font-size: 10px;
-              border-top: 2px dashed #000;
-              padding-top: 10px;
-            }
-            @media print {
-              body { padding: 0; }
-            }
-          </style>
-        </head>
-        <body>
-          ${contenido.innerHTML}
-        </body>
-      </html>
-    `);
-
-    ventanaImpresion.document.close();
-    ventanaImpresion.focus();
-    
-    setTimeout(() => {
-      ventanaImpresion.print();
-      ventanaImpresion.close();
-    }, 250);
-  }
-
-  getFolio(): string {
-    if (this.tipoRegistro === 'mensualidad') {
-      return this.registroSeleccionado?.idmens || '';
-    }
-    return this.registroSeleccionado?.ticket || '';
+  cerrarTicket() {
+    this.mostrarTicket = false;
+    this.ticketData = null;
   }
 
   formatearFecha(fecha: Date): string {
@@ -260,5 +284,65 @@ export class RegistroTicketsComponent implements OnInit {
     if (registro.pagado === 1) return '#10B981';
     if (registro.saldo > 0) return '#F59E0B';
     return '#EF4444';
+  }
+
+  esPendiente(mensualidad: Mensualidad): boolean {
+    return mensualidad.saldo > 0 || mensualidad.pagado === 0;
+  }
+
+  abrirModalCobro(mensualidad: Mensualidad) {
+    this.registroSeleccionado = mensualidad;
+    this.montoCobro = mensualidad.saldo > 0 ? mensualidad.saldo : mensualidad.total;
+    this.formaPago = 'Efectivo';
+    this.referencia = '';
+    this.comentariosCobro = '';
+    this.mostrarModalCobro = true;
+  }
+
+  cerrarModalCobro() {
+    this.mostrarModalCobro = false;
+    this.registroSeleccionado = null;
+    this.montoCobro = 0;
+  }
+
+  procesarCobro() {
+    if (this.montoCobro <= 0) {
+      this.notificationService.warning('El monto a cobrar debe ser mayor a 0');
+      return;
+    }
+
+    const saldoActual = this.registroSeleccionado.saldo > 0 
+      ? this.registroSeleccionado.saldo 
+      : this.registroSeleccionado.total;
+
+    if (this.montoCobro > saldoActual) {
+      this.notificationService.warning('El monto a cobrar no puede ser mayor al saldo pendiente');
+      return;
+    }
+
+    const datosCobro = {
+      idmens: this.registroSeleccionado.idmens,
+      monto: this.montoCobro,
+      formaPago: this.formaPago,
+      referencia: this.referencia,
+      comentarios: this.comentariosCobro
+    };
+
+    this.http.post(`${this.apiUrl}/cobrar-mensualidad`, datosCobro).subscribe({
+      next: (response: any) => {
+        this.notificationService.success('Cobro procesado exitosamente');
+        this.cerrarModalCobro();
+        // Recargar mensualidades si hay búsqueda activa
+        if (this.busquedaMensualidadRealizada) {
+          this.filtrarMensualidades();
+        }
+      },
+      error: (err) => {
+        console.error('Error al procesar cobro:', err);
+        this.notificationService.error(
+          err.error?.message || 'Error al procesar el cobro. Intenta nuevamente.'
+        );
+      }
+    });
   }
 }

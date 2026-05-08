@@ -1,0 +1,277 @@
+<div class="component-page">
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="page-header-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="page-header-text">
+        <h1>Estadísticas</h1>
+        <p class="page-subtitle">Panel de análisis y métricas</p>
+      </div>
+    </div>
+    <button class="btn-add" (click)="agregarEstadistica()">
+      <i class="fas fa-plus"></i>
+      Agregar Estadística
+    </button>
+  </div>
+
+  <div class="page-content">
+    <div class="content-wrapper">
+      <div *ngIf="estadisticasAgregadas.length === 0" class="empty-state">
+        <i class="fas fa-chart-bar"></i>
+        <h3>No hay estadísticas agregadas</h3>
+        <p>Haz clic en "Agregar Estadística" para comenzar</p>
+      </div>
+
+      <div *ngIf="estadisticasAgregadas.length > 0" class="estadisticas-grid">
+        <div 
+          *ngFor="let stat of estadisticasAgregadas" 
+          class="stat-card"
+          [class.expanded]="stat.expanded"
+        >
+          <div class="stat-card-header" (click)="toggleCard(stat)">
+            <div class="stat-card-icon">
+              <i [class]="stat.icono"></i>
+            </div>
+            <div class="stat-card-title">
+              <h3>{{ stat.titulo }}</h3>
+            </div>
+            <div class="stat-card-actions">
+              <button class="btn-icon" (click)="removerEstadistica(stat); $event.stopPropagation()" title="Eliminar">
+                <i class="fas fa-times"></i>
+              </button>
+              <button class="btn-icon" title="Expandir/Contraer">
+                <i [class]="stat.expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="stat-card-body" *ngIf="stat.expanded">
+            <div [ngSwitch]="stat.tipo">
+              <!-- Género -->
+              <div *ngSwitchCase="'genero'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item">
+                    <div class="stat-label">Masculino</div>
+                    <div class="stat-value">{{ stat.data.masculino || 0 }}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Femenino</div>
+                    <div class="stat-value">{{ stat.data.femenino || 0 }}</div>
+                  </div>
+                  <div class="stat-item highlight">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value">{{ stat.data.total || 0 }}</div>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data"
+                  type="doughnut" 
+                  [data]="getGeneroChartData(stat.data)">
+                </app-chart>
+              </div>
+
+              <!-- Ingresos -->
+              <div *ngSwitchCase="'ingresos'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item highlight large">
+                    <div class="stat-label">{{ stat.data.periodo }}</div>
+                    <div class="stat-value">${{ stat.data.ingresoTotal || 0 | number:'1.2-2' }}</div>
+                  </div>
+                </div>
+                <div class="stat-section-title" *ngIf="stat.data.mensuales && stat.data.mensuales.length > 0">
+                  <h4>Tendencia (Últimos 6 meses)</h4>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data.mensuales && stat.data.mensuales.length > 0"
+                  type="line" 
+                  [data]="getIngresosMensualesChartData(stat.data.mensuales)">
+                </app-chart>
+              </div>
+
+              <!-- Edades -->
+              <div *ngSwitchCase="'edades'" class="stat-content">
+                <div class="stat-list" *ngIf="stat.data.length > 0; else noData">
+                  <div class="stat-list-item" *ngFor="let edad of stat.data">
+                    <span class="stat-list-label">{{ edad.rango }}</span>
+                    <span class="stat-list-value">{{ edad.cantidad }}</span>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data && stat.data.length > 0"
+                  type="bar" 
+                  [data]="getEdadesChartData(stat.data)">
+                </app-chart>
+              </div>
+
+              <!-- Paquetes -->
+              <div *ngSwitchCase="'paquetes'" class="stat-content">
+                <div class="stat-list" *ngIf="stat.data.length > 0; else noData">
+                  <div class="stat-list-item" *ngFor="let paquete of stat.data">
+                    <span class="stat-list-label">{{ paquete.paquete }}</span>
+                    <span class="stat-list-value">{{ paquete.usuarios }} usuarios</span>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data && stat.data.length > 0"
+                  type="bar" 
+                  [data]="getPaquetesChartData(stat.data)">
+                </app-chart>
+              </div>
+
+              <!-- Inscripciones -->
+              <div *ngSwitchCase="'inscripciones'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item success">
+                    <div class="stat-label">Nuevas Inscripciones</div>
+                    <div class="stat-value">{{ stat.data.nuevas || 0 }}</div>
+                  </div>
+                  <div class="stat-item danger">
+                    <div class="stat-label">Bajas</div>
+                    <div class="stat-value">{{ stat.data.bajas || 0 }}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Período</div>
+                    <div class="stat-value small">{{ stat.data.periodo }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Saldo al Corte -->
+              <div *ngSwitchCase="'saldo'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item highlight large">
+                    <div class="stat-label">Saldo Total</div>
+                    <div class="stat-value">${{ stat.data.saldoTotal || 0 | number:'1.2-2' }}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Fecha de Corte</div>
+                    <div class="stat-value small">{{ stat.data.fecha | date:'dd/MM/yyyy' }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deudas -->
+              <div *ngSwitchCase="'deudas'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item danger">
+                    <div class="stat-label">Total en Deudas</div>
+                    <div class="stat-value">${{ stat.data.totalDeudas || 0 | number:'1.2-2' }}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Clientes con Deuda</div>
+                    <div class="stat-value">{{ stat.data.clientesConDeuda || 0 }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tipos de Pago -->
+              <div *ngSwitchCase="'pagos'" class="stat-content">
+                <div class="stat-list" *ngIf="stat.data.length > 0; else noData">
+                  <div class="stat-list-item" *ngFor="let pago of stat.data">
+                    <span class="stat-list-label">{{ pago.tipoPago }}</span>
+                    <span class="stat-list-value">
+                      {{ pago.cantidad }} pagos - ${{ pago.monto | number:'1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data && stat.data.length > 0"
+                  type="pie" 
+                  [data]="getPagosChartData(stat.data)">
+                </app-chart>
+              </div>
+
+              <!-- Membresías Activas -->
+              <div *ngSwitchCase="'membresias'" class="stat-content">
+                <div class="stat-summary">
+                  <div class="stat-item success">
+                    <div class="stat-label">Activas</div>
+                    <div class="stat-value">{{ stat.data.membresiasActivas || 0 }}</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-label">Inactivas</div>
+                    <div class="stat-value">{{ stat.data.membresiasInactivas || 0 }}</div>
+                  </div>
+                  <div class="stat-item highlight">
+                    <div class="stat-label">% Activas</div>
+                    <div class="stat-value">{{ stat.data.porcentajeActivas || 0 }}%</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tipos de Clientes -->
+              <div *ngSwitchCase="'clientes'" class="stat-content">
+                <div class="stat-list" *ngIf="stat.data.length > 0; else noData">
+                  <div class="stat-list-item" *ngFor="let cliente of stat.data">
+                    <span class="stat-list-label">{{ cliente.tipo }}</span>
+                    <span class="stat-list-value">{{ cliente.cantidad }}</span>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data && stat.data.length > 0"
+                  type="bar" 
+                  [data]="getClientesChartData(stat.data)">
+                </app-chart>
+              </div>
+
+              <!-- Accesos -->
+              <div *ngSwitchCase="'accesos'" class="stat-content">
+                <div class="stat-list" *ngIf="stat.data.length > 0; else noData">
+                  <div class="stat-list-item" *ngFor="let acceso of stat.data">
+                    <span class="stat-list-label">{{ acceso.fecha | date:'dd/MM/yyyy' }}</span>
+                    <span class="stat-list-value">{{ acceso.cantidad }} accesos</span>
+                  </div>
+                </div>
+                <app-chart 
+                  *ngIf="stat.data && stat.data.length > 0"
+                  type="line" 
+                  [data]="getAccesosChartData(stat.data)">
+                </app-chart>
+              </div>
+            </div>
+
+            <ng-template #noData>
+              <div class="no-data">
+                <i class="fas fa-inbox"></i>
+                <p>No hay datos disponibles</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menú de selección de estadísticas -->
+  <div class="modal-overlay" *ngIf="mostrarMenu" (click)="cerrarMenu()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Agregar Estadística</h2>
+        <button class="btn-close" (click)="cerrarMenu()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="estadisticas-list">
+          <div 
+            *ngFor="let stat of estadisticasDisponibles" 
+            class="estadistica-item"
+            [class.disabled]="estaAgregada(stat)"
+            (click)="seleccionarEstadistica(stat)"
+          >
+            <div class="estadistica-item-icon">
+              <i [class]="stat.icono"></i>
+            </div>
+            <div class="estadistica-item-info">
+              <h4>{{ stat.titulo }}</h4>
+            </div>
+            <div class="estadistica-item-check" *ngIf="estaAgregada(stat)">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

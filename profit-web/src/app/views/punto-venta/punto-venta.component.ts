@@ -1,7 +1,11 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { NotificationService } from '../../shared/services/notification.service';
+import { TicketPrintComponent, TicketData } from '../../shared/components/ticket-print/ticket-print.component';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface Categoria {
   id: number;
@@ -36,11 +40,11 @@ interface Cliente {
 @Component({
   selector: 'app-punto-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TicketPrintComponent],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.scss']
 })
-export class PuntoVentaComponent implements OnInit {
+export class PuntoVentaComponent implements OnInit, OnDestroy {
   categorias: Categoria[] = [];
   productos: Producto[] = [];
   productosFiltrados: Producto[] = [];
@@ -69,47 +73,88 @@ export class PuntoVentaComponent implements OnInit {
   mostrarModalProducto: boolean = false;
   nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
   
+  mostrarModalEditarProducto: boolean = false;
+  productoEditando: Producto | null = null;
+  productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+  
+  mostrarTicket: boolean = false;
+  ticketData: TicketData | null = null;
+  
   formasPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO'];
+  clientesFiltrados: Cliente[] = [];
+  cargandoClientes: boolean = false;
 
   private apiUrl = '/punto-venta';
+  private buscarClienteSubject = new Subject<string>();
+  private readonly MINIMO_CARACTERES_CLIENTE = 2;
+  private readonly DEBOUNCE_TIME = 400;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnDestroy() {
+    this.buscarClienteSubject.complete();
+  }
 
   ngOnInit() {
     this.cargarCategorias();
     this.cargarProductos();
-    this.cargarClientes();
+    
+    // Configurar búsqueda de clientes con debounce
+    this.buscarClienteSubject
+      .pipe(
+        debounceTime(this.DEBOUNCE_TIME),
+        distinctUntilChanged()
+      )
+      .subscribe(busqueda => {
+        this.realizarBusquedaClientes(busqueda);
+      });
   }
 
-  cargarClientes() {
-    this.http.get<any[]>(`${this.apiUrl}/clientes`).subscribe({
+  onBuscarClienteInput() {
+    const busqueda = this.buscarCliente.trim();
+    
+    if (!busqueda || busqueda.length < this.MINIMO_CARACTERES_CLIENTE) {
+      this.clientesFiltrados = [];
+      this.mostrarListaClientes = false;
+      return;
+    }
+    
+    this.mostrarListaClientes = true;
+    this.buscarClienteSubject.next(busqueda);
+  }
+
+  private realizarBusquedaClientes(busqueda: string) {
+    this.cargandoClientes = true;
+    
+    this.http.get<any[]>(`${this.apiUrl}/clientes`, {
+      params: { busqueda }
+    }).subscribe({
       next: (data) => {
-        console.log('Clientes recibidos:', data);
-        this.clientes = data.map(c => ({
+        this.clientesFiltrados = data.map(c => ({
           id: c.id,
           nombre: c.nombreCompleto || c.nomsocio || '',
           nombreCompleto: c.nombreCompleto || c.nomsocio || ''
         }));
-        console.log('Clientes mapeados:', this.clientes);
+        this.cargandoClientes = false;
       },
-      error: (err) => console.error('Error al cargar clientes:', err)
+      error: (err) => {
+        console.error('Error al buscar clientes:', err);
+        this.notificationService.error('Error al buscar clientes');
+        this.cargandoClientes = false;
+        this.clientesFiltrados = [];
+      }
     });
   }
 
-  filtrarClientes(): Cliente[] {
-    if (!this.buscarCliente || this.buscarCliente.trim() === '') {
-      return this.clientes.slice(0, 10);
-    }
-    const busqueda = this.buscarCliente.toLowerCase().trim();
-    return this.clientes.filter(c => 
-      c.nombreCompleto?.toLowerCase().includes(busqueda)
-    ).slice(0, 10);
-  }
 
   seleccionarCliente(cliente: Cliente) {
     this.clienteSeleccionado = cliente;
     this.buscarCliente = cliente.nombreCompleto || '';
     this.mostrarListaClientes = false;
+    this.clientesFiltrados = [];
   }
 
   limpiarCliente() {
@@ -235,11 +280,12 @@ export class PuntoVentaComponent implements OnInit {
 
   procesarCobro() {
     if (this.abonado < this.totalConDescuento) {
-      alert('El monto abonado es insuficiente');
+      this.notificationService.warning('El monto abonado es insuficiente');
       return;
     }
 
     const venta = {
+      clienteId: this.clienteSeleccionado?.id,
       productos: this.carrito.map(item => ({
         productoId: item.producto.id,
         cantidad: item.cantidad,
@@ -257,18 +303,42 @@ export class PuntoVentaComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/ventas`, venta).subscribe({
       next: (response: any) => {
-        let mensaje = `Venta registrada exitosamente\nFolio: ${response.ventaId}`;
-        if (response.clienteNombre) {
-          mensaje += `\nCliente: ${response.clienteNombre}`;
-        }
-        mensaje += `\nTotal: $${this.totalConDescuento.toFixed(2)}`;
-        alert(mensaje);
+        // Calcular IVA (16%)
+        const subtotalSinIva = this.totalConDescuento / 1.16;
+        const iva = this.totalConDescuento - subtotalSinIva;
+
+        // Preparar datos del ticket
+        this.ticketData = {
+          folio: response.ventaId,
+          fecha: new Date(),
+          cliente: response.clienteNombre,
+          productos: this.carrito.map(item => ({
+            nombre: item.producto.nombre,
+            cantidad: item.cantidad,
+            precio: item.producto.precio,
+            subtotal: item.subtotal
+          })),
+          subtotal: subtotalSinIva,
+          descuento: this.descuento,
+          iva: iva,
+          total: this.totalConDescuento,
+          formaPago: this.formaPago,
+          pagado: this.abonado,
+          cambio: this.cambio
+        };
+
+        // Mostrar ticket
+        this.mostrarTicket = true;
+        
+        // Limpiar venta y cerrar modal de cobro
         this.limpiarVenta();
         this.cerrarModalCobro();
+        
+        this.notificationService.success('Venta registrada exitosamente');
       },
       error: (err) => {
         console.error('Error al registrar venta:', err);
-        alert('Error al procesar la venta');
+        this.notificationService.error('Error al procesar la venta');
       }
     });
   }
@@ -285,7 +355,7 @@ export class PuntoVentaComponent implements OnInit {
   // Métodos para gestionar categorías
   abrirModalProducto() {
     if (this.categoriaSeleccionada === null) {
-      alert('Selecciona una categoría primero');
+      this.notificationService.warning('Selecciona una categoría primero');
       return;
     }
     this.mostrarModalProducto = true;
@@ -301,9 +371,55 @@ export class PuntoVentaComponent implements OnInit {
     this.nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
   }
 
+  abrirModalEditarProducto(producto: Producto, event: Event) {
+    event.stopPropagation();
+    this.productoEditando = producto;
+    this.productoEditado = {
+      nombre: producto.nombre,
+      precio: producto.precio,
+      stock: producto.stock,
+      costo: 0,
+      emoji: producto.imagen || '📦'
+    };
+    this.mostrarModalEditarProducto = true;
+  }
+
+  cerrarModalEditarProducto() {
+    this.mostrarModalEditarProducto = false;
+    this.productoEditando = null;
+    this.productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+  }
+
+  actualizarProducto() {
+    if (!this.productoEditando || !this.productoEditado.nombre || !this.productoEditado.precio) {
+      this.notificationService.warning('El nombre y precio son obligatorios');
+      return;
+    }
+
+    const dto = {
+      nomproducto: this.productoEditado.nombre,
+      venta: this.productoEditado.precio,
+      existencia: this.productoEditado.stock || 0,
+      costo: this.productoEditado.costo || 0,
+      foto: this.productoEditado.emoji || '📦'
+    };
+
+    this.http.put(`${this.apiUrl}/productos/${this.productoEditando.id}`, dto).subscribe({
+      next: (response: any) => {
+        this.notificationService.success('Producto actualizado exitosamente');
+        this.cerrarModalEditarProducto();
+        this.cargarProductos();
+      },
+      error: (err) => {
+        console.error('Error al actualizar producto:', err);
+        this.notificationService.error('Error al actualizar el producto');
+      }
+    });
+  }
+
   crearCategoria() {
     if (!this.nuevaCategoria.nombre) {
-      alert('El nombre de la categoría es obligatorio');
+      this.notificationService.warning('El nombre de la categoría es obligatorio');
       return;
     }
 
@@ -315,20 +431,20 @@ export class PuntoVentaComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/categorias`, dto).subscribe({
       next: (response: any) => {
-        alert('Categoría creada exitosamente');
+        this.notificationService.success('Categoría creada exitosamente');
         this.cerrarModalCategoria();
         this.cargarCategorias();
       },
       error: (err) => {
         console.error('Error al crear categoría:', err);
-        alert('Error al crear la categoría');
+        this.notificationService.error('Error al crear la categoría');
       }
     });
   }
 
   crearProducto() {
     if (!this.nuevoProducto.nombre || !this.nuevoProducto.precio) {
-      alert('El nombre y precio son obligatorios');
+      this.notificationService.warning('El nombre y precio son obligatorios');
       return;
     }
 
@@ -344,14 +460,64 @@ export class PuntoVentaComponent implements OnInit {
 
     this.http.post(`${this.apiUrl}/productos`, dto).subscribe({
       next: (response: any) => {
-        alert('Producto creado exitosamente');
+        this.notificationService.success('Producto creado exitosamente');
         this.cerrarModalProducto();
         this.cargarProductos();
       },
       error: (err) => {
         console.error('Error al crear producto:', err);
-        alert('Error al crear el producto');
+        this.notificationService.error('Error al crear el producto');
       }
     });
+  }
+
+  eliminarCategoria(categoriaId: number, event: Event) {
+    event.stopPropagation();
+    
+    this.notificationService.confirm(
+      'Eliminar Categoría',
+      '¿Estás seguro de eliminar esta categoría? Esta acción no se puede deshacer.',
+      () => {
+        this.http.delete(`${this.apiUrl}/categorias/${categoriaId}`).subscribe({
+          next: () => {
+            this.notificationService.success('Categoría eliminada exitosamente');
+            this.cargarCategorias();
+            if (this.categoriaSeleccionada === categoriaId) {
+              this.seleccionarCategoria(null);
+            }
+          },
+          error: (err) => {
+            console.error('Error al eliminar categoría:', err);
+            this.notificationService.error('Error al eliminar la categoría');
+          }
+        });
+      }
+    );
+  }
+
+  eliminarProducto(productoId: number, event: Event) {
+    event.stopPropagation();
+    
+    this.notificationService.confirm(
+      'Eliminar Producto',
+      '¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.',
+      () => {
+        this.http.delete(`${this.apiUrl}/productos/${productoId}`).subscribe({
+          next: () => {
+            this.notificationService.success('Producto eliminado exitosamente');
+            this.cargarProductos();
+          },
+          error: (err) => {
+            console.error('Error al eliminar producto:', err);
+            this.notificationService.error('Error al eliminar el producto');
+          }
+        });
+      }
+    );
+  }
+
+  cerrarTicket() {
+    this.mostrarTicket = false;
+    this.ticketData = null;
   }
 }

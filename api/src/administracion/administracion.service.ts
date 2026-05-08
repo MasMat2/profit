@@ -4,7 +4,7 @@ import type { Tbparametros } from '../database/database.types';
 
 export type UpdateParametrosDto = Partial<Pick<Tbparametros,
   'paqvisvence' | 'diaspaqvisvence' | 'aplicadescdias' |
-  'empresa' | 'dir1' | 'dir2' | 'dir3' | 'tels' | 'sucursal'
+  'empresa' | 'dir1' | 'dir2' | 'dir3' | 'tels' | 'sucursal' | 'rfc'
 >>;
 
 @Injectable()
@@ -26,6 +26,7 @@ export class AdministracionService {
         'dir3',
         'tels',
         'sucursal',
+        'rfc',
       ])
       .executeTakeFirst();
   }

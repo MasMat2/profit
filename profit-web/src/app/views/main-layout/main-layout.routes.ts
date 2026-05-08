@@ -7,6 +7,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
         component: MainLayoutComponent,
         children: [
             {
+                path: 'estadisticas',
+                loadComponent: () =>
+                    import('../estadisticas/estadisticas.component').then(
+                        (m) => m.EstadisticasComponent
+                    ),
+            },
+            {
                 path: 'administracion',
                 loadComponent: () =>
                     import('../administracion/administracion.component').then(

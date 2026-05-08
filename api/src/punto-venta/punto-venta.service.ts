@@ -158,17 +158,56 @@ export class PuntoVentaService {
     }
   }
 
-  async getClientes(): Promise<Array<{ id: number; nombreCompleto: string }>> {
+  async actualizarProducto(id: number, dto: any) {
     try {
-      const socios = await this.db.getKysely()
+      await this.db.getKysely()
+        .updateTable('tbproductos')
+        .set({
+          nomproducto: dto.nomproducto,
+          venta: dto.venta,
+          existencia: dto.existencia,
+          costo: dto.costo || 0,
+          foto: dto.foto || '📦',
+          fecmod: new Date(),
+          usumod: 1
+        })
+        .where('id', '=', id)
+        .executeTakeFirstOrThrow();
+
+      return {
+        success: true,
+        message: 'Producto actualizado exitosamente'
+      };
+    } catch (error) {
+      console.error('Error al actualizar producto:', error);
+      throw error;
+    }
+  }
+
+  async getClientes(busqueda?: string): Promise<Array<{ id: number; nombreCompleto: string }>> {
+    try {
+      let query = this.db.getKysely()
         .selectFrom('tbsocios')
         .select(['id', 'nomsocio', 'activo'])
-        .where('activo', '=', 1)
+        .where('activo', '=', 1);
+
+      // Aplicar filtro de búsqueda si se proporciona
+      if (busqueda && busqueda.trim().length > 0) {
+        const termino = `%${busqueda.toLowerCase()}%`;
+        query = query.where((eb) => 
+          eb.or([
+            eb(eb.fn('LOWER', ['nomsocio']), 'like', termino),
+            eb('id', '=', isNaN(Number(busqueda)) ? -1 : Number(busqueda))
+          ])
+        );
+      }
+
+      const socios = await query
         .orderBy('nomsocio', 'asc')
         .limit(100)
         .execute();
 
-      console.log(`Clientes encontrados: ${socios.length}`);
+      console.log(`Clientes encontrados con búsqueda '${busqueda}': ${socios.length}`);
 
       return socios.map(socio => ({
         id: socio.id,
@@ -314,7 +353,7 @@ export class PuntoVentaService {
   async getVentas() {
     const tickets = await this.db.getKysely()
       .selectFrom('tbtickets as t')
-      .leftJoin('tbsocios as s', 's.socio', 't.socio')
+      .leftJoin('tbsocios as s', 's.id', 't.socio')
       .select([
         't.ticket',
         't.socio',
@@ -331,5 +370,64 @@ export class PuntoVentaService {
       .execute();
 
     return tickets;
+  }
+
+  async eliminarCategoria(id: number): Promise<{ success: boolean; mensaje: string }> {
+    try {
+      console.log(`Intentando eliminar categoría con id: ${id}`);
+      
+      // Soft delete: marcar como no visible en pantalla
+      const result = await this.db.getKysely()
+        .updateTable('tbcategorias')
+        .set({
+          enpantalla: 0,
+          fecmod: new Date(),
+          usumod: 1,
+          envia: 0
+        })
+        .where('id', '=', id)
+        .execute();
+
+      console.log('Resultado de eliminación:', result);
+
+      return {
+        success: true,
+        mensaje: 'Categoría eliminada exitosamente'
+      };
+    } catch (error) {
+      console.error('Error al eliminar categoría:', error);
+      console.error('Stack:', error.stack);
+      throw error;
+    }
+  }
+
+  async eliminarProducto(id: number): Promise<{ success: boolean; mensaje: string }> {
+    try {
+      console.log(`Intentando eliminar producto con id: ${id}`);
+      
+      // Soft delete: marcar como no visible en pantalla y desactivar
+      const result = await this.db.getKysely()
+        .updateTable('tbproductos')
+        .set({
+          enpantalla: 0,
+          activo: 0,
+          fecmod: new Date(),
+          usumod: 1,
+          envia: 0
+        })
+        .where('id', '=', id)
+        .execute();
+
+      console.log('Resultado de eliminación:', result);
+
+      return {
+        success: true,
+        mensaje: 'Producto eliminado exitosamente'
+      };
+    } catch (error) {
+      console.error('Error al eliminar producto:', error);
+      console.error('Stack:', error.stack);
+      throw error;
+    }
   }
 }

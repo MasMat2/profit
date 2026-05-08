@@ -34,13 +34,10 @@
           <input 
             type="text" 
             class="input-busqueda" 
-            placeholder="Buscar por folio, cliente o descripción..."
+            placeholder="Escribe mínimo 2 caracteres para buscar..."
             [(ngModel)]="busquedaMensualidad"
             (input)="filtrarMensualidades()">
         </div>
-        <button class="btn-refrescar" (click)="cargarMensualidades()">
-          <i class="fas fa-sync-alt"></i>
-        </button>
       </div>
 
       <div class="tabla-wrapper">
@@ -49,9 +46,16 @@
           <p>Cargando mensualidades...</p>
         </div>
 
-        <div class="empty-state" *ngIf="!cargandoMensualidades && mensualidadesFiltradas.length === 0">
+        <div class="empty-state" *ngIf="!cargandoMensualidades && !busquedaMensualidadRealizada">
+          <i class="fas fa-search"></i>
+          <p>Ingresa un criterio de búsqueda para ver las mensualidades</p>
+          <small>Busca por folio, nombre de cliente o descripción</small>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoMensualidades && busquedaMensualidadRealizada && mensualidadesFiltradas.length === 0">
           <i class="fas fa-inbox"></i>
           <p>No se encontraron mensualidades</p>
+          <small>Intenta con otro criterio de búsqueda</small>
         </div>
 
         <table class="tabla-registros" *ngIf="!cargandoMensualidades && mensualidadesFiltradas.length > 0">
@@ -86,9 +90,17 @@
                 </span>
               </td>
               <td>
-                <button class="btn-accion" (click)="abrirModalMensualidad(mens)" title="Imprimir ticket">
-                  <i class="fas fa-print"></i>
-                </button>
+                <div class="acciones-grupo">
+                  <button class="btn-accion btn-cobrar" 
+                          *ngIf="esPendiente(mens) && mens.cancelado === 0"
+                          (click)="abrirModalCobro(mens)" 
+                          title="Cobrar mensualidad">
+                    <i class="fas fa-dollar-sign"></i>
+                  </button>
+                  <button class="btn-accion" (click)="abrirModalMensualidad(mens)" title="Imprimir ticket">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -103,13 +115,10 @@
           <input 
             type="text" 
             class="input-busqueda" 
-            placeholder="Buscar por folio o cliente..."
+            placeholder="Escribe mínimo 2 caracteres para buscar..."
             [(ngModel)]="busquedaTicket"
             (input)="filtrarTickets()">
         </div>
-        <button class="btn-refrescar" (click)="cargarTickets()">
-          <i class="fas fa-sync-alt"></i>
-        </button>
       </div>
 
       <div class="tabla-wrapper">
@@ -118,9 +127,16 @@
           <p>Cargando tickets...</p>
         </div>
 
-        <div class="empty-state" *ngIf="!cargandoTickets && ticketsFiltrados.length === 0">
+        <div class="empty-state" *ngIf="!cargandoTickets && !busquedaTicketRealizada">
+          <i class="fas fa-search"></i>
+          <p>Ingresa un criterio de búsqueda para ver los tickets de venta</p>
+          <small>Busca por folio, nombre de cliente o descripción</small>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoTickets && busquedaTicketRealizada && ticketsFiltrados.length === 0">
           <i class="fas fa-inbox"></i>
           <p>No se encontraron tickets de venta</p>
+          <small>Intenta con otro criterio de búsqueda</small>
         </div>
 
         <table class="tabla-registros" *ngIf="!cargandoTickets && ticketsFiltrados.length > 0">
@@ -167,92 +183,107 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalImprimir" (click)="cerrarModal()">
-  <div class="modal-imprimir" (click)="$event.stopPropagation()">
+<!-- Modal de Ticket para Imprimir -->
+<app-ticket-print 
+  [show]="mostrarTicket"
+  [ticketData]="ticketData"
+  (onClose)="cerrarTicket()">
+</app-ticket-print>
+
+<!-- Modal de Cobro -->
+<div class="modal-overlay" *ngIf="mostrarModalCobro" (click)="cerrarModalCobro()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>
-        <i class="fas fa-print"></i>
-        Imprimir {{ tipoRegistro === 'mensualidad' ? 'Mensualidad' : 'Ticket de Venta' }}
+        <i class="fas fa-dollar-sign"></i>
+        Cobrar Mensualidad
       </h3>
-      <button class="btn-cerrar-modal" (click)="cerrarModal()">
+      <button class="btn-cerrar-modal" (click)="cerrarModalCobro()">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
     <div class="modal-body">
-      <div id="contenido-impresion" class="ticket-impresion">
-        <div class="ticket-header">
-          <h2>{{ tipoRegistro === 'mensualidad' ? 'MENSUALIDAD' : 'TICKET DE VENTA' }}</h2>
-          <p><strong>Folio:</strong> {{ getFolio() }}</p>
-          <p><strong>Fecha:</strong> {{ formatearFecha(registroSeleccionado?.fecha) }}</p>
+      <div class="info-mensualidad">
+        <div class="info-row">
+          <span class="label">Folio:</span>
+          <span class="value">{{ registroSeleccionado?.idmens }}</span>
         </div>
-
-        <div class="ticket-info">
-          <div class="ticket-row">
-            <strong>Cliente:</strong>
-            <span>{{ registroSeleccionado?.nombreSocio || 'N/A' }}</span>
-          </div>
-          
-          <div class="ticket-row" *ngIf="tipoRegistro === 'mensualidad'">
-            <strong>Descripción:</strong>
-            <span>{{ registroSeleccionado?.descrip }}</span>
-          </div>
+        <div class="info-row">
+          <span class="label">Cliente:</span>
+          <span class="value">{{ registroSeleccionado?.nombreSocio }}</span>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="ticket-detalles">
-          <div class="ticket-row">
-            <strong>Importe:</strong>
-            <span>{{ formatearMoneda(registroSeleccionado?.importe) }}</span>
-          </div>
-          <div class="ticket-row">
-            <strong>Descuento:</strong>
-            <span>{{ formatearMoneda(registroSeleccionado?.descuento) }}</span>
-          </div>
-          <div class="ticket-row" *ngIf="tipoRegistro === 'ticket'">
-            <strong>IVA:</strong>
-            <span>{{ formatearMoneda(registroSeleccionado?.iva) }}</span>
-          </div>
-          <div class="ticket-row" *ngIf="tipoRegistro === 'ticket' && registroSeleccionado?.ieps > 0">
-            <strong>IEPS:</strong>
-            <span>{{ formatearMoneda(registroSeleccionado?.ieps) }}</span>
-          </div>
+        <div class="info-row">
+          <span class="label">Descripción:</span>
+          <span class="value">{{ registroSeleccionado?.descrip }}</span>
         </div>
-
-        <div class="ticket-total">
-          <div class="ticket-row">
-            <strong>TOTAL:</strong>
-            <strong>{{ formatearMoneda(registroSeleccionado?.total) }}</strong>
-          </div>
-          <div class="ticket-row" *ngIf="registroSeleccionado?.saldo > 0">
-            <strong>Saldo Pendiente:</strong>
-            <strong>{{ formatearMoneda(registroSeleccionado?.saldo) }}</strong>
-          </div>
+        <div class="info-row">
+          <span class="label">Importe:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.importe) }}</span>
         </div>
-
-        <div class="ticket-footer">
-          <p>¡Gracias por su preferencia!</p>
-          <p>{{ formatearFecha(fechaActual) }}</p>
+        <div class="info-row" *ngIf="registroSeleccionado?.descuento > 0">
+          <span class="label">Descuento:</span>
+          <span class="value descuento">-{{ formatearMoneda(registroSeleccionado?.descuento) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Total:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.total) }}</span>
+        </div>
+        <div class="info-row destacado">
+          <span class="label">Saldo Pendiente:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.saldo || registroSeleccionado?.total) }}</span>
         </div>
       </div>
 
-      <div class="modal-vista-previa">
-        <p class="text-info">
-          <i class="fas fa-info-circle"></i>
-          Vista previa del ticket a imprimir
-        </p>
+      <div class="form-cobro">
+        <div class="form-field">
+          <label>Monto a Cobrar</label>
+          <input 
+            type="number" 
+            [(ngModel)]="montoCobro" 
+            min="0" 
+            [max]="registroSeleccionado?.saldo || registroSeleccionado?.total"
+            step="0.01"
+            class="input-monto">
+        </div>
+
+        <div class="form-field">
+          <label>Forma de Pago</label>
+          <select [(ngModel)]="formaPago" class="input-select">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div class="form-field" *ngIf="formaPago !== 'Efectivo'">
+          <label>Referencia</label>
+          <input 
+            type="text" 
+            [(ngModel)]="referencia" 
+            placeholder="Número de referencia o autorización"
+            class="input-text">
+        </div>
+
+        <div class="form-field">
+          <label>Comentarios (Opcional)</label>
+          <textarea 
+            [(ngModel)]="comentariosCobro" 
+            rows="3"
+            placeholder="Comentarios adicionales sobre el cobro"
+            class="input-textarea"></textarea>
+        </div>
       </div>
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancelar" (click)="cerrarModal()">
-        <i class="fas fa-times"></i>
+      <button class="btn-cancelar" (click)="cerrarModalCobro()">
         Cancelar
       </button>
-      <button class="btn-imprimir" (click)="imprimirTicket()">
-        <i class="fas fa-print"></i>
-        Imprimir
+      <button class="btn-procesar" (click)="procesarCobro()">
+        <i class="fas fa-check"></i>
+        Procesar Cobro
       </button>
     </div>
   </div>

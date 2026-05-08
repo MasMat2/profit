@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, Put } from '@nestjs/common';
 import { PuntoVentaService } from './punto-venta.service';
 import { VentaDto } from './dto/venta.dto';
 import { CrearCategoriaDto } from './dto/categoria.dto';
@@ -18,6 +18,11 @@ export class PuntoVentaController {
     return this.puntoVentaService.crearCategoria(dto);
   }
 
+  @Delete('categorias/:id')
+  eliminarCategoria(@Param('id') id: string) {
+    return this.puntoVentaService.eliminarCategoria(+id);
+  }
+
   @Get('productos')
   getTodosLosProductos() {
     return this.puntoVentaService.getTodosLosProductos();
@@ -33,9 +38,19 @@ export class PuntoVentaController {
     return this.puntoVentaService.crearProducto(dto);
   }
 
+  @Put('productos/:id')
+  actualizarProducto(@Param('id') id: string, @Body() dto: CrearProductoDto) {
+    return this.puntoVentaService.actualizarProducto(+id, dto);
+  }
+
+  @Delete('productos/:id')
+  eliminarProducto(@Param('id') id: string) {
+    return this.puntoVentaService.eliminarProducto(+id);
+  }
+
   @Get('clientes')
-  getClientes() {
-    return this.puntoVentaService.getClientes();
+  getClientes(@Query('busqueda') busqueda?: string) {
+    return this.puntoVentaService.getClientes(busqueda);
   }
 
   @Post('ventas')
