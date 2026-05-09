@@ -12,6 +12,7 @@ export interface Parametros {
   dir3: string;
   tels: string;
   sucursal: number;
+  rfc?: string;
 }
 
 @Injectable({

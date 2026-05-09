@@ -7,6 +7,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
         component: MainLayoutComponent,
         children: [
             {
+                path: 'estadisticas',
+                loadComponent: () =>
+                    import('../estadisticas/estadisticas.component').then(
+                        (m) => m.EstadisticasComponent
+                    ),
+            },
+            {
                 path: 'administracion',
                 loadComponent: () =>
                     import('../administracion/administracion.component').then(
@@ -20,7 +27,28 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
             {
                 path: 'catalogo-socios',
                 loadComponent: () => import('../partners-catalog/partners-catalog.component').then(m => m.PartnersCatalogComponent)
-            }
+            },
+            {
+                path: 'punto-venta',
+                loadComponent: () =>
+                    import('../punto-venta/punto-venta.component').then(
+                        (m) => m.PuntoVentaComponent
+                    ),
+            },
+            {
+                path: 'registro-tickets',
+                loadComponent: () =>
+                    import('../registro-tickets/registro-tickets.component').then(
+                        (m) => m.RegistroTicketsComponent
+                    ),
+            },
+            {
+                path: 'acceso-clientes',
+                loadComponent: () =>
+                    import('../access-client/access-client.component').then(
+                        (m) => m.AccessClientComponent
+                    ),
+            },
         ]
     },
 ];

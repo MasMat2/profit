@@ -8,6 +8,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AdministracionModule } from './administracion/administracion.module';
 import { FormasPagoModule } from './formas-pago/formas-pago.module';
+import { PuntoVentaModule } from './punto-venta/punto-venta.module';
+import { RegistroTicketsModule } from './registro-tickets/registro-tickets.module';
+import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { AccesoClientesModule } from './acceso-clientes/acceso-clientes.module';
 
 @Module({
   imports: [
@@ -18,6 +22,10 @@ import { FormasPagoModule } from './formas-pago/formas-pago.module';
     SociosModule,
     MensualidadesModule,
     DescuentosModule,
+    PuntoVentaModule,
+    RegistroTicketsModule,
+    AccesoClientesModule,
+    EstadisticasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

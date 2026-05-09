@@ -15,12 +15,7 @@ export const MENU_CONFIG: MenuSection[] = [
   {
     title: 'ADMINISTRACIÓN',
     items: [
-      { 
-        id: 'reportes', 
-        name: 'Reportes', 
-        icon: 'fas fa-chart-bar',
-        route: 'reportes'
-      },
+
       { 
         id: 'configuracion', 
         name: 'Configuración', 
@@ -28,17 +23,28 @@ export const MENU_CONFIG: MenuSection[] = [
         route: 'administracion'
       },
       { 
-        id: 'monitor-acceso', 
-        name: 'Monitor de Acceso', 
-        icon: 'fas fa-video',
-        route: 'monitor-acceso'
+        id: 'estadisticas', 
+        name: 'Estadísticas', 
+        icon: 'fas fa-chart-bar',
+        route: 'estadisticas'
       },
+    ]
+  },
+  {
+    title: 'ACCESO',
+    items: [
+
       { 
         id: 'acceso-clientes', 
-        name: 'Acceso a Clientes', 
+        name: 'Registro Asistencia', 
         icon: 'fas fa-user',
         route: 'acceso-clientes'
       },
+    ]
+  },
+  {
+    title: 'CATÁLOGOS',
+    items: [
       { 
         id: 'categoria-planes', 
         name: 'Clases', 
@@ -47,7 +53,7 @@ export const MENU_CONFIG: MenuSection[] = [
       },
       { 
         id: 'catalogo-socios', 
-        name: 'Catálogo de Socios', 
+        name: 'Socios', 
         icon: 'fas fa-users',
         route: 'catalogo-socios'
       }
@@ -57,17 +63,12 @@ export const MENU_CONFIG: MenuSection[] = [
     title: 'INVENTARIO Y VENTAS',
     items: [
       { 
-        id: 'catalogo-productos', 
-        name: 'Catálogo de Productos', 
-        icon: 'fas fa-box-open',
-        route: 'catalogo-productos'
-      },
-      { 
         id: 'punto-venta', 
-        name: 'Punto de Venta', 
+        name: 'Punto de venta', 
         icon: 'fas fa-cash-register',
         route: 'punto-venta'
       },
+     
       { 
         id: 'ventas-credito', 
         name: 'Ventas a Crédito', 

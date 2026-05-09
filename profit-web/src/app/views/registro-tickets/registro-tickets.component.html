@@ -1,0 +1,290 @@
+<div class="registro-tickets-wrapper">
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i class="fas fa-ticket-alt"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Registro de Tickets</h1>
+      <p class="page-subtitle">Consulta y gestión de mensualidades y ventas</p>
+    </div>
+  </div>
+
+  <div class="registro-tickets-container">
+    <div class="tabs-container">
+      <button 
+        class="tab-btn" 
+        [class.active]="tabActiva === 'mensualidades'"
+        (click)="cambiarTab('mensualidades')">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Mensualidades</span>
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="tabActiva === 'ventas'"
+        (click)="cambiarTab('ventas')">
+        <i class="fas fa-shopping-cart"></i>
+        <span>Ventas</span>
+      </button>
+    </div>
+
+    <div class="tab-content" *ngIf="tabActiva === 'mensualidades'">
+      <div class="content-header">
+        <div class="busqueda-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            class="input-busqueda" 
+            placeholder="Escribe mínimo 2 caracteres para buscar..."
+            [(ngModel)]="busquedaMensualidad"
+            (input)="filtrarMensualidades()">
+        </div>
+      </div>
+
+      <div class="tabla-wrapper">
+        <div class="loading-state" *ngIf="cargandoMensualidades">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando mensualidades...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoMensualidades && !busquedaMensualidadRealizada">
+          <i class="fas fa-search"></i>
+          <p>Ingresa un criterio de búsqueda para ver las mensualidades</p>
+          <small>Busca por folio, nombre de cliente o descripción</small>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoMensualidades && busquedaMensualidadRealizada && mensualidadesFiltradas.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No se encontraron mensualidades</p>
+          <small>Intenta con otro criterio de búsqueda</small>
+        </div>
+
+        <table class="tabla-registros" *ngIf="!cargandoMensualidades && mensualidadesFiltradas.length > 0">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Importe</th>
+              <th>Descuento</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mens of mensualidadesFiltradas" 
+                class="fila-registro"
+                [class.cancelado]="mens.cancelado === 1">
+              <td class="folio">{{ mens.idmens }}</td>
+              <td>{{ mens.nombreSocio || 'N/A' }}</td>
+              <td>{{ formatearFecha(mens.fecha) }}</td>
+              <td class="descripcion">{{ mens.descrip }}</td>
+              <td class="monto">{{ formatearMoneda(mens.importe) }}</td>
+              <td class="monto">{{ formatearMoneda(mens.descuento) }}</td>
+              <td class="monto-total">{{ formatearMoneda(mens.total) }}</td>
+              <td>
+                <span class="badge-estado" 
+                      [style.background-color]="mens.cancelado === 1 ? '#6B7280' : getColorEstado(mens)">
+                  {{ mens.cancelado === 1 ? 'CANCELADO' : getEstadoPago(mens) }}
+                </span>
+              </td>
+              <td>
+                <div class="acciones-grupo">
+                  <button class="btn-accion btn-cobrar" 
+                          *ngIf="esPendiente(mens) && mens.cancelado === 0"
+                          (click)="abrirModalCobro(mens)" 
+                          title="Cobrar mensualidad">
+                    <i class="fas fa-dollar-sign"></i>
+                  </button>
+                  <button class="btn-accion" (click)="abrirModalMensualidad(mens)" title="Imprimir ticket">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="tabActiva === 'ventas'">
+      <div class="content-header">
+        <div class="busqueda-container">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            class="input-busqueda" 
+            placeholder="Escribe mínimo 2 caracteres para buscar..."
+            [(ngModel)]="busquedaTicket"
+            (input)="filtrarTickets()">
+        </div>
+      </div>
+
+      <div class="tabla-wrapper">
+        <div class="loading-state" *ngIf="cargandoTickets">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Cargando tickets...</p>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoTickets && !busquedaTicketRealizada">
+          <i class="fas fa-search"></i>
+          <p>Ingresa un criterio de búsqueda para ver los tickets de venta</p>
+          <small>Busca por folio, nombre de cliente o descripción</small>
+        </div>
+
+        <div class="empty-state" *ngIf="!cargandoTickets && busquedaTicketRealizada && ticketsFiltrados.length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No se encontraron tickets de venta</p>
+          <small>Intenta con otro criterio de búsqueda</small>
+        </div>
+
+        <table class="tabla-registros" *ngIf="!cargandoTickets && ticketsFiltrados.length > 0">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Cliente</th>
+              <th>Fecha</th>
+              <th>Importe</th>
+              <th>Descuento</th>
+              <th>IVA</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of ticketsFiltrados" 
+                class="fila-registro" 
+                [class.cancelado]="ticket.cancelado === 1">
+              <td class="folio">{{ ticket.ticket }}</td>
+              <td>{{ ticket.nombreSocio || 'N/A' }}</td>
+              <td>{{ formatearFecha(ticket.fecha) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.importe) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.descuento) }}</td>
+              <td class="monto">{{ formatearMoneda(ticket.iva) }}</td>
+              <td class="monto-total">{{ formatearMoneda(ticket.total) }}</td>
+              <td>
+                <span class="badge-estado" 
+                      [style.background-color]="ticket.cancelado === 1 ? '#6B7280' : getColorEstado(ticket)">
+                  {{ ticket.cancelado === 1 ? 'CANCELADO' : getEstadoPago(ticket) }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-accion" (click)="abrirModalTicket(ticket)" title="Imprimir ticket">
+                  <i class="fas fa-print"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Ticket para Imprimir -->
+<app-ticket-print 
+  [show]="mostrarTicket"
+  [ticketData]="ticketData"
+  (onClose)="cerrarTicket()">
+</app-ticket-print>
+
+<!-- Modal de Cobro -->
+<div class="modal-overlay" *ngIf="mostrarModalCobro" (click)="cerrarModalCobro()">
+  <div class="modal-cobro" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-dollar-sign"></i>
+        Cobrar Mensualidad
+      </h3>
+      <button class="btn-cerrar-modal" (click)="cerrarModalCobro()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="info-mensualidad">
+        <div class="info-row">
+          <span class="label">Folio:</span>
+          <span class="value">{{ registroSeleccionado?.idmens }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Cliente:</span>
+          <span class="value">{{ registroSeleccionado?.nombreSocio }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Descripción:</span>
+          <span class="value">{{ registroSeleccionado?.descrip }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Importe:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.importe) }}</span>
+        </div>
+        <div class="info-row" *ngIf="registroSeleccionado?.descuento > 0">
+          <span class="label">Descuento:</span>
+          <span class="value descuento">-{{ formatearMoneda(registroSeleccionado?.descuento) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Total:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.total) }}</span>
+        </div>
+        <div class="info-row destacado">
+          <span class="label">Saldo Pendiente:</span>
+          <span class="value">{{ formatearMoneda(registroSeleccionado?.saldo || registroSeleccionado?.total) }}</span>
+        </div>
+      </div>
+
+      <div class="form-cobro">
+        <div class="form-field">
+          <label>Monto a Cobrar</label>
+          <input 
+            type="number" 
+            [(ngModel)]="montoCobro" 
+            min="0" 
+            [max]="registroSeleccionado?.saldo || registroSeleccionado?.total"
+            step="0.01"
+            class="input-monto">
+        </div>
+
+        <div class="form-field">
+          <label>Forma de Pago</label>
+          <select [(ngModel)]="formaPago" class="input-select">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div class="form-field" *ngIf="formaPago !== 'Efectivo'">
+          <label>Referencia</label>
+          <input 
+            type="text" 
+            [(ngModel)]="referencia" 
+            placeholder="Número de referencia o autorización"
+            class="input-text">
+        </div>
+
+        <div class="form-field">
+          <label>Comentarios (Opcional)</label>
+          <textarea 
+            [(ngModel)]="comentariosCobro" 
+            rows="3"
+            placeholder="Comentarios adicionales sobre el cobro"
+            class="input-textarea"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancelar" (click)="cerrarModalCobro()">
+        Cancelar
+      </button>
+      <button class="btn-procesar" (click)="procesarCobro()">
+        <i class="fas fa-check"></i>
+        Procesar Cobro
+      </button>
+    </div>
+  </div>
+</div>

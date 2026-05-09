@@ -69,4 +69,14 @@ body, html {
     --text-color-secondary: #6B7280; /* Secundario (gris) */
   
   }
-  
+
+/* --- ESTILOS DE IMPRESIÓN --- */
+@media print {
+  .main-layout,
+  .sidebar,
+  .page-header,
+  app-notification,
+  app-confirm-dialog {
+    display: none !important;
+  }
+}
