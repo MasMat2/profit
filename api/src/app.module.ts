@@ -6,6 +6,7 @@ import { AdministracionModule } from './administracion/administracion.module';
 import { PuntoVentaModule } from './punto-venta/punto-venta.module';
 import { RegistroTicketsModule } from './registro-tickets/registro-tickets.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { AccesoClientesModule } from './acceso-clientes/acceso-clientes.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { EstadisticasModule } from './estadisticas/estadisticas.module';
     PuntoVentaModule,
     RegistroTicketsModule,
     EstadisticasModule,
+    AccesoClientesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -35,7 +35,7 @@ export const MENU_CONFIG: MenuSection[] = [
       },
       { 
         id: 'acceso-clientes', 
-        name: 'Acceso a Clientes', 
+        name: 'Registro Asistencia', 
         icon: 'fas fa-user',
         route: 'acceso-clientes'
       },

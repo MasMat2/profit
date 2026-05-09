@@ -34,6 +34,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.RegistroTicketsComponent
                     ),
             },
+            {
+                path: 'acceso-clientes',
+                loadComponent: () =>
+                    import('../access-client/access-client.component').then(
+                        (m) => m.AccessClientComponent
+                    ),
+            },
         ]
     },
 ];
