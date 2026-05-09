@@ -1,4 +1,4 @@
-<div class="main-layout">
+<div class="main-layout" [class.sidebar-is-collapsed]="isSidebarCollapsed">
     
   <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
     <div class="logo-container">
@@ -17,16 +17,18 @@
         <ng-container *ngFor="let item of section.items">
             <!-- Elemento de menú normal -->
             <a *ngIf="!item.children" class="nav-item" (click)="selectComponent(item.id)" [class.active]="activeMenu === item.id"
-            routerLink="{{ item.route }}">
-              <i [class]="item.icon"></i> <span class="nav-label">{{ item.name }}</span>
+            routerLink="{{ item.route }}" [title]="item.name">
+              <i [class]="item.icon"></i>
+              <span class="nav-label">{{ item.name }}</span>
             </a>
             <!-- Elemento de menú con acordeón -->
-            <div *ngIf="item.children" class="accordion">
-              <div class="accordion-header" (click)="toggleAccordion(item.id)">
+            <div *ngIf="item.children" class="accordion" [title]="item.name">
+              <div class="accordion-header" (click)="isSidebarCollapsed ? toggleSidebar() : toggleAccordion(item.id)">
                 <a class="nav-item">
-                  <i [class]="item.icon"></i> <span class="nav-label">{{ item.name }}</span>
+                  <i [class]="item.icon"></i>
+                  <span class="nav-label">{{ item.name }}</span>
                 </a>
-                <i class="fas fa-chevron-down" [class.rotated]="accordions[item.id]"></i>
+                <i class="fas fa-chevron-down accordion-chevron" [class.rotated]="accordions[item.id]"></i>
               </div>
               <div class="accordion-content" [class.show]="accordions[item.id]">
                 <a *ngFor="let child of item.children" class="nav-item sub-item" (click)="selectComponent(child.id)" [class.active]="activeMenu === child.id"
@@ -43,7 +45,7 @@
 
 
     <div class="sidebar-footer">
-      <a class="nav-item theme-switcher" (click)="toggleTheme()" title="Cambiar tema">
+      <a class="nav-item theme-switcher" (click)="toggleTheme()" [title]="isDarkMode ? 'Modo Claro' : 'Modo Oscuro'">
         <i class="fas" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
         <span class="nav-label">{{ isDarkMode ? 'Modo Claro' : 'Modo Oscuro' }}</span>
       </a>

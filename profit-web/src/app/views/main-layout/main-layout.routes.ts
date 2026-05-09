@@ -13,6 +13,10 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.AdministracionComponent
                     ),
             },
+            {
+                path: 'categoria-planes',
+                loadComponent: () => import('../classes/classes.component').then(m => m.ClassesComponent)
+            }
         ]
     },
 ];

@@ -119,6 +119,46 @@
 }
 
 
+.logo-container {
+    padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    min-height: 80px;
+  }
+  
+  .logo-container img {
+    height: 80px; 
+    width: auto;
+    object-fit: contain;
+  }
+
+  .sidebar-toggle {
+    background: none;
+    border: 1px solid var(--surface-border);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+
+    i {
+      font-size: 0.7rem;
+    }
+
+    &:hover {
+      background-color: var(--primary-color-light);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+  }
+
   .main-nav {
     display: flex;
     flex-direction: column;

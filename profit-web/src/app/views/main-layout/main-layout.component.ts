@@ -49,6 +49,11 @@ export class MainLayoutComponent {
     }
 
     this.loadMenuState();
+
+    const savedSidebar = localStorage.getItem('sidebarCollapsed');
+    if (savedSidebar === 'true') {
+      this.isSidebarCollapsed = true;
+    }
   }
 
 
