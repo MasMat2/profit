@@ -1,0 +1,98 @@
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="assignment-modal-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>
+        <i class="fas fa-calendar-plus"></i>
+        Asignación de Clases
+      </h2>
+      <button class="btn-close" (click)="onCancel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <div class="assignment-grid">
+        <!-- Columna 1: Lista de Clases -->
+        <div class="classes-column">
+          <h3>Clases Disponibles</h3>
+          
+          <div class="categories-list">
+            <div 
+              class="category-item"
+              *ngFor="let category of classCategories"
+              [class.active]="selectedCategory?.id === category.id"
+              (click)="selectCategory(category)"
+            >
+              <i class="fas fa-dumbbell"></i>
+              <span>{{ category.nombre }}</span>
+            </div>
+          </div>
+
+          <div class="classes-list" *ngIf="selectedCategory">
+            <div 
+              class="class-item"
+              *ngFor="let clase of selectedCategory.clases"
+              [class.active]="selectedClass?.id === clase.id"
+              (click)="selectClass(clase)"
+            >
+              <div class="class-name">{{ clase.nombre }}</div>
+              <div class="class-category">{{ clase.categoria }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Precios y Descuentos -->
+        <div class="prices-column">
+          <h3>Precios</h3>
+
+          <div class="period-selector">
+            <label>Periodicidad</label>
+            <select class="form-control" [(ngModel)]="selectedPeriod">
+              <option *ngFor="let period of availablePeriods" [value]="period">
+                {{ period }}
+              </option>
+            </select>
+          </div>
+
+          <div class="price-details" *ngIf="selectedClass">
+            <div class="price-row">
+              <span>Precio {{ selectedPeriod }}:</span>
+              <span class="amount">{{ formatCurrency(getCurrentPrice()) }}</span>
+            </div>
+            <div class="price-row discount" *ngIf="getCurrentDiscount() > 0">
+              <span>Descuento:</span>
+              <span class="amount">- {{ formatCurrency(getCurrentDiscount()) }}</span>
+            </div>
+            <div class="price-row subtotal">
+              <span>Subtotal:</span>
+              <span class="amount">{{ formatCurrency(getSubtotal()) }}</span>
+            </div>
+          </div>
+
+          <div class="total-section" *ngIf="selectedClass">
+            <div class="total-label">Total a Pagar</div>
+            <div class="total-amount">{{ formatCurrency(getSubtotal()) }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="onCancel()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="onConfirm()"
+        [disabled]="!selectedClass"
+      >
+        <i class="fas fa-check"></i>
+        Confirmar Asignación
+      </button>
+    </div>
+  </div>
+</div>

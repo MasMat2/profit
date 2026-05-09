@@ -1,0 +1,30 @@
+<div class="partners-catalog-container">
+  <main class="main-content">
+    <div class="catalog-header">
+      <div class="header-title">
+        <i class="fas fa-users"></i>
+        <h1>Catálogo de Socios</h1>
+      </div>
+      <button class="btn-primary" (click)="openNewPartnerModal()">
+        <i class="fas fa-plus"></i>
+        Nuevo Socio
+      </button>
+    </div>
+
+    <div class="grid-container">
+      <app-grid
+        [rowData]="partners"
+        [columnDefs]="columnDefs"
+        [rowHeight]="60"
+        (rowClicked)="openPartnerModal($event)"
+      />
+    </div>
+  </main>
+</div>
+
+@if (showModal) {
+  <app-partner-modal
+    [partner]="selectedPartner"
+    (close)="closeModal()"
+  />
+}
