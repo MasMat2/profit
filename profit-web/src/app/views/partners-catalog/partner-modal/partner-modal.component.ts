@@ -25,6 +25,7 @@ export class PartnerModalComponent implements OnInit {
   totalInscripcion: number = 0;
   showTicketModal: boolean = false;
   ticketData: PaymentTicket | null = null;
+  loadingSubscriptions: boolean = false;
 
   PartnerStatus = PartnerStatus;
   PaymentPeriod = PaymentPeriod;
@@ -46,19 +47,17 @@ export class PartnerModalComponent implements OnInit {
 
   loadMensualidades(): void {
     if (this.partner && this.partner.id > 0) {
-      console.log('Cargando mensualidades para socio ID:', this.partner.id);
+      this.loadingSubscriptions = true;
       this.partnersService.getMensualidadesBySocio(this.partner.id).subscribe({
         next: (mensualidades) => {
-          console.log('Mensualidades recibidas:', mensualidades);
           this.partner!.suscripciones = mensualidades.map(m => this.mapMensualidadToSubscription(m));
-          console.log('Suscripciones mapeadas:', this.partner!.suscripciones);
+          this.loadingSubscriptions = false;
         },
         error: (error) => {
           console.error('Error al cargar mensualidades:', error);
+          this.loadingSubscriptions = false;
         }
       });
-    } else {
-      console.log('Partner no válido para cargar mensualidades:', this.partner);
     }
   }
 
@@ -220,6 +219,9 @@ export class PartnerModalComponent implements OnInit {
 
   setActiveTab(tab: 'datos' | 'suscripciones' | 'ventas'): void {
     this.activeTab = tab;
+    if (tab === 'suscripciones' && this.partner && this.partner.id > 0) {
+      this.loadMensualidades();
+    }
   }
 
   calculateTotal(): void {

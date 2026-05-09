@@ -335,7 +335,13 @@
       <!-- TAB: Suscripciones -->
       <div class="tab-content" *ngIf="activeTab === 'suscripciones'">
         <div class="subscriptions-content">
-          <div class="table-container" *ngIf="partner && partner.suscripciones.length > 0">
+
+          <div class="loading-state" *ngIf="loadingSubscriptions">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando suscripciones...</p>
+          </div>
+
+          <div class="table-container" *ngIf="!loadingSubscriptions && partner && partner.suscripciones.length > 0">
             <table class="data-table">
               <thead>
                 <tr>
@@ -373,7 +379,7 @@
             </table>
           </div>
 
-          <div class="empty-state" *ngIf="!partner || partner.suscripciones.length === 0">
+          <div class="empty-state" *ngIf="!loadingSubscriptions && (!partner || partner.suscripciones.length === 0)">
             <i class="fas fa-calendar-times"></i>
             <p>No hay suscripciones registradas</p>
           </div>

@@ -685,6 +685,22 @@
   }
 }
 
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+
+  i {
+    font-size: 36px;
+    color: #F97316;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #6B7280;
+  }
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;

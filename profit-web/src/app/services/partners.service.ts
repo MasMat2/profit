@@ -62,7 +62,7 @@ export class PartnersService {
   }
 
   getClaseDetails(claseId: number): Observable<any> {
-    return this.http.get(`http://localhost:3000/api/classes/${claseId}`);
+    return this.http.get(`/classes/${claseId}`);
   }
 
   private mapPartnerToSocioAPI(partner: Partial<Partner>): any {
@@ -105,7 +105,7 @@ export class PartnersService {
   }
 
   private mapClasesArrayToString(clases: PartnerClass[]): string {
-    return clases.map(c => c.id).join(',');
+    return clases.map(c => ',' + String(c.id).padStart(3, '0')).join('');
   }
 
   getPartners(filter?: PartnerFilter): Observable<Partner[]> {
@@ -168,17 +168,17 @@ export class PartnersService {
   }
 
   getAvailableClasses(): Observable<ClassCategory[]> {
-    return this.http.get<any[]>('http://localhost:3000/api/classes/active').pipe(
+    return this.http.get<any[]>('/classes/active').pipe(
       map(classes => this.mapClassesToCategories(classes))
     );
   }
 
   getMensualidadesBySocio(socioId: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:3000/api/mensualidades/socio/${socioId}`);
+    return this.http.get<any[]>(`/mensualidades/socio/${socioId}`);
   }
 
   getDescuentosBySocio(socioId: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:3000/api/descuentos/socio/${socioId}`);
+    return this.http.get<any[]>(`/descuentos/socio/${socioId}`);
   }
 
   private mapClassesToCategories(classes: any[]): ClassCategory[] {

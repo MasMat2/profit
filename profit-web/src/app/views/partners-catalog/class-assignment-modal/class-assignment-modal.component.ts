@@ -75,7 +75,7 @@ export class ClassAssignmentModalComponent implements OnInit {
       const subtotal = this.getSubtotal();
       
       const newClass: PartnerClass = {
-        id: Date.now() + Math.random(),
+        id: this.selectedClass.id,
         nombre: this.selectedClass.nombre,
         categoria: this.selectedClass.categoria,
         horario: 'Por definir',
