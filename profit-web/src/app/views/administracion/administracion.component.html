@@ -25,32 +25,32 @@
 
           <div class="form-field">
             <label>Nombre del Negocio</label>
-            <input type="text" [(ngModel)]="parametros.empresa" [ngModelOptions]="{ standalone: true }" placeholder="Nombre del negocio" />
+            <input type="text" [(ngModel)]="parametros.empresa" placeholder="Nombre del negocio" />
           </div>
 
           <div class="form-field">
             <label>Dirección</label>
-            <input type="text" [(ngModel)]="parametros.dir1" [ngModelOptions]="{ standalone: true }" placeholder="Dirección" />
+            <input type="text" [(ngModel)]="parametros.dir1" placeholder="Dirección" />
           </div>
 
           <div class="form-field">
             <label>Colonia</label>
-            <input type="text" [(ngModel)]="parametros.dir2" [ngModelOptions]="{ standalone: true }" placeholder="Colonia" />
+            <input type="text" [(ngModel)]="parametros.dir2" placeholder="Colonia" />
           </div>
 
           <div class="form-field">
             <label>Ciudad, Estado</label>
-            <input type="text" [(ngModel)]="parametros.dir3" [ngModelOptions]="{ standalone: true }" placeholder="Ciudad, Estado" />
+            <input type="text" [(ngModel)]="parametros.dir3" placeholder="Ciudad, Estado" />
           </div>
 
           <div class="two-col">
             <div class="form-field">
               <label>Teléfonos</label>
-              <input type="text" [(ngModel)]="parametros.tels" [ngModelOptions]="{ standalone: true }" placeholder="Teléfonos" />
+              <input type="text" [(ngModel)]="parametros.tels" placeholder="Teléfonos" />
             </div>
             <div class="form-field">
               <label>Número de Sucursal</label>
-              <input type="number" [(ngModel)]="parametros.sucursal" [ngModelOptions]="{ standalone: true }" min="1" />
+              <input type="number" [(ngModel)]="parametros.sucursal" min="1" />
             </div>
           </div>
         </div>
@@ -61,21 +61,20 @@
           <div class="params-grid">
             <div class="checkbox-field">
               <label class="checkbox-label">
-                <input type="checkbox" [(ngModel)]="paqvisvenceChecked" [ngModelOptions]="{ standalone: true }" />
+                <input type="checkbox" [(ngModel)]="paqvisvenceChecked" />
                 <span class="checkmark"></span>
                 Paquete Visita Vence
               </label>
             </div>
-
             <div class="form-field">
               <label>Días Paquete Vigencia</label>
-              <input type="number" [(ngModel)]="parametros.diaspaqvisvence" [ngModelOptions]="{ standalone: true }" min="0" />
+              <input type="number" [(ngModel)]="parametros.diaspaqvisvence" min="0" />
             </div>
           </div>
 
           <div class="form-field">
             <label>Descuento Días</label>
-            <input type="number" [(ngModel)]="parametros.aplicadescdias" [ngModelOptions]="{ standalone: true }" min="0" />
+            <input type="number" [(ngModel)]="parametros.aplicadescdias" min="0" />
           </div>
 
           <button class="btn-outline btn-formas-pago" (click)="openFormasPagoModal()">
