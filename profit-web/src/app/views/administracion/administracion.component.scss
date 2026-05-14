@@ -25,6 +25,14 @@
     .actions-row{
       grid-column: 1;
     }
+
+    .params-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .two-col {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
@@ -34,6 +42,12 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .btn-formas-pago {
