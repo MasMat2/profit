@@ -22,7 +22,6 @@
   --surface-b: #F3F4F6;       /* Fondo principal de la app */
   --surface-c: #F9FAFB;       /* Fondo de la página */
   --surface-border: #D1D5DB;  /* Bordes */
-  --surface-hover: #E5E7EB;   /* Hover en elementos de lista */
 
   /* Texto */
   --text-color: #111827;          /* Principal (casi negro) */
@@ -31,6 +30,12 @@
   /* Otros */
   --border-radius: 8px;
   --focus-ring-color: #FDBA74; /* Naranja claro para el foco */
+  
+  --edit-color: #3b82f6;
+  --edit-color-hover: #EFF6FF;
+  
+  --danger-color: #ef4444;
+  --danger-color-hover: #FEE2E2;
 }
 
 [data-theme="dark"] {

@@ -98,20 +98,20 @@
   }
 
   &.btn-edit {
-    color: #3b82f6;
+    color: var(--edit-color);
     
     &:hover {
-      background-color: #EFF6FF;
-      border-color: #3b82f6;
+      background-color: var(--edit-color-hover);
+      border-color: var(--edit-color);
     }
   }
 
   &.btn-delete {
-    color: #ef4444;
+    color: var(--danger-color);
     
     &:hover {
-      background-color: #FEF2F2;
-      border-color: #ef4444;
+      background-color: var(--danger-color-hover);
+      border-color: var(--danger-color);
     }
   }
 }
