@@ -39,19 +39,19 @@
   .page-header-text {
     display: flex;
     flex-direction: column;
-  }
+    
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin: 0 0 0.25rem 0;
+    }
 
-  h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin: 0 0 0.25rem 0;
-  }
-
-  .page-subtitle {
-    color: var(--text-color-secondary);
-    font-size: 0.875rem;
-    margin: 0;
+    .page-subtitle {
+      color: var(--text-color-secondary);
+      font-size: 0.875rem;
+      margin: 0;
+    }
   }
 }
 
@@ -65,24 +65,32 @@
 }
 
 
-
 // ── Card & form UI ────────────────────────────────────────────────────────────
 
-.card {
-  background: var(--surface-a);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  
-  align-self: start; // Shrink to content height
-}
+.cards-row {
 
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin: 0 0 1.25rem 0;
+  .card {
+    background: var(--surface-a);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    
+    align-self: start; // Shrink to content height
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin: 0 0 1.25rem 0;
+    }
+  }
+ 
+  .actions-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
 }
 
 .form-field {
@@ -154,11 +162,6 @@
 
 // ── Actions & feedback ────────────────────────────────────────────────────────
 
-.actions-row {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 0.5rem;
-}
 
 .btn-outline {
   display: flex;
