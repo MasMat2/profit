@@ -67,7 +67,7 @@
             </div>
             <div class="form-field">
               <label>Días Paquete Vigencia</label>
-              <input type="number" [(ngModel)]="parametros.diaspaqvisvence" min="0" />
+              <input type="number" [disabled]="!paqvisvenceChecked" [(ngModel)]="parametros.diaspaqvisvence" min="0" />
             </div>
           </div>
 
