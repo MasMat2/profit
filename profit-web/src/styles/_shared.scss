@@ -60,6 +60,8 @@
   overflow-y: auto;
   padding: 24px 32px;
   background-color: var(--surface-c);
+
+  container-type: inline-size; // Set container
 }
 
 
@@ -72,6 +74,8 @@
   border-radius: var(--border-radius);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  
+  align-self: start; // Shrink to content height
 }
 
 .section-title {

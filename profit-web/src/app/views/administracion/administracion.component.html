@@ -83,10 +83,6 @@
 
         </div>
 
-
-        </div><!-- /.cards-row -->
-
-
         <!-- Save button -->
         <div class="actions-row">
           <button class="btn-save" (click)="guardarInformacion()" [disabled]="isSavingParametros">
@@ -94,6 +90,11 @@
             {{ isSavingParametros ? 'Guardando...' : 'Guardar Información' }}
           </button>
         </div>
+
+        </div>
+        <!-- /.cards-row -->
+
+
 
       </ng-container>
   </div>

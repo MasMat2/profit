@@ -4,13 +4,27 @@
 // src/styles/_shared.scss and are available globally.
 
 .cards-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 500px 500px;
   gap: 1.5rem;
-  align-items: flex-start;
 
-  > .card {
-    flex: 1;
-    margin-bottom: 0;
+ 
+  .actions-row {
+    grid-column: 2;
+  }
+
+  @container(max-width: 1000px){
+    grid-template-columns: 500px;
+    .actions-row{
+      grid-column: 1;
+    }
+  }
+
+  @container(max-width: 500px){
+    grid-template-columns: 1fr;
+    .actions-row{
+      grid-column: 1;
+    }
   }
 }
 
@@ -28,18 +42,3 @@
 }
 
 
-@media (max-width: 768px) {
-  .cards-row {
-    flex-direction: column;
-
-    > .card {
-      margin-bottom: 1.5rem;
-    }
-  }
-}
-
-@media (max-width: 600px) {
-  .params-grid {
-    grid-template-columns: 1fr;
-  }
-}
