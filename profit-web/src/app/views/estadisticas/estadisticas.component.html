@@ -9,10 +9,79 @@
         <p class="page-subtitle">Panel de análisis y métricas</p>
       </div>
     </div>
-    <button class="btn-add" (click)="agregarEstadistica()">
-      <i class="fas fa-plus"></i>
-      Agregar Estadística
-    </button>
+    <div class="page-header-actions">
+      <button class="btn-filtros" (click)="toggleFiltros()">
+        <i class="fas fa-filter"></i>
+        Filtros
+      </button>
+      <button class="btn-add" (click)="agregarEstadistica()">
+        <i class="fas fa-plus"></i>
+        Agregar Estadística
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros de Fecha -->
+  <div class="filtros-container" *ngIf="mostrarFiltros">
+    <div class="filtros-header">
+      <h3>Filtrar por Período</h3>
+      <button class="btn-limpiar" (click)="limpiarFiltros()">
+        <i class="fas fa-redo"></i>
+        Restablecer
+      </button>
+    </div>
+    <div class="filtros-periodos">
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'hoy'"
+        (click)="seleccionarPeriodo('hoy')">
+        Hoy
+      </button>
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'semana'"
+        (click)="seleccionarPeriodo('semana')">
+        Última Semana
+      </button>
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'mes'"
+        (click)="seleccionarPeriodo('mes')">
+        Último Mes
+      </button>
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'trimestre'"
+        (click)="seleccionarPeriodo('trimestre')">
+        Último Trimestre
+      </button>
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'anio'"
+        (click)="seleccionarPeriodo('anio')">
+        Último Año
+      </button>
+      <button 
+        class="periodo-btn" 
+        [class.active]="periodoSeleccionado === 'personalizado'"
+        (click)="seleccionarPeriodo('personalizado')">
+        Personalizado
+      </button>
+    </div>
+    <div class="filtros-fechas" *ngIf="periodoSeleccionado === 'personalizado'">
+      <div class="fecha-group">
+        <label>Fecha Inicio</label>
+        <input type="date" [(ngModel)]="fechaInicio" class="input-fecha">
+      </div>
+      <div class="fecha-group">
+        <label>Fecha Fin</label>
+        <input type="date" [(ngModel)]="fechaFin" class="input-fecha">
+      </div>
+      <button class="btn-aplicar" (click)="aplicarFiltros()">
+        <i class="fas fa-check"></i>
+        Aplicar
+      </button>
+    </div>
   </div>
 
   <div class="page-content">
@@ -26,48 +95,46 @@
       <div *ngIf="estadisticasAgregadas.length > 0" class="estadisticas-grid">
         <div 
           *ngFor="let stat of estadisticasAgregadas" 
-          class="stat-card"
-          [class.expanded]="stat.expanded"
+          class="stat-card-modern"
         >
-          <div class="stat-card-header" (click)="toggleCard(stat)">
-            <div class="stat-card-icon">
-              <i [class]="stat.icono"></i>
+          <div class="stat-card-header-modern">
+            <div class="stat-header-left">
+              <div class="stat-card-icon-modern">
+                <i [class]="stat.icono"></i>
+              </div>
+              <div class="stat-card-title-modern">
+                <h3>{{ stat.titulo }}</h3>
+              </div>
             </div>
-            <div class="stat-card-title">
-              <h3>{{ stat.titulo }}</h3>
-            </div>
-            <div class="stat-card-actions">
-              <button class="btn-icon" (click)="removerEstadistica(stat); $event.stopPropagation()" title="Eliminar">
-                <i class="fas fa-times"></i>
-              </button>
-              <button class="btn-icon" title="Expandir/Contraer">
-                <i [class]="stat.expanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
-              </button>
-            </div>
+            <button class="btn-icon-remove" (click)="removerEstadistica(stat)" title="Eliminar">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
 
-          <div class="stat-card-body" *ngIf="stat.expanded">
+          <div class="stat-card-body-modern">
             <div [ngSwitch]="stat.tipo">
               <!-- Género -->
               <div *ngSwitchCase="'genero'" class="stat-content">
                 <div class="stat-summary">
                   <div class="stat-item">
                     <div class="stat-label">Masculino</div>
-                    <div class="stat-value">{{ stat.data.masculino || 0 }}</div>
+                    <div class="stat-value">{{ stat.data?.masculino || 0 }}</div>
                   </div>
                   <div class="stat-item">
                     <div class="stat-label">Femenino</div>
-                    <div class="stat-value">{{ stat.data.femenino || 0 }}</div>
+                    <div class="stat-value">{{ stat.data?.femenino || 0 }}</div>
                   </div>
                   <div class="stat-item highlight">
                     <div class="stat-label">Total</div>
-                    <div class="stat-value">{{ stat.data.total || 0 }}</div>
+                    <div class="stat-value">{{ stat.data?.total || 0 }}</div>
                   </div>
                 </div>
+                <div class="stat-section-title">
+                  <h4>Distribución Visual</h4>
+                </div>
                 <app-chart 
-                  *ngIf="stat.data"
                   type="doughnut" 
-                  [data]="getGeneroChartData(stat.data)">
+                  [data]="getGeneroChartData(stat.data || { masculino: 0, femenino: 0, total: 0 })">
                 </app-chart>
               </div>
 

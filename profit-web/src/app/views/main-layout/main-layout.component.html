@@ -7,6 +7,9 @@
   <div class="sidebar" [class.collapsed]="isSidebarCollapsed">
     <div class="logo-container">
       <img *ngIf="!isSidebarCollapsed" src="assets/logo.png" alt="Profit-Syslam Logo">
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 1rem;">
       <button class="sidebar-toggle" (click)="toggleSidebar()" [title]="isSidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'">
         <i class="fas" [ngClass]="isSidebarCollapsed ? 'fa-chevron-right' : 'fa-chevron-left'"></i>
       </button>

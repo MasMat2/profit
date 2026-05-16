@@ -173,20 +173,32 @@ export class EstadisticasService {
     ]);
   }
 
-  getEstadisticaGenero(): Observable<EstadisticaGenero> {
-    return this.http.get<EstadisticaGenero>(`${this.apiUrl}/genero`);
+  getEstadisticaGenero(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaGenero> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaGenero>(`${this.apiUrl}/genero`, { params });
   }
 
-  getEstadisticaEdades(): Observable<EstadisticaEdad[]> {
-    return this.http.get<EstadisticaEdad[]>(`${this.apiUrl}/edades`);
+  getEstadisticaEdades(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaEdad[]> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaEdad[]>(`${this.apiUrl}/edades`, { params });
   }
 
-  getEstadisticaPaquetes(): Observable<EstadisticaPaquete[]> {
-    return this.http.get<EstadisticaPaquete[]>(`${this.apiUrl}/paquetes`);
+  getEstadisticaPaquetes(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaPaquete[]> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaPaquete[]>(`${this.apiUrl}/paquetes`, { params });
   }
 
-  getEstadisticaInscripciones(): Observable<EstadisticaInscripciones> {
-    return this.http.get<EstadisticaInscripciones>(`${this.apiUrl}/inscripciones`);
+  getEstadisticaInscripciones(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaInscripciones> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaInscripciones>(`${this.apiUrl}/inscripciones`, { params });
   }
 
   getEstadisticaSaldo(): Observable<EstadisticaSaldo> {
@@ -197,23 +209,32 @@ export class EstadisticasService {
     return this.http.get<EstadisticaDeudas>(`${this.apiUrl}/deudas`);
   }
 
-  getEstadisticaPagos(): Observable<EstadisticaPago[]> {
-    return this.http.get<EstadisticaPago[]>(`${this.apiUrl}/pagos`);
+  getEstadisticaPagos(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaPago[]> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaPago[]>(`${this.apiUrl}/pagos`, { params });
   }
 
   getEstadisticaMembresias(): Observable<EstadisticaMembresia> {
     return this.http.get<EstadisticaMembresia>(`${this.apiUrl}/membresias`);
   }
 
-  getEstadisticaIngresos(): Observable<EstadisticaIngreso> {
-    return this.http.get<EstadisticaIngreso>(`${this.apiUrl}/ingresos`);
+  getEstadisticaIngresos(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaIngreso> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaIngreso>(`${this.apiUrl}/ingresos`, { params });
   }
 
   getEstadisticaTiposClientes(): Observable<EstadisticaTipoCliente[]> {
     return this.http.get<EstadisticaTipoCliente[]>(`${this.apiUrl}/tipos-clientes`);
   }
 
-  getEstadisticaAccesos(): Observable<EstadisticaAcceso[]> {
-    return this.http.get<EstadisticaAcceso[]>(`${this.apiUrl}/accesos`);
+  getEstadisticaAccesos(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaAcceso[]> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaAcceso[]>(`${this.apiUrl}/accesos`, { params });
   }
 }

@@ -71,11 +71,11 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
   nuevaCategoria = { nombre: '', color: '' };
   
   mostrarModalProducto: boolean = false;
-  nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+  nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0 };
   
   mostrarModalEditarProducto: boolean = false;
   productoEditando: Producto | null = null;
-  productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+  productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0 };
   
   mostrarTicket: boolean = false;
   ticketData: TicketData | null = null;
@@ -368,7 +368,7 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
 
   cerrarModalProducto() {
     this.mostrarModalProducto = false;
-    this.nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+    this.nuevoProducto = { nombre: '', precio: 0, stock: 0, costo: 0 };
   }
 
   abrirModalEditarProducto(producto: Producto, event: Event) {
@@ -378,8 +378,7 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
       nombre: producto.nombre,
       precio: producto.precio,
       stock: producto.stock,
-      costo: 0,
-      emoji: producto.imagen || '📦'
+      costo: 0
     };
     this.mostrarModalEditarProducto = true;
   }
@@ -387,7 +386,7 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
   cerrarModalEditarProducto() {
     this.mostrarModalEditarProducto = false;
     this.productoEditando = null;
-    this.productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0, emoji: '' };
+    this.productoEditado = { nombre: '', precio: 0, stock: 0, costo: 0 };
   }
 
   actualizarProducto() {
@@ -401,7 +400,7 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
       venta: this.productoEditado.precio,
       existencia: this.productoEditado.stock || 0,
       costo: this.productoEditado.costo || 0,
-      foto: this.productoEditado.emoji || '📦'
+      foto: '📦'
     };
 
     this.http.put(`${this.apiUrl}/productos/${this.productoEditando.id}`, dto).subscribe({
@@ -454,7 +453,7 @@ export class PuntoVentaComponent implements OnInit, OnDestroy {
       venta: this.nuevoProducto.precio,
       existencia: this.nuevoProducto.stock || 0,
       costo: this.nuevoProducto.costo || 0,
-      foto: this.nuevoProducto.emoji || '📦',
+      foto: '📦',
       enpantalla: 1
     };
 
