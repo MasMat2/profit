@@ -13,6 +13,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.AdministracionComponent
                     ),
             },
+            {
+                path: 'clases',
+                loadComponent: () =>
+                    import('../clases/clases.component').then(
+                        (m) => m.ClasesComponent
+                    ),
+            },
         ]
     },
 ];

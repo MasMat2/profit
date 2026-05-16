@@ -1,0 +1,257 @@
+.cards-row {
+  display: grid;
+  grid-template-columns: 320px 320px 1fr;
+  gap: 1.5rem;
+  
+  .actions-row {
+    grid-column: 3;
+
+    .btn-save {
+      margin-left: 0.5rem;
+    }
+  }
+
+  @container (max-width: 960px) {
+    grid-template-columns: 320px 320px;
+
+    .card--grow {
+      grid-column: 1 / -1;
+    }
+    
+    .actions-row {
+      grid-column: 2;
+    }
+  }
+
+  @container (max-width: 640px) {
+    grid-template-columns: minmax(320px, 1fr);
+ 
+    .card:not(.card--grow) {
+      max-width: 320px;
+    }
+
+    .actions-row {
+      grid-column: 1;
+    }
+
+  }
+
+  @container (max-width: 320px) {
+    grid-template-columns: min(100%, 320px);
+  }
+
+
+}
+
+// Listado de clases
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+
+  .section-title {
+    margin-bottom: 0;
+  }
+
+  .btn-header {
+    border-radius: 50%;
+    height: 32px;
+    width: 32px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+
+  .class-item {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    cursor: pointer;
+    transition: background 0.15s;
+
+    .class-item-name {
+      font-size: 0.875rem;
+      color: var(--text-color);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--secondary-color);
+    }
+
+    &.active {
+      background: var(--light-focus-ring-color);
+      border-left: 3px solid var(--primary-color);
+      padding-left: calc(0.75rem - 3px);
+
+      .class-item-name {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+// Configuracion
+.checkbox-value {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  margin-bottom: 1rem;
+
+  .form-field {
+    display: contents; // remove form-field class margin
+  }
+}
+
+.section-divider {
+  height: 1px;
+  background-color: var(--surface-border);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+
+  .info-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+  }
+
+  .info-value {
+    font-size: 0.875rem;
+    color: var(--text-color);
+    font-weight: 500;
+
+    &.active {
+      color: var(--success-color);
+    }
+
+    &.inactive {
+      color: var(--danger-color);
+    }
+  }
+}
+
+
+// Precios
+.prices-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+
+  thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--secondary-color);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--surface-b);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--surface-b);
+    }
+  }
+
+  tbody td {
+    padding: 0.875rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+
+    &.period-cell {
+      font-weight: 600;
+    }
+
+    .price-display {
+      font-size: 0.875rem;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    .price-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .currency-symbol {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-color-secondary);
+      }
+
+      .price-input {
+        width: 100%;
+        max-width: 80px;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid var(--surface-border);
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: var(--text-color);
+        transition: all 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px var(--light-focus-ring-color);
+        }
+
+        &::-webkit-inner-spin-button,
+        &::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+      }
+    }
+
+    &.action-cell {
+      text-align: center;
+      width: 40px;
+
+      .edit-icon {
+        font-size: 18px;
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: all 0.2s;
+        opacity: 0.6;
+
+        &:hover {
+          opacity: 1;
+          transform: scale(1.1);
+        }
+
+        &.editing {
+          color: var(--success-color);
+          opacity: 1;
+          
+          &:hover {
+            transform: scale(1.15);
+          }
+        }
+      }
+    }
+  }
+}

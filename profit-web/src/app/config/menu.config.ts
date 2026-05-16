@@ -45,10 +45,10 @@ export const MENU_CONFIG: MenuSection[] = [
     title: 'GESTIÓN',
     items: [
       { 
-        id: 'categoria-planes', 
-        name: 'Categoría/Planes', 
+        id: 'clases', 
+        name: 'Clases', 
         icon: 'fas fa-layer-group',
-        route: 'categoria-planes'
+        route: 'clases'
       },
       { 
         id: 'clientes-accordion', 

@@ -1,0 +1,168 @@
+<div class="component-page"> <!-- Necessary pattern -->
+
+  <div class="page-header"> <!-- Necessary pattern -->
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+
+    <div class="page-header-text">
+      <h1>Clases</h1>
+    </div>
+  </div>
+
+  <div class="page-content"> <!-- Necessary pattern -->
+    <div *ngIf="isLoadingClases" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+
+    <ng-container *ngIf="!isLoadingClases">
+      <div class="cards-row">
+        <!-- Listado de Clases -->
+        <div class="card">
+          <div class="card-header-row">
+            <h2 class="section-title">Listado de Clases</h2>
+            <button class="btn-save btn-header" title="Nueva clase">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+          <div *ngIf="classes.length === 0" class="empty-state">
+            No se encontraron clases
+          </div>
+
+          <ul class="class-list">
+            <li *ngFor="let c of classes" class="class-item" [class.active]="selectedClass?.id === c.id"
+              (click)="selectClass(c)">
+              <span class="class-item-name">{{ c.nomclase }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Configuración -->
+        <div class="card">
+          <h2 class="section-title">Configuración</h2>
+          <div class="form-field">
+            <label>Nombre de la Clase</label>
+            <input type="text" [(ngModel)]="selectedClass.nomclase" placeholder="Nombre de la clase" />
+          </div>
+
+          <div class="checkbox-value">
+            <div class="checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="selectedClass.limitectes" />
+                Limite de Socios
+              </label>
+            </div>
+
+            <div class="form-field">
+              <!-- <label>Límite de Ctes</label> -->
+              <input type="number" [disabled]="!selectedClass.limitectes" [(ngModel)]="selectedClass.cntlimite"
+                min="0" />
+            </div>
+          </div>
+
+          <div class="checkbox-field">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="selectedClass.activa" />
+              Clase activa
+            </label>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="info-row">
+            <span class="info-label">ID de Clase:</span>
+            <span class="info-value">{{ selectedClass.id }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Estado:</span>
+            <span class="info-value" [class.active]="!!selectedClass.activa" [class.inactive]="!selectedClass.activa">
+              {{ selectedClass.activa ? 'Activa' : 'Inactiva' }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-label">Última modificación:</span>
+            <span class="info-value">{{ selectedClass.fecmod | date:'short' }}</span>
+          </div>
+        </div>
+
+        <!-- Precios -->
+        <div class="card card--grow">
+          <h2 class="section-title">Precios</h2>
+
+          <table class="prices-table">
+            <thead>
+              <tr>
+                <th>PERIODO</th>
+                <th>PRECIO NORMAL</th>
+                <th>DESCUENTO</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let precio of selectedClass.precios; let i = index">
+                <td class="period-cell">{{ precio.periodo }}</td>
+
+                <td>
+                  <span *ngIf="!isEditingPrice(i)" class="price-display">
+                    {{ formatCurrency(precio.precioNormal) }}
+                  </span>
+                  <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" class="price-input" [(ngModel)]="precio.precioNormal" [name]="'precio_' + i"
+                      step="0.01" min="0" placeholder="0.00">
+                  </div>
+                </td>
+
+                <td>
+                  <span *ngIf="!isEditingPrice(i)" class="price-display">
+                    {{ formatCurrency(precio.descuento) }}
+                  </span>
+                  <div *ngIf="isEditingPrice(i)" class="price-input-wrapper">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" class="price-input" [(ngModel)]="precio.descuento" [name]="'descuento_' + i"
+                      step="0.01" min="0" placeholder="0.00">
+                  </div>
+                </td>
+
+                <td class="action-cell">
+                  <i [class]="isEditingPrice(i) ? 'fas fa-check edit-icon editing' : 'fas fa-pen edit-icon'"
+                    (click)="toggleEditPrice(i)" [title]="isEditingPrice(i) ? 'Confirmar' : 'Editar'">
+                  </i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="checkbox-value">
+            <div class="checkbox-field">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="selectedClass.cobinsc">
+                Cobrar Inscripción
+              </label>
+            </div>
+
+            <div class="form-field">
+              <input type="number" [disabled]="!selectedClass.cobinsc" [(ngModel)]="selectedClass.prinsc"
+                placeholder="0.00">
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions row -->
+        <div class="actions-row">
+          <button class="btn-cancel">
+            Cancelar
+          </button>
+
+          <button class="btn-save" (click)="guardarInformacion()" [disabled]="isSaving">
+            {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </div><!-- /.cards-row -->
+    </ng-container>
+  </div>
+</div>
