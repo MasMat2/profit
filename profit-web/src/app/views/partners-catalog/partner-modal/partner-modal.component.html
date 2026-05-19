@@ -66,6 +66,17 @@
                     {{ formatCurrency(partner.saldo) }}
                   </div>
                 </div>
+
+                <!-- Botón de Huella Digital -->
+                <button class="btn-fingerprint" (click)="openFingerprintModal()" [class.has-fingerprint]="fingerprintData">
+                  <div class="fingerprint-icon">
+                    <i class="fas fa-fingerprint"></i>
+                  </div>
+                  <div class="fingerprint-text">
+                    <span class="fingerprint-label">{{ fingerprintData ? 'Huella Registrada' : 'Registrar Huella' }}</span>
+                    <span class="fingerprint-status">{{ fingerprintData ? 'Click para gestionar' : 'Click para capturar' }}</span>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -466,3 +477,14 @@
   [ticket]="ticketData"
   (close)="closeTicketModal()"
 ></app-payment-ticket-modal>
+
+<!-- Modal de Huella Digital -->
+<app-fingerprint-modal
+  *ngIf="showFingerprintModal && partner"
+  [partnerName]="partner.nombre"
+  [partnerId]="partner.id"
+  [existingFingerprint]="fingerprintData"
+  (close)="closeFingerprintModal()"
+  (fingerprintSaved)="onFingerprintCaptured($event)"
+  (fingerprintDeleted)="onFingerprintCleared()"
+></app-fingerprint-modal>

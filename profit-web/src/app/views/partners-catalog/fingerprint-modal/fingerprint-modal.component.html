@@ -1,0 +1,48 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        <div class="header-text">
+          <h2>Gestión de Huella Digital</h2>
+          <p class="partner-name">{{ partnerName }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <app-fingerprint-capture
+        [existingFingerprint]="currentFingerprintData?.fmd"
+        (fingerprintCaptured)="onFingerprintCaptured($event)"
+        (fingerprintCleared)="onFingerprintCleared()"
+      ></app-fingerprint-capture>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="onClose()">
+        <i class="fas fa-times"></i>
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<app-confirmation-modal
+  *ngIf="showConfirmDelete"
+  title="¿Estás seguro de eliminar la huella digital registrada?"
+  message="Esta acción no se puede deshacer. Deberás volver a capturar la huella digital del socio."
+  confirmText="Eliminar"
+  cancelText="Cancelar"
+  type="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()"
+></app-confirmation-modal>

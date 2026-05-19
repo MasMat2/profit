@@ -11,31 +11,84 @@ export class SociosService {
   }
 
   async getAllSocios(search?: string, estatus?: string, becado?: string) {
-    return this.db
-      .selectFrom('tbsocios')
-      .selectAll()
+    const socios = await this.db
+      .selectFrom('tbsocios as s')
+      .leftJoin('tbhuellas as h', 'h.socio', 's.socio')
+      .select([
+        's.id',
+        's.socio',
+        's.nomsocio',
+        's.direccion',
+        's.tel1',
+        's.tel2',
+        's.correo',
+        's.obs',
+        's.activo',
+        's.foto',
+        's.modopago',
+        's.importepago',
+        's.descpo',
+        's.becado',
+        's.diapago',
+        's.visitasdisp',
+        's.fecvencevis',
+        's.cumpleaños',
+        's.sexo',
+        's.clases',
+        's.usunvo',
+        's.fecnvo',
+        's.usumod',
+        's.fecmod',
+        's.envia',
+        's.campo1',
+        's.campo2',
+        's.campo3',
+        's.campo4',
+        's.campo5',
+        's.campo6',
+        's.campo7',
+        's.campo8',
+        's.campo9',
+        's.campo10',
+        's.fotostr',
+        's.visvig',
+        's.vissucacc',
+        's.razonsocial',
+        's.fcalle',
+        's.fnumero',
+        's.finterior',
+        's.fcolonia',
+        's.fciudad',
+        's.festado',
+        's.fcp',
+        's.rfc',
+        's.nivel',
+        sql<number>`CASE WHEN h.huella IS NOT NULL THEN 1 ELSE 0 END`.as('tieneHuella')
+      ])
       .$if(!!search, qb =>
         qb.where(eb => eb.or([
-          eb('nomsocio', 'like', `%${search}%`),
-          eb('correo', 'like', `%${search}%`),
-          eb('tel1', 'like', `%${search}%`),
+          eb('s.nomsocio', 'like', `%${search}%`),
+          eb('s.correo', 'like', `%${search}%`),
+          eb('s.tel1', 'like', `%${search}%`),
         ])),
       )
       .$if(!!estatus, qb => {
         const parts = estatus!.split(',');
         const conds: any[] = [];
         return qb.where(eb => {
-          if (parts.includes('Activo'))   conds.push(eb('activo', '=', 1));
-          if (parts.includes('Inactivo')) conds.push(eb('activo', '=', 0));
-          if (parts.includes('Becado'))   conds.push(eb('becado', '=', 1));
+          if (parts.includes('Activo'))   conds.push(eb('s.activo', '=', 1));
+          if (parts.includes('Inactivo')) conds.push(eb('s.activo', '=', 0));
+          if (parts.includes('Becado'))   conds.push(eb('s.becado', '=', 1));
           return eb.or(conds);
         });
       })
       .$if(becado !== undefined, qb =>
-        qb.where('becado', '=', Number(becado)),
+        qb.where('s.becado', '=', Number(becado)),
       )
-      .orderBy('nomsocio')
+      .orderBy('s.nomsocio')
       .execute();
+
+    return socios;
   }
 
   async getSocioById(id: number) {
@@ -148,6 +201,58 @@ export class SociosService {
     await this.db
       .deleteFrom('tbsocios')
       .where('id', '=', id)
+      .execute();
+    return { deleted: true };
+  }
+
+  async getHuellaBySocio(socioId: number) {
+    return this.db
+      .selectFrom('tbhuellas')
+      .selectAll()
+      .where('socio', '=', socioId)
+      .executeTakeFirst() ?? null;
+  }
+
+  async guardarHuella(socioId: number, huellaData: any) {
+    // Verificar si ya existe huella para este socio
+    const existente = await this.getHuellaBySocio(socioId);
+
+    if (existente) {
+      // Actualizar huella existente
+      await this.db
+        .updateTable('tbhuellas')
+        .set({
+          huella: huellaData.fmd,
+          dedo: huellaData.dedo ?? 1,
+          usumod: huellaData.usumod ?? 1,
+          fecmod: sql`NOW()`,
+        })
+        .where('socio', '=', socioId)
+        .execute();
+    } else {
+      // Insertar nueva huella
+      await this.db
+        .insertInto('tbhuellas')
+        .values({
+          socio: socioId,
+          huella: huellaData.fmd,
+          dedo: huellaData.dedo ?? 1,
+          envia: 0,
+          usunvo: huellaData.usunvo ?? 1,
+          fecnvo: sql`NOW()`,
+          usumod: huellaData.usumod ?? 1,
+          fecmod: sql`NOW()`,
+        })
+        .execute();
+    }
+
+    return this.getHuellaBySocio(socioId);
+  }
+
+  async eliminarHuella(socioId: number) {
+    await this.db
+      .deleteFrom('tbhuellas')
+      .where('socio', '=', socioId)
       .execute();
     return { deleted: true };
   }

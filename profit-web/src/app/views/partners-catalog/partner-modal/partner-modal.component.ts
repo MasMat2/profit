@@ -1,15 +1,16 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Partner, PartnerStatus, PaymentPeriod } from '../../../models/partner.model';
+import { Partner, PartnerStatus, PaymentPeriod, FingerprintData } from '../../../models/partner.model';
 import { PartnersService } from '../../../services/partners.service';
 import { ClassAssignmentModalComponent } from '../class-assignment-modal/class-assignment-modal.component';
 import { PaymentTicketModalComponent, PaymentTicket } from '../payment-ticket-modal/payment-ticket-modal.component';
+import { FingerprintModalComponent } from '../fingerprint-modal/fingerprint-modal.component';
 
 @Component({
   selector: 'app-partner-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ClassAssignmentModalComponent, PaymentTicketModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ClassAssignmentModalComponent, PaymentTicketModalComponent, FingerprintModalComponent],
   templateUrl: './partner-modal.component.html',
   styleUrls: ['./partner-modal.component.scss']
 })
@@ -26,6 +27,8 @@ export class PartnerModalComponent implements OnInit {
   showTicketModal: boolean = false;
   ticketData: PaymentTicket | null = null;
   loadingSubscriptions: boolean = false;
+  fingerprintData: FingerprintData | null = null;
+  showFingerprintModal: boolean = false;
 
   PartnerStatus = PartnerStatus;
   PaymentPeriod = PaymentPeriod;
@@ -42,6 +45,29 @@ export class PartnerModalComponent implements OnInit {
     if (this.partner) {
       this.loadPartnerData();
       this.loadMensualidades();
+      this.loadHuellaExistente();
+    }
+  }
+
+  loadHuellaExistente(): void {
+    if (this.partner && this.partner.id > 0) {
+      this.partnersService.getHuellaBySocio(this.partner.id).subscribe({
+        next: (huella) => {
+          if (huella && huella.huella) {
+            this.fingerprintData = {
+              fmd: huella.huella,
+              image: '',
+              quality: 100,
+              captured: true,
+              fechaRegistro: huella.fecnvo ? new Date(huella.fecnvo) : undefined
+            };
+            console.log('Huella existente cargada:', this.fingerprintData);
+          }
+        },
+        error: (error) => {
+          console.log('No se encontró huella para este socio o error:', error);
+        }
+      });
     }
   }
 
@@ -290,11 +316,12 @@ export class PartnerModalComponent implements OnInit {
           this.close.emit();
         });
       } else {
-        // Crear nuevo socio con clases temporales y cobro de inscripción
+        // Crear nuevo socio con clases temporales, cobro de inscripción y huella digital
         const newPartnerData = {
           ...formValue,
           clases: this.temporaryClasses,
           fechaRegistro: new Date(),
+          huella: this.fingerprintData,
           pagoInscripcion: {
             monto: formValue.montoInscripcion,
             descuento: formValue.descuentoInscripcion,
@@ -304,10 +331,25 @@ export class PartnerModalComponent implements OnInit {
         };
         
         console.log('Creando nuevo socio con datos:', newPartnerData);
+        if (this.fingerprintData) {
+          console.log('Huella digital incluida:', this.fingerprintData);
+        }
         
         this.partnersService.createPartner(newPartnerData).subscribe({
           next: (response) => {
             console.log('Socio creado exitosamente:', response);
+            
+            // Guardar huella digital si existe
+            if (this.fingerprintData && response.id) {
+              this.partnersService.guardarHuella(response.id, this.fingerprintData).subscribe({
+                next: () => {
+                  console.log('Huella digital guardada exitosamente');
+                },
+                error: (error) => {
+                  console.error('Error al guardar huella:', error);
+                }
+              });
+            }
             
             // Crear datos del ticket
             this.ticketData = {
@@ -428,5 +470,65 @@ export class PartnerModalComponent implements OnInit {
       if (field.errors['minlength']) return `Mínimo ${field.errors['minlength'].requiredLength} caracteres`;
     }
     return '';
+  }
+
+  onFingerprintCaptured(fingerprintData: FingerprintData): void {
+    this.fingerprintData = {
+      ...fingerprintData,
+      fechaRegistro: new Date()
+    };
+    console.log('Huella capturada:', this.fingerprintData);
+
+    // Si es un socio existente, guardar huella inmediatamente
+    if (this.partner && this.partner.id > 0) {
+      this.guardarHuellaExistente();
+    }
+  }
+
+  onFingerprintCleared(): void {
+    // Si es un socio existente, eliminar de la BD
+    if (this.partner && this.partner.id > 0) {
+      this.eliminarHuellaExistente();
+    } else {
+      this.fingerprintData = null;
+      console.log('Huella eliminada');
+    }
+  }
+
+  guardarHuellaExistente(): void {
+    if (!this.partner || this.partner.id === 0 || !this.fingerprintData) return;
+
+    this.partnersService.guardarHuella(this.partner.id, this.fingerprintData).subscribe({
+      next: (response) => {
+        console.log('Huella guardada exitosamente:', response);
+        alert('Huella digital registrada exitosamente');
+      },
+      error: (error) => {
+        console.error('Error al guardar huella:', error);
+        alert('Error al guardar huella digital: ' + (error.error?.message || error.message));
+      }
+    });
+  }
+
+  eliminarHuellaExistente(): void {
+    if (!this.partner || this.partner.id === 0) return;
+
+    this.partnersService.eliminarHuella(this.partner.id).subscribe({
+      next: () => {
+        this.fingerprintData = null;
+        console.log('Huella eliminada');
+      },
+      error: (error) => {
+        console.error('Error al eliminar huella:', error);
+      }
+    });
+  }
+
+  openFingerprintModal(): void {
+    this.showFingerprintModal = true;
+  }
+
+  closeFingerprintModal(): void {
+    this.showFingerprintModal = false;
   }
 }

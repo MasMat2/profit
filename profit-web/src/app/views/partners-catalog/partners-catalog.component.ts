@@ -72,6 +72,22 @@ export class PartnersCatalogComponent implements OnInit {
       valueFormatter: (p: any) => new Date(p.value).toLocaleDateString('es-MX'),
     },
     {
+      field: 'tieneHuella',
+      headerName: 'Huella',
+      width: 90,
+      sortable: false,
+      filter: false,
+      floatingFilter: false,
+      cellRenderer: (params: any) => {
+        const tieneHuella = params.value;
+        const color = tieneHuella ? '#F97316' : '#D1D5DB';
+        const title = tieneHuella ? 'Huella registrada' : 'Sin huella';
+        return `<div style="display:flex;align-items:center;justify-content:center;height:100%">
+          <i class="fas fa-fingerprint" style="font-size:18px;color:${color}" title="${title}"></i>
+        </div>`;
+      },
+    },
+    {
       headerName: 'Acciones',
       width: 100,
       sortable: false,

@@ -30,7 +30,8 @@ export class PartnersService {
       periodicidad: this.mapModoPagoToPeriod(socio.modopago),
       clases: this.mapClasesString(socio.clases),
       suscripciones: [],
-      ventas: []
+      ventas: [],
+      tieneHuella: (socio as any).tieneHuella === 1
     };
   }
 
@@ -216,5 +217,22 @@ export class PartnersService {
     });
 
     return categories;
+  }
+
+  getHuellaBySocio(socioId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${socioId}/huella`);
+  }
+
+  guardarHuella(socioId: number, huellaData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${socioId}/huella`, {
+      fmd: huellaData.fmd,
+      dedo: huellaData.dedo || 1,
+      usunvo: 1,
+      usumod: 1
+    });
+  }
+
+  eliminarHuella(socioId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${socioId}/huella`);
   }
 }

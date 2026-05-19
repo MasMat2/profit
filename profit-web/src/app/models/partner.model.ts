@@ -15,6 +15,16 @@ export interface Partner {
   clases: PartnerClass[];
   suscripciones: Subscription[];
   ventas: Sale[];
+  huella?: FingerprintData;
+  tieneHuella?: boolean;
+}
+
+export interface FingerprintData {
+  fmd: string;
+  image?: string;
+  quality: number;
+  captured: boolean;
+  fechaRegistro?: Date;
 }
 
 export enum PartnerStatus {

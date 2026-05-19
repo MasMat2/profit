@@ -33,4 +33,19 @@ export class SociosController {
   async deleteSocio(@Param('id') id: string) {
     return this.sociosService.deleteSocio(+id);
   }
+
+  @Get(':id/huella')
+  async getHuellaBySocio(@Param('id') id: string) {
+    return this.sociosService.getHuellaBySocio(+id);
+  }
+
+  @Post(':id/huella')
+  async guardarHuella(@Param('id') id: string, @Body() huellaData: any) {
+    return this.sociosService.guardarHuella(+id, huellaData);
+  }
+
+  @Delete(':id/huella')
+  async eliminarHuella(@Param('id') id: string) {
+    return this.sociosService.eliminarHuella(+id);
+  }
 }

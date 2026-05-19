@@ -198,6 +198,74 @@
             &.negative {
               color: #FEE2E2;
             }
+
+            &.positive {
+              color: #FFFFFF;
+            }
+          }
+        }
+
+        .btn-fingerprint {
+          width: 100%;
+          margin-top: 16px;
+          padding: 14px 16px;
+          background: #FFF7ED;
+          border: 2px solid #FFEDD5;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover {
+            background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+            border-color: #F97316;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+          }
+
+          &.has-fingerprint {
+            background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+            border-color: #F97316;
+
+            .fingerprint-icon {
+              background: linear-gradient(135deg, #F97316, #EA580C);
+              color: #FFFFFF;
+            }
+          }
+
+          .fingerprint-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6B7280;
+            font-size: 18px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+          }
+
+          .fingerprint-text {
+            flex: 1;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            .fingerprint-label {
+              font-size: 14px;
+              font-weight: 700;
+              color: #111827;
+            }
+
+            .fingerprint-status {
+              font-size: 11px;
+              color: #6B7280;
+            }
           }
         }
       }
@@ -437,6 +505,20 @@
         font-weight: 600;
         color: #111827;
         margin-bottom: 16px;
+      }
+
+      &.fingerprint-card {
+        background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+        border: 2px solid #FFEDD5;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+        padding: 0;
+        overflow: hidden;
+        margin-bottom: 20px;
+
+        &:hover {
+          border-color: #FED7AA;
+          box-shadow: 0 6px 16px rgba(249, 115, 22, 0.15);
+        }
       }
 
       &.classes-card {
