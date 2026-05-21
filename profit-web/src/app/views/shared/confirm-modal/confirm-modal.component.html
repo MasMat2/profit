@@ -1,0 +1,18 @@
+<div class="confirm-overlay" (click)="onCancel()">
+  <div class="confirm-content" (click)="$event.stopPropagation()">
+    <p class="confirm-message">{{ message }}</p>
+    
+    <div class="confirm-actions">
+      <button 
+        class="btn-cancel" 
+        (click)="onCancel()">
+        {{ cancelText }}
+      </button>
+      <button 
+        class="btn-confirm" 
+        (click)="onConfirm()">
+        {{ confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

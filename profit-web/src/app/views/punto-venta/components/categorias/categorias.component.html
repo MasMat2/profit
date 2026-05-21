@@ -1,0 +1,66 @@
+<div class="card categorias-card">
+  <div class="card-header-row">
+    <h2 class="section-title">Categorías</h2>
+    <button class="btn-save btn-header" (click)="abrirModalCategoria()" title="Nueva categoría">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoading" class="categorias-grid">
+    <div
+      class="categoria-item"
+      [class.active]="categoriaSeleccionada === null"
+      (click)="seleccionarCategoria(null)">
+      <span class="categoria-nombre">Todas</span>
+    </div>
+
+    <div
+      *ngFor="let categoria of categorias"
+      class="categoria-item"
+      [class.active]="categoriaSeleccionada === categoria.id"
+      (click)="seleccionarCategoria(categoria.id)">
+      <span class="categoria-nombre">{{ categoria.nombre }}</span>
+      <button
+        class="btn-delete-categoria"
+        (click)="eliminarCategoria(categoria.id, $event)"
+        title="Eliminar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-shared-modal
+  *ngIf="mostrarModalCategoria"
+  modalTitle="Nueva Categoría"
+  [size]="'small'"
+  (close)="cerrarModalCategoria()"
+  (save)="crearCategoria()">
+  <div class="form-field">
+    <label>Nombre de la Categoría</label>
+    <input
+      type="text"
+      [(ngModel)]="nuevaCategoria.nombre"
+      placeholder="Ej: Bebidas, Suplementos..."
+      autofocus />
+  </div>
+
+  <div class="form-field">
+    <label>Color</label>
+    <input type="color" [(ngModel)]="nuevaCategoria.color" />
+  </div>
+</app-shared-modal>
+
+<!-- Modal de Confirmación para Eliminar -->
+<app-confirm-modal
+  *ngIf="mostrarConfirmEliminar"
+  message="¿Estás seguro de eliminar esta categoría?"
+  confirmText="Aceptar"
+  cancelText="Cancelar"
+  (confirm)="confirmarEliminarCategoria()"
+  (cancel)="cancelarEliminarCategoria()">
+</app-confirm-modal>

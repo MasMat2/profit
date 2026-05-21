@@ -1,0 +1,94 @@
+<div class="ticket-modal-overlay" (click)="cerrarModal()">
+  <div class="ticket-modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="ticket-container">
+      <!-- Header con Logo -->
+      <div class="ticket-header">
+        <img src="assets/logo.png" alt="Logo" class="ticket-logo-img">
+        <div class="negocio-info">
+          <p class="negocio-nombre">{{ empresa.nombre }}</p>
+          <p *ngIf="empresa.sucursal" class="negocio-sucursal">{{ empresa.sucursal }}</p>
+          <p *ngIf="empresa.direccion">{{ empresa.direccion }}</p>
+          <p *ngIf="empresa.telefono">Tel: {{ empresa.telefono }}</p>
+        </div>
+      </div>
+
+      <!-- Título -->
+      <h2 class="ticket-titulo">Recibo de Pago</h2>
+
+      <!-- Información de la Venta -->
+      <div class="ticket-info">
+        <div class="info-row">
+          <span>Folio:</span>
+          <span>#{{ ticketData?.folio || '0000' }}</span>
+        </div>
+        <div class="info-row">
+          <span>Fecha:</span>
+          <span>{{ formatFecha(ticketData?.fecha) }}</span>
+        </div>
+        <div class="info-row" *ngIf="ticketData?.cliente">
+          <span>Cliente:</span>
+          <span>{{ ticketData.cliente }}</span>
+        </div>
+      </div>
+
+      <!-- Tabla de Productos -->
+      <table class="ticket-table">
+        <thead>
+          <tr>
+            <th>Cant.</th>
+            <th>Descripción</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let producto of ticketData?.productos">
+            <td>{{ producto.cantidad }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.subtotal | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Resumen -->
+      <div class="ticket-resumen">
+        <div class="resumen-row" *ngIf="ticketData?.descuento > 0">
+          <span>Subtotal:</span>
+          <span>{{ (ticketData.total + ticketData.descuento) | currency:'MXN':'symbol-narrow':'1.2-2' }}</span>
+        </div>
+        <div class="resumen-row" *ngIf="ticketData?.descuento > 0">
+          <span>Descuento:</span>
+          <span>-{{ ticketData.descuento | currency:'MXN':'symbol-narrow':'1.2-2' }}</span>
+        </div>
+        <div class="resumen-row total-row">
+          <span>TOTAL:</span>
+          <span class="total-amount">{{ ticketData?.total | currency:'MXN':'symbol-narrow':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Método de Pago -->
+      <div class="ticket-pago">
+        <p><strong>Método de pago:</strong> {{ ticketData?.formaPago }}</p>
+        <p><strong>Pagado:</strong> {{ ticketData?.pagado | currency:'MXN':'symbol-narrow':'1.2-2' }}</p>
+        <p *ngIf="ticketData?.cambio > 0"><strong>Cambio:</strong> {{ ticketData?.cambio | currency:'MXN':'symbol-narrow':'1.2-2' }}</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="ticket-footer">
+        <p># My body my pro-fit</p>
+      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="ticket-actions">
+      <button class="btn-imprimir" (click)="imprimir()">
+        <i class="fas fa-print"></i>
+        Imprimir Ticket
+      </button>
+      <button class="btn-cerrar" (click)="cerrarModal()">
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+</div>

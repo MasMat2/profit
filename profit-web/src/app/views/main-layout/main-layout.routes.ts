@@ -20,6 +20,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.ClasesComponent
                     ),
             },
+            {
+                path: 'punto-venta',
+                loadComponent: () =>
+                    import('../punto-venta/punto-venta.component').then(
+                        (m) => m.PuntoVentaComponent
+                    ),
+            },
         ]
     },
 ];

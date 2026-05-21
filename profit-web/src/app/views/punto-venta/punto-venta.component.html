@@ -1,0 +1,59 @@
+<div class="component-page">
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Punto de Venta</h1>
+      <p class="page-subtitle">Gestión de ventas y productos</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="punto-venta-container">
+      
+      <!-- Sección izquierda: Categorías y Productos -->
+      <div class="productos-section">
+        <app-categorias
+          [categorias]="categorias"
+          [categoriaSeleccionada]="categoriaSeleccionada"
+          [isLoading]="isLoadingCategorias"
+          (categoriaSeleccionadaChange)="onCategoriaSeleccionada($event)"
+          (categoriaCreada)="onCategoriaCreada()"
+          (categoriaEliminada)="onCategoriaEliminada()">
+        </app-categorias>
+
+        <app-productos-list
+          [productos]="productos"
+          [categoriaSeleccionada]="categoriaSeleccionada"
+          [isLoading]="isLoadingProductos"
+          (productoAgregado)="onProductoAgregado($event)"
+          (productoCreado)="onProductoCreado()"
+          (productoActualizado)="onProductoActualizado()">
+        </app-productos-list>
+      </div>
+
+      <!-- Sección derecha: Carrito -->
+      <div class="carrito-section">
+        <app-carrito
+          [carrito]="carrito"
+          [total]="total"
+          [descuento]="descuento"
+          [totalConDescuento]="totalConDescuento"
+          [clienteSeleccionado]="clienteSeleccionado"
+          (carritoActualizado)="onCarritoActualizado($event)"
+          (descuentoActualizado)="onDescuentoActualizado($event)"
+          (clienteSeleccionadoChange)="onClienteSeleccionado($event)"
+          (ventaCompletada)="onVentaCompletada($event)">
+        </app-carrito>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<app-ticket-modal
+  *ngIf="mostrarTicket"
+  [ticketData]="ticketData"
+  (cerrar)="cerrarTicket()">
+</app-ticket-modal>

@@ -1,0 +1,155 @@
+<div class="card productos-card">
+  <div class="card-header-row">
+    <h2 class="section-title">Productos</h2>
+    <button
+      class="btn-save btn-header"
+      (click)="abrirModalProducto()"
+      [disabled]="categoriaSeleccionada === null"
+      title="Nuevo producto">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoading && productos.length === 0" class="empty-state">
+    <i class="fas fa-box-open"></i>
+    <p>No hay productos disponibles</p>
+    <small *ngIf="categoriaSeleccionada === null">Selecciona una categoría para ver productos</small>
+  </div>
+
+  <div *ngIf="!isLoading && productos.length > 0" class="productos-grid">
+    <div
+      *ngFor="let producto of productos"
+      class="producto-item"
+      (click)="agregarAlCarrito(producto)">
+      <div class="producto-info">
+        <h4 class="producto-nombre">{{ producto.nombre }}</h4>
+        <p class="producto-precio">{{ producto.precio | currency:'MXN' }}</p>
+        <span class="producto-stock" [class.sin-stock]="producto.stock === 0">
+          Stock: {{ producto.stock }}
+        </span>
+      </div>
+      <div class="producto-actions">
+        <button
+          class="btn-editar"
+          (click)="abrirModalEditarProducto(producto, $event)"
+          title="Editar">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button
+          class="btn-eliminar"
+          (click)="eliminarProducto(producto.id, $event)"
+          title="Eliminar">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Producto -->
+<app-shared-modal
+  *ngIf="mostrarModalProducto"
+  modalTitle="Nuevo Producto"
+  [size]="'medium'"
+  (close)="cerrarModalProducto()"
+  (save)="crearProducto()">
+  <div class="form-field">
+    <label>Nombre del Producto</label>
+    <input
+      type="text"
+      [(ngModel)]="nuevoProducto.nombre"
+      placeholder="Ej: Proteína Whey..."
+      autofocus />
+  </div>
+
+  <div class="two-col">
+    <div class="form-field">
+      <label>Precio</label>
+      <input
+        type="number"
+        [(ngModel)]="nuevoProducto.precio"
+        min="0"
+        step="0.01"
+        placeholder="0.00" />
+    </div>
+    <div class="form-field">
+      <label>Stock</label>
+      <input
+        type="number"
+        [(ngModel)]="nuevoProducto.stock"
+        min="0"
+        placeholder="0" />
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="form-field">
+      <label>Costo</label>
+      <input
+        type="number"
+        [(ngModel)]="nuevoProducto.costo"
+        min="0"
+        step="0.01"
+        placeholder="0.00" />
+    </div>
+  </div>
+</app-shared-modal>
+
+<!-- Modal Editar Producto -->
+<app-shared-modal
+  *ngIf="mostrarModalEditarProducto"
+  modalTitle="Editar Producto"
+  [size]="'medium'"
+  (close)="cerrarModalEditarProducto()"
+  (save)="actualizarProducto()">
+  <div class="form-field">
+    <label>Nombre del Producto</label>
+    <input
+      type="text"
+      [(ngModel)]="productoEditado.nombre"
+      autofocus />
+  </div>
+
+  <div class="two-col">
+    <div class="form-field">
+      <label>Precio</label>
+      <input
+        type="number"
+        [(ngModel)]="productoEditado.precio"
+        min="0"
+        step="0.01" />
+    </div>
+    <div class="form-field">
+      <label>Stock</label>
+      <input
+        type="number"
+        [(ngModel)]="productoEditado.stock"
+        min="0" />
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="form-field">
+      <label>Costo</label>
+      <input
+        type="number"
+        [(ngModel)]="productoEditado.costo"
+        min="0"
+        step="0.01" />
+    </div>
+  </div>
+</app-shared-modal>
+
+<!-- Modal de Confirmación para Eliminar -->
+<app-confirm-modal
+  *ngIf="mostrarConfirmEliminar"
+  message="¿Estás seguro de eliminar este producto?"
+  confirmText="Aceptar"
+  cancelText="Cancelar"
+  (confirm)="confirmarEliminarProducto()"
+  (cancel)="cancelarEliminarProducto()">
+</app-confirm-modal>

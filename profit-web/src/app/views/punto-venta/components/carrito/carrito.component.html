@@ -1,0 +1,158 @@
+<div class="card carrito-card">
+  <h2 class="section-title">Carrito de Compra</h2>
+
+  <!-- Búsqueda de Cliente -->
+  <div class="buscar-cliente-section">
+    <label>Cliente (Opcional)</label>
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="buscarCliente"
+        (input)="onBuscarClienteInput()"
+        placeholder="Buscar cliente (mínimo 2 caracteres)..."
+        class="search-input" />
+      <button *ngIf="clienteSeleccionado" (click)="limpiarCliente()" class="btn-clear-cliente">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div *ngIf="mostrarListaClientes" class="clientes-dropdown">
+      <div *ngIf="cargandoClientes" class="dropdown-loading">
+        <i class="fas fa-spinner fa-spin"></i> Buscando clientes...
+      </div>
+      <div *ngIf="!cargandoClientes && clientesFiltrados.length === 0" class="dropdown-empty">
+        No se encontraron coincidencias
+      </div>
+      <div
+        *ngFor="let cliente of clientesFiltrados"
+        class="dropdown-item"
+        (click)="seleccionarCliente(cliente)">
+        {{ cliente.nombreCompleto || (cliente.nombre + ' ' + (cliente.apellido || '')) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Productos en el Carrito -->
+  <div class="carrito-items">
+    <div *ngIf="carrito.length === 0" class="carrito-vacio">
+      <i class="fas fa-shopping-cart"></i>
+      <p>El carrito está vacío</p>
+      <small>Selecciona productos para agregar</small>
+    </div>
+
+    <div *ngFor="let item of carrito" class="carrito-item">
+      <div class="item-info">
+        <span class="item-emoji">{{ item.producto.imagen || '📦' }}</span>
+        <div class="item-detalles">
+          <h4>{{ item.producto.nombre }}</h4>
+          <p class="item-precio">{{ item.producto.precio | currency:'MXN' }}</p>
+        </div>
+      </div>
+
+      <div class="item-cantidad">
+        <button (click)="modificarCantidad(item, -1)" class="btn-cantidad">
+          <i class="fas fa-minus"></i>
+        </button>
+        <span>{{ item.cantidad }}</span>
+        <button (click)="modificarCantidad(item, 1)" class="btn-cantidad">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+
+      <div class="item-subtotal">
+        {{ item.subtotal | currency:'MXN' }}
+      </div>
+
+      <button (click)="eliminarDelCarrito(item)" class="btn-eliminar-item">
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Resumen -->
+  <div class="carrito-resumen">
+    <div class="resumen-row">
+      <span>Subtotal:</span>
+      <span class="resumen-valor">{{ total | currency:'MXN' }}</span>
+    </div>
+
+    <div class="resumen-row descuento-row">
+      <label>Descuento:</label>
+      <input
+        type="number"
+        [(ngModel)]="descuento"
+        (change)="actualizarDescuento()"
+        min="0"
+        [max]="total"
+        step="0.01"
+        class="descuento-input" />
+    </div>
+
+    <div class="resumen-row total-row">
+      <span>Total:</span>
+      <span class="resumen-total">{{ totalConDescuento | currency:'MXN' }}</span>
+    </div>
+
+    <button
+      class="btn-cobrar"
+      (click)="abrirModalCobro()"
+      [disabled]="carrito.length === 0">
+      <i class="fas fa-cash-register"></i>
+      Procesar Cobro
+    </button>
+  </div>
+</div>
+
+<!-- Modal de Cobro -->
+<app-shared-modal
+  *ngIf="mostrarModalCobro"
+  modalTitle="Procesar Cobro"
+  [size]="'medium'"
+  (close)="cerrarModalCobro()"
+  (save)="procesarCobro()">
+  <div class="cobro-modal-content">
+    <div class="cobro-total">
+      <h3>Total a Pagar</h3>
+      <p class="cobro-monto">{{ totalConDescuento | currency:'MXN' }}</p>
+    </div>
+
+    <div class="form-field">
+      <label>Forma de Pago</label>
+      <select [(ngModel)]="formaPago" class="select-input">
+        <option *ngFor="let fp of formasPago" [value]="fp">{{ fp }}</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label>Monto Recibido</label>
+      <input
+        type="number"
+        [(ngModel)]="abonado"
+        (input)="calcularCambio()"
+        min="0"
+        step="0.01"
+        autofocus />
+    </div>
+
+    <div class="cobro-cambio">
+      <span>Cambio:</span>
+      <span class="cambio-monto">{{ cambio | currency:'MXN' }}</span>
+    </div>
+
+    <div class="form-field" *ngIf="formaPago !== 'EFECTIVO'">
+      <label>Referencia / No. Transacción</label>
+      <input
+        type="text"
+        [(ngModel)]="referencia"
+        placeholder="Referencia de la transacción" />
+    </div>
+
+    <div class="form-field">
+      <label>Comentarios (Opcional)</label>
+      <textarea
+        [(ngModel)]="comentarios"
+        rows="3"
+        placeholder="Notas o comentarios adicionales..."></textarea>
+    </div>
+  </div>
+</app-shared-modal>

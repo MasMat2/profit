@@ -1,0 +1,29 @@
+.punto-venta-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 200px);
+  padding: 0;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.productos-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.carrito-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  
+  @media (max-width: 1200px) {
+    margin-top: 1.5rem;
+  }
+}
