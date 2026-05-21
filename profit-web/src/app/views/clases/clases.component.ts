@@ -77,6 +77,17 @@ export class ClasesComponent implements OnInit {
   }
 
   guardarInformacion(): void {
-    this.toast.show('Cambios guardados correctamente', 'success');
+    if (!this.selectedClass.id) return;
+    this.isSaving = true;
+    this.classesService.updateClase(this.selectedClass).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.toast.show('Cambios guardados correctamente', 'success');
+      },
+      error: () => {
+        this.isSaving = false;
+        this.toast.show('Error al guardar los cambios', 'error');
+      },
+    });
   }
 }

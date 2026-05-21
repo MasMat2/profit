@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import { ClasesService } from './clases.service';
+import { Body, Controller, Get, Put } from '@nestjs/common';
+import { ClasesService, UpdateClaseDto } from './clases.service';
 
 @Controller('clases')
 export class ClasesController {
@@ -8,6 +8,11 @@ export class ClasesController {
   @Get()
   getAllClases() {
     return this.clasesService.getAllClases();
+  }
+
+  @Put()
+  updateClase(@Body() body: UpdateClaseDto) {
+    return this.clasesService.updateClase(body);
   }
 
 }
