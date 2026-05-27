@@ -50,11 +50,11 @@
 
 
 .sidebar {
-    width: 22vw;
+    width: 260px;
     flex-shrink: 0;
     background-color: var(--surface-b); /* Color de fondo azul-grisáceo claro */
     border-right: 1px solid var(--surface-border);
-    padding: 1.5rem;
+    padding: 1rem 0.75rem;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -98,15 +98,15 @@
 }
 
 .logo-container {
-    padding: 1rem 0;
-    margin-bottom: 1rem;
+    padding: 0.75rem 0.5rem;
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 .logo-container img {
-    height: 80px;
+    height: 60px;
     width: auto;
     object-fit: contain;
 }
@@ -134,12 +134,13 @@
 
 
   .menu-section-header {
-    padding: 0 1rem;
-    margin: 1.5rem 0 0.75rem 0;
-    font-size: 0.75rem;
+    padding: 0 0.75rem;
+    margin: 1rem 0 0.5rem 0;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--text-color-secondary);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
 
@@ -147,18 +148,19 @@
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 6px;
     cursor: pointer;
     color: #4b5563; /* Texto más oscuro */
     font-weight: 500;
+    font-size: 0.9rem;
     transition: color 0.2s;
   }
   
   .nav-item i {
-    font-size: 1rem;
-    width: 20px;
+    font-size: 0.95rem;
+    width: 18px;
     text-align: center;
     color: #9da5b5; /* Iconos grisáceos */
   }
