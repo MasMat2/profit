@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { MENU_CONFIG, MenuSection } from '../../config/menu.config';
 import { NotificationComponent } from '../../shared/components/notification/notification.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -36,11 +37,12 @@ export class MainLayoutComponent {
 
   menuSections: MenuSection[] = MENU_CONFIG;
 
-  constructor(private router: Router, private renderer: Renderer2) {
-    // Revisa si ya existe una sesión al cargar la app
-    if (sessionStorage.getItem('isLoggedIn')) {
-      this.isLoggedIn = true;
-    }
+  constructor(
+    private router: Router,
+    private renderer: Renderer2,
+    private authService: AuthService,
+  ) {
+    this.isLoggedIn = this.authService.isAuthenticated();
   }
 
   ngOnInit(): void {
@@ -112,7 +114,8 @@ export class MainLayoutComponent {
   }
 
   logout() {
+    this.authService.logout();
     this.isLoggedIn = false;
-    sessionStorage.removeItem('isLoggedIn');
+    this.router.navigate(['/login']);
   }
 }

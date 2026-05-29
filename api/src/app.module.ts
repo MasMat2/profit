@@ -12,10 +12,12 @@ import { PuntoVentaModule } from './punto-venta/punto-venta.module';
 import { RegistroTicketsModule } from './registro-tickets/registro-tickets.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
 import { AccesoClientesModule } from './acceso-clientes/acceso-clientes.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    AuthModule,
     AdministracionModule,
     FormasPagoModule,
     ClassesModule,
