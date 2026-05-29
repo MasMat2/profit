@@ -56,7 +56,7 @@ export class EstadisticasService {
       .selectFrom('tbclases')
       .select([
         'nomclase as paquete',
-        sql<number>`(SELECT COUNT(DISTINCT socio) FROM tbmensualidades WHERE inscrip = tbclases.clase AND cancelado = 0)`.as('usuarios'),
+        sql<number>`(SELECT COUNT(*) FROM tbsocios WHERE FIND_IN_SET(LPAD(tbclases.clase, 3, '0'), clases) AND activo = 1)`.as('usuarios'),
       ])
       .where('activa', '=', 1)
       .orderBy('usuarios', 'desc')
