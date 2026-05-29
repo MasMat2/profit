@@ -1,0 +1,71 @@
+.modal-cobro {
+  background: var(--surface-a);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .info-mensualidad {
+    background: var(--surface-b);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--surface-border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &.destacado {
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--primary-color);
+
+        .label,
+        .value {
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: var(--primary-color);
+        }
+      }
+
+      .label {
+        color: var(--text-color-secondary);
+        font-size: 0.875rem;
+      }
+
+      .value {
+        color: var(--text-color);
+        font-weight: 600;
+
+        &.descuento {
+          color: #EF4444;
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--surface-border);
+    background: var(--surface-b);
+    
+    // Los estilos de .btn-cancel y .btn-save ya están en _shared.scss
+  }
+}

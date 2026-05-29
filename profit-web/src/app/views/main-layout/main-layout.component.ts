@@ -3,6 +3,7 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
 import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MENU_CONFIG, MenuSection } from '../../config/menu.config';
+import { ToastComponent } from '../../components/toast/toast.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -11,6 +12,7 @@ import { MENU_CONFIG, MenuSection } from '../../config/menu.config';
     RouterOutlet,
     CommonModule,
     RouterModule,
+    ToastComponent
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']

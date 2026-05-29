@@ -6,6 +6,7 @@ import { AdministracionModule } from './administracion/administracion.module';
 import { FormasPagoModule } from './formas-pago/formas-pago.module';
 import { ClasesModule } from './clases/clases.module';
 import { PuntoVentaModule } from './punto-venta/punto-venta.module';
+import { RegistroTicketsModule } from './registro-tickets/registro-tickets.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PuntoVentaModule } from './punto-venta/punto-venta.module';
     FormasPagoModule,
     ClasesModule,
     PuntoVentaModule,
+    RegistroTicketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

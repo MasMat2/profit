@@ -1,0 +1,374 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.ticket-container {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  color: #2C3E50;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.ticket-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  .logo {
+    margin-bottom: 1rem;
+    
+    .logo-img {
+      max-width: 120px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FF8C42, #FF6B35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0 0 1rem 0;
+    }
+  }
+
+  .negocio-info {
+    p {
+      margin: 0.25rem 0;
+      font-size: 0.875rem;
+      color: #5A6C7D;
+    }
+  }
+}
+
+.ticket-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2C3E50;
+    margin: 0;
+  }
+}
+
+.ticket-info {
+  margin-bottom: 1rem;
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+
+    span:first-child {
+      color: #5A6C7D;
+    }
+
+    span:last-child {
+      color: #2C3E50;
+      font-weight: 600;
+    }
+  }
+}
+
+.ticket-divider {
+  border-top: 2px dashed #D1D5DB;
+  margin: 1.5rem 0;
+}
+
+.ticket-productos {
+  width: 100%;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+
+  thead {
+    th {
+      text-align: left;
+      padding: 0.5rem 0;
+      font-weight: 700;
+      color: #2C3E50;
+      border-bottom: 1px solid #D1D5DB;
+
+      &:last-child {
+        text-align: right;
+      }
+    }
+  }
+
+  tbody {
+    td {
+      padding: 0.75rem 0;
+      color: #5A6C7D;
+
+      &:last-child {
+        text-align: right;
+        font-weight: 600;
+        color: #2C3E50;
+      }
+    }
+  }
+}
+
+.ticket-totales {
+  margin-bottom: 1rem;
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.95rem;
+
+    span:first-child {
+      color: #5A6C7D;
+    }
+
+    span:last-child {
+      font-weight: 600;
+      color: #2C3E50;
+    }
+
+    &.total-final {
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      border-top: 2px solid #FF6B35;
+
+      span {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #FF6B35;
+      }
+    }
+
+    .descuento {
+      color: #EF4444 !important;
+    }
+  }
+}
+
+.ticket-pago {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #5A6C7D;
+
+    strong {
+      color: #2C3E50;
+    }
+  }
+}
+
+.ticket-footer {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: #5A6C7D;
+
+    &:first-child {
+      font-weight: 700;
+      color: #FF6B35;
+    }
+  }
+}
+
+.ticket-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+
+  button {
+    flex: 1;
+    padding: 0.875rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  .btn-cerrar {
+    background: #E5E7EB;
+    color: #5A6C7D;
+
+    &:hover {
+      background: #D1D5DB;
+      transform: translateY(-2px);
+    }
+  }
+
+  .btn-imprimir {
+    background: linear-gradient(135deg, #FF8C42, #FF6B35);
+    color: white;
+
+    &:hover {
+      background: linear-gradient(135deg, #FF7A30, #FF5A23);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    }
+  }
+}
+
+// Estilos para impresión en papel térmico 58mm
+@media print {
+  @page {
+    size: 58mm auto;
+    margin: 0;
+  }
+
+  // Ocultar todo excepto el ticket
+  body * {
+    visibility: hidden;
+  }
+
+  .modal-overlay,
+  .modal-overlay * {
+    visibility: visible;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    background: white;
+    backdrop-filter: none;
+  }
+
+  .ticket-container {
+    width: 58mm !important;
+    max-width: 58mm !important;
+    min-width: 58mm !important;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 2mm 3mm;
+    margin: 0;
+    font-size: 9pt;
+    overflow: visible;
+    page-break-inside: avoid;
+  }
+
+  .ticket-header {
+    margin-bottom: 3mm;
+
+    .logo {
+      .logo-img {
+        max-width: 30mm;
+      }
+    }
+
+    .negocio-info {
+      p {
+        font-size: 8pt;
+        margin: 1mm 0;
+        line-height: 1.2;
+      }
+    }
+  }
+
+  .ticket-title {
+    margin-bottom: 3mm;
+
+    h2 {
+      font-size: 11pt;
+      margin: 2mm 0;
+    }
+  }
+
+  .ticket-info {
+    margin-bottom: 3mm;
+
+    .info-row {
+      font-size: 8pt;
+      padding: 1mm 0;
+
+      span {
+        font-size: 8pt;
+      }
+    }
+  }
+
+  .productos-tabla {
+    margin: 3mm 0;
+    font-size: 8pt;
+
+    table {
+      width: 100%;
+
+      th, td {
+        font-size: 7pt;
+        padding: 1mm;
+      }
+    }
+  }
+
+  .ticket-totales {
+    margin-top: 3mm;
+
+    .total-row {
+      font-size: 8pt;
+      padding: 1mm 0;
+
+      &.total-final {
+        font-size: 10pt;
+        margin-top: 2mm;
+        padding-top: 2mm;
+      }
+    }
+  }
+
+  .ticket-footer {
+    margin-top: 5mm;
+    margin-bottom: 3mm;
+
+    p {
+      font-size: 7pt;
+      margin: 1mm 0;
+    }
+  }
+
+  .ticket-actions {
+    display: none !important;
+  }
+
+  // Ocultar elementos no necesarios en la impresión
+  button,
+  .btn-cerrar,
+  .btn-imprimir {
+    display: none !important;
+  }
+}

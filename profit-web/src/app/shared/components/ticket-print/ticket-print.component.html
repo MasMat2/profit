@@ -1,0 +1,94 @@
+<div class="modal-overlay" *ngIf="show" (click)="cerrar()">
+  <div class="ticket-container" (click)="$event.stopPropagation()">
+    <div class="ticket-header">
+      <div class="logo">
+        <img [src]="logoUrl" alt="Logo" class="logo-img" />
+      </div>
+      <div class="negocio-info">
+        <p><strong>{{ configuracion.nombreNegocio }}</strong></p>
+        <p *ngIf="configuracion.direccion">{{ configuracion.direccion }}</p>
+        <p *ngIf="configuracion.telefono">Tel: {{ configuracion.telefono }}</p>
+        <p *ngIf="configuracion.rfc">RFC: {{ configuracion.rfc }}</p>
+      </div>
+    </div>
+
+    <div class="ticket-title">
+      <h2>Recibo de Pago</h2>
+    </div>
+
+    <div class="ticket-info">
+      <div class="info-row">
+        <span>Folio:</span>
+        <span><strong>{{ ticketData?.folio }}</strong></span>
+      </div>
+      <div class="info-row">
+        <span>Fecha:</span>
+        <span>{{ formatearFecha(ticketData?.fecha!) }}</span>
+      </div>
+      <div class="info-row">
+        <span>Cliente:</span>
+        <span>{{ ticketData?.cliente }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-divider"></div>
+
+    <table class="ticket-productos">
+      <thead>
+        <tr>
+          <th>Cant.</th>
+          <th>Descripción</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of ticketData?.productos">
+          <td>{{ producto.cantidad }}</td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ formatearMoneda(producto.subtotal) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="ticket-divider"></div>
+
+    <div class="ticket-totales">
+      <div class="total-row">
+        <span>Subtotal:</span>
+        <span>{{ formatearMoneda(ticketData?.subtotal!) }}</span>
+      </div>
+      <div class="total-row" *ngIf="ticketData?.descuento! > 0">
+        <span>Descuento:</span>
+        <span class="descuento">-{{ formatearMoneda(ticketData?.descuento!) }}</span>
+      </div>
+      <div class="total-row" *ngIf="ticketData?.iva! > 0">
+        <span>IVA:</span>
+        <span>{{ formatearMoneda(ticketData?.iva!) }}</span>
+      </div>
+      <div class="total-row total-final">
+        <span>Total:</span>
+        <span>{{ formatearMoneda(ticketData?.total!) }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-divider"></div>
+
+    <div class="ticket-pago">
+      <p><strong>Método de pago:</strong> {{ ticketData?.formaPago }}</p>
+    </div>
+
+    <div class="ticket-footer">
+      <p># My body my pro-fit</p>
+      <p>¡Gracias por tu preferencia!</p>
+    </div>
+
+    <div class="ticket-actions">
+      <button class="btn-cerrar" (click)="cerrar()">
+        <i class="fas fa-times"></i> Cerrar
+      </button>
+      <button class="btn-imprimir" (click)="imprimir()">
+        <i class="fas fa-print"></i> Imprimir
+      </button>
+    </div>
+  </div>
+</div>
