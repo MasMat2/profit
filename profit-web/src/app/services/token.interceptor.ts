@@ -16,7 +16,6 @@ export const tokenInterceptor: HttpInterceptorFn = (
     url: environment.apiUrl + req.url,
     ...(token && {
       setHeaders: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       }
     })

@@ -4,6 +4,7 @@ import { Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MENU_CONFIG, MenuSection } from '../../config/menu.config';
 import { ToastComponent } from '../../components/toast/toast.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -34,9 +35,13 @@ export class MainLayoutComponent {
 
   menuSections: MenuSection[] = MENU_CONFIG;
 
-  constructor(private router: Router, private renderer: Renderer2) {
+  constructor(
+    private router: Router, 
+    private renderer: Renderer2,
+    private authService: AuthService
+  ) {
     // Revisa si ya existe una sesión al cargar la app
-    if (sessionStorage.getItem('isLoggedIn')) {
+    if (this.authService.isLoggedIn()) {
       this.isLoggedIn = true;
     }
   }
@@ -106,6 +111,6 @@ export class MainLayoutComponent {
 
   logout() {
     this.isLoggedIn = false;
-    sessionStorage.removeItem('isLoggedIn');
+    this.authService.logout();
   }
 }
