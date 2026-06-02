@@ -22,8 +22,7 @@
       "@app/*": ["app/*"],
       "@services/*": ["app/services/*"],
       "@views/*": ["app/views/*"],
-      "@components/*": ["app/components/*"],
-      "@shared/*": ["app/shared/*"]
+      "@components/*": ["app/components/*"]
     }
   },
   "angularCompilerOptions": {
