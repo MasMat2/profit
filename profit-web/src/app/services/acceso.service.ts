@@ -11,14 +11,9 @@ export interface SocioAcceso {
   id: number;
   socio: number;
   nombre: string;
-  foto?: string;
-  fotostr?: string;
-  telefono?: string;
-  correo?: string;
   activo: number;
   tipoMembresia?: string;
   fechaVencimiento?: string;
-  visitasDisponibles?: number;
   vigenciaVisitas?: string;
 }
 

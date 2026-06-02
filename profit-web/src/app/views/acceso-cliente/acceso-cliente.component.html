@@ -75,31 +75,6 @@
           El sistema verificará automáticamente tu acceso
         </li>
       </ul>
-      
-      <!-- DEV_MODE: delete this ng-container and its contents when removing dev mode -->
-      <ng-container *ngIf="DEV_MODE">
-        <div class="simulation-buttons">
-          <h4><i class="fas fa-vial"></i> Modo Desarrollo</h4>
-          
-          <button 
-            class="btn-simulate success" 
-            (click)="simularAccesoPermitido()"
-            [disabled]="verificando"
-          >
-            <i class="fas fa-check-circle"></i>
-            Simular Acceso Permitido
-          </button>
-          
-          <button 
-            class="btn-simulate error" 
-            (click)="simularAccesoDenegado()"
-            [disabled]="verificando"
-          >
-            <i class="fas fa-times-circle"></i>
-            Simular Acceso Denegado
-          </button>
-        </div>
-      </ng-container>
     </div>
   </div>
   </div>
@@ -122,12 +97,7 @@
       
       <div class="client-info" *ngIf="resultadoAcceso?.cliente">
         <div class="client-avatar">
-          <img 
-            *ngIf="resultadoAcceso?.cliente?.foto" 
-            [src]="resultadoAcceso?.cliente?.foto" 
-            alt="Foto"
-          >
-          <i *ngIf="!resultadoAcceso?.cliente?.foto" class="fas fa-user"></i>
+          <i class="fas fa-user"></i>
         </div>
         
         <div class="client-details">
@@ -151,24 +121,9 @@
                 </div>
               </div>
               
-              <div class="detail-item" *ngIf="resultadoAcceso?.cliente?.visitasDisponibles !== undefined">
-                <i class="fas fa-ticket-alt"></i>
-                <div>
-                  <small>Visitas</small>
-                  <strong>{{ resultadoAcceso?.cliente?.visitasDisponibles }}</strong>
-                </div>
-              </div>
             </div>
           </div>
           
-          <div class="client-extra" *ngIf="resultadoAcceso?.cliente?.telefono || resultadoAcceso?.cliente?.correo">
-            <p *ngIf="resultadoAcceso?.cliente?.telefono">
-              <i class="fas fa-phone"></i> {{ resultadoAcceso?.cliente?.telefono }}
-            </p>
-            <p *ngIf="resultadoAcceso?.cliente?.correo">
-              <i class="fas fa-envelope"></i> {{ resultadoAcceso?.cliente?.correo }}
-            </p>
-          </div>
         </div>
       </div>
       

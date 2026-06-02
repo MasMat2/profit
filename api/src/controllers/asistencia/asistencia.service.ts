@@ -5,14 +5,9 @@ export interface SocioAccesoDto {
   id: number;
   socio: number;
   nombre: string;
-  foto?: string;
-  fotostr?: string;
-  telefono?: string;
-  correo?: string;
   activo: number;
   tipoMembresia?: string;
   fechaVencimiento?: Date | null;
-  visitasDisponibles?: number;
   vigenciaVisitas?: Date | null;
 }
 
@@ -29,13 +24,9 @@ export class AsistenciaService {
         'id',
         'socio',
         'nomsocio',
-        'correo',
-        'tel1',
-        'foto',
-        'fotostr',
         'activo',
-        'visitasdisp',
-        'fecvencevis',
+        'modopago',
+        'diapago',
         'visvig',
       ])
       .where('socio', '=', socioId)
@@ -45,26 +36,19 @@ export class AsistenciaService {
       throw new NotFoundException(`Socio ${socioId} no encontrado`);
     }
 
-    const membresia = await db
-      .selectFrom('tbmensualidades')
-      .select(['descrip'])
-      .where('socio', '=', socioId)
-      .where('cancelado', '=', 0)
-      .orderBy('fecha', 'desc')
+    const modo = await db
+      .selectFrom('tbmodospago')
+      .select(['nommodopago'])
+      .where('modopago', '=', socio.modopago)
       .executeTakeFirst();
 
     return {
       id: socio.id,
       socio: socio.socio,
       nombre: socio.nomsocio,
-      foto: socio.foto,
-      fotostr: socio.fotostr ?? undefined,
-      telefono: socio.tel1,
-      correo: socio.correo,
       activo: socio.activo,
-      tipoMembresia: membresia?.descrip,
-      fechaVencimiento: socio.fecvencevis,
-      visitasDisponibles: socio.visitasdisp,
+      tipoMembresia: modo?.nommodopago,
+      fechaVencimiento: socio.diapago,
       vigenciaVisitas: socio.visvig,
     };
   }

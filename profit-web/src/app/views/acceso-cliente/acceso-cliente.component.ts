@@ -9,13 +9,9 @@ declare var Fingerprint: any;
 interface Cliente {
   id: number;
   nombre: string;
-  foto?: string;
-  telefono?: string;
-  correo?: string;
   fechaVencimiento?: Date;
   tipoMembresia?: string;
   montoPago?: number;
-  visitasDisponibles?: number;
   vigenciaVisitas?: Date;
 }
 
@@ -157,12 +153,8 @@ export class AccessClientComponent implements OnInit, OnDestroy {
       cliente: {
         id: socio.socio ?? socio.id,
         nombre: socio.nombre,
-        foto: socio.fotostr || socio.foto || '',
-        telefono: socio.telefono,
-        correo: socio.correo,
         tipoMembresia: socio.tipoMembresia,
         fechaVencimiento: socio.fechaVencimiento ? new Date(socio.fechaVencimiento) : undefined,
-        visitasDisponibles: socio.visitasDisponibles,
         vigenciaVisitas: socio.vigenciaVisitas ? new Date(socio.vigenciaVisitas) : undefined,
       },
       asistencia: {
@@ -204,55 +196,6 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     this.resultadoAcceso = null;
     this.huellaInput = ''; // DEV — remove this line with the DEV_MODE region
   }
-
-  // #region DEV_MODE (simulation helpers)
-  simularAccesoPermitido() {
-    this.verificando = true;
-    this.mostrarResultado = false;
-    
-    setTimeout(() => {
-      this.resultadoAcceso = {
-        success: true,
-        message: 'Acceso permitido',
-        cliente: {
-          id: 1001,
-          nombre: 'Juan Pérez García',
-          foto: '',
-          telefono: '123-456-7890',
-          correo: 'juan.perez@email.com',
-          tipoMembresia: 'Mensual',
-          montoPago: 500,
-          fechaVencimiento: new Date(new Date().setDate(new Date().getDate() + 15)),
-          visitasDisponibles: 12,
-          vigenciaVisitas: new Date(new Date().setDate(new Date().getDate() + 30))
-        },
-        asistencia: {
-          success: true,
-          fecha: new Date()
-        }
-      };
-      this.mostrarResultado = true;
-      this.verificando = false;
-      this.toastService.show('Acceso registrado exitosamente', 'success');
-      setTimeout(() => this.limpiarResultado(), 10000);
-    }, 1500);
-  }
-
-  simularAccesoDenegado() {
-    this.verificando = true;
-    this.mostrarResultado = false;
-    
-    setTimeout(() => {
-      this.resultadoAcceso = {
-        success: false,
-        message: 'Socio no encontrado'
-      };
-      this.mostrarResultado = true;
-      this.verificando = false;
-      setTimeout(() => this.limpiarResultado(), 3000);
-    }, 1500);
-  }
-  // #endregion DEV_MODE
 
   obtenerEstadoMembresia(fechaVencimiento?: Date): { clase: string; texto: string } {
     if (!fechaVencimiento) {
