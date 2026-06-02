@@ -1,0 +1,9 @@
+mysqldump -u root -p bdksiste_bdkgym2 > backup.sql
+
+mysql -u root -p -e "CREATE DATABASE bdksiste_bdkgym2;"
+mysql -u root -p bdksiste_bdkgym2 < backup.sql
+
+
+docker exec -i mysql55_local mysql -u root -pFum4s!Crick0Fu+Maryjuana -e "CREATE DATABASE bdksiste_bdkgym2;"
+
+docker exec -i mysql55_local bash -c "mysql -u root -p'Fum4s!Crick0Fu+Maryjuana' bdksiste_bdkgym2 < /backup.sql"
