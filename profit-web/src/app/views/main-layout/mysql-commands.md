@@ -43,3 +43,7 @@ sudo iptables -I DOCKER-USER -p tcp --dport 3306 -s 212.227.239.14 -j ACCEPT
 
 3. Guardar reglas
 sudo netfilter-persistent save
+
+
+# Log de docker
+docker exec mysql55_local tail -f /var/lib/mysql/mysql/general.log
