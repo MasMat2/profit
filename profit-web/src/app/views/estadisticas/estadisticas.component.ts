@@ -4,6 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { EstadisticasService, Estadistica } from '../../services/estadisticas.service';
 import { ChartComponent } from '../../shared/components/chart/chart.component';
 
+interface EstadisticaConFiltros extends Estadistica {
+  fechaInicio?: string;
+  fechaFin?: string;
+  mostrarFiltros?: boolean;
+  periodoActivo?: 'semana' | 'mes' | 'anio' | 'todo' | 'personalizado' | null;
+}
+
 @Component({
   selector: 'app-estadisticas',
   standalone: true,
@@ -12,16 +19,13 @@ import { ChartComponent } from '../../shared/components/chart/chart.component';
   styleUrls: ['./estadisticas.component.scss'],
 })
 export class EstadisticasComponent implements OnInit {
-  estadisticasAgregadas: Estadistica[] = [];
+  estadisticasAgregadas: EstadisticaConFiltros[] = [];
   estadisticasDisponibles: Estadistica[] = [];
   mostrarMenu = false;
   isLoading = false;
   
-  // Filtros de fecha
-  fechaInicio: string = '';
-  fechaFin: string = '';
-  periodoSeleccionado: 'hoy' | 'semana' | 'mes' | 'trimestre' | 'anio' | 'personalizado' = 'mes';
-  mostrarFiltros = false;
+  // Estadísticas que requieren filtros de fecha
+  estadisticasConFiltro = ['pagos', 'accesos', 'edades', 'paquetes', 'inscripciones', 'saldo', 'ingresos'];
   
   chartColors = {
     primary: '#4A90E2',      // Azul principal
@@ -42,7 +46,6 @@ export class EstadisticasComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarEstadisticasDisponibles();
-    this.establecerPeriodoMes();
   }
 
   cargarEstadisticasDisponibles(): void {
@@ -83,12 +86,14 @@ export class EstadisticasComponent implements OnInit {
     return this.estadisticasAgregadas.some(e => e.id === estadistica.id);
   }
 
-  cargarDatosEstadistica(estadistica: Estadistica): void {
-    console.log('Cargando datos para:', estadistica.tipo, 'Fecha inicio:', this.fechaInicio, 'Fecha fin:', this.fechaFin);
+  cargarDatosEstadistica(estadistica: EstadisticaConFiltros): void {
+    const fechaInicio = estadistica.fechaInicio || undefined;
+    const fechaFin = estadistica.fechaFin || undefined;
+    console.log('Cargando datos para:', estadistica.tipo, 'Fecha inicio:', fechaInicio, 'Fecha fin:', fechaFin);
     
     switch (estadistica.tipo) {
       case 'genero':
-        this.estadisticasService.getEstadisticaGenero(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaGenero(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos genero recibidos:', data);
             estadistica.data = data;
@@ -97,7 +102,7 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'edades':
-        this.estadisticasService.getEstadisticaEdades(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaEdades(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos edades recibidos:', data);
             estadistica.data = data;
@@ -106,7 +111,7 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'paquetes':
-        this.estadisticasService.getEstadisticaPaquetes(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaPaquetes(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos paquetes recibidos:', data);
             estadistica.data = data;
@@ -115,7 +120,7 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'inscripciones':
-        this.estadisticasService.getEstadisticaInscripciones(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaInscripciones(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos inscripciones recibidos:', data);
             estadistica.data = data;
@@ -124,7 +129,7 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'saldo':
-        this.estadisticasService.getEstadisticaSaldo().subscribe({
+        this.estadisticasService.getEstadisticaSaldo(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos saldo recibidos:', data);
             estadistica.data = data;
@@ -142,7 +147,7 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'pagos':
-        this.estadisticasService.getEstadisticaPagos(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaPagos(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos pagos recibidos:', data);
             estadistica.data = data;
@@ -159,15 +164,6 @@ export class EstadisticasComponent implements OnInit {
           error: (err) => console.error('Error cargando membresias:', err)
         });
         break;
-      case 'ingresos':
-        this.estadisticasService.getEstadisticaIngresos(this.fechaInicio, this.fechaFin).subscribe({
-          next: (data: any) => {
-            console.log('Datos ingresos recibidos:', data);
-            estadistica.data = data;
-          },
-          error: (err) => console.error('Error cargando ingresos:', err)
-        });
-        break;
       case 'clientes':
         this.estadisticasService.getEstadisticaTiposClientes().subscribe({
           next: (data: any) => {
@@ -178,12 +174,21 @@ export class EstadisticasComponent implements OnInit {
         });
         break;
       case 'accesos':
-        this.estadisticasService.getEstadisticaAccesos(this.fechaInicio, this.fechaFin).subscribe({
+        this.estadisticasService.getEstadisticaAccesos(fechaInicio, fechaFin).subscribe({
           next: (data: any) => {
             console.log('Datos accesos recibidos:', data);
             estadistica.data = data;
           },
           error: (err) => console.error('Error cargando accesos:', err)
+        });
+        break;
+      case 'ingresos':
+        this.estadisticasService.getEstadisticaIngresos(fechaInicio, fechaFin).subscribe({
+          next: (data: any) => {
+            console.log('Datos ingresos recibidos:', data);
+            estadistica.data = data;
+          },
+          error: (err) => console.error('Error cargando ingresos:', err)
         });
         break;
     }
@@ -193,23 +198,73 @@ export class EstadisticasComponent implements OnInit {
   getGeneroChartData(data: any) {
     const masculino = data?.masculino || 0;
     const femenino = data?.femenino || 0;
-    
-    // Si no hay datos, mostrar valores placeholder para que se vea la gráfica
-    const chartData = (masculino === 0 && femenino === 0) 
-      ? [1, 1]  // Valores iguales para mostrar la estructura
-      : [masculino, femenino];
-    
+
     return {
       labels: ['Masculino', 'Femenino'],
       datasets: [{
-        data: chartData,
+        data: [masculino, femenino],
         backgroundColor: [this.chartColors.primary, this.chartColors.pink],
-        borderWidth: 3,
-        borderColor: '#ffffff',
-        hoverOffset: 10,
-        spacing: 3
+        borderRadius: 6,
+        borderSkipped: false,
+        barThickness: 40
       }]
     };
+  }
+
+  // Método para calcular el porcentaje para las barras horizontales
+  getBarPercentage(value: number, total: number): number {
+    if (!total || total === 0) return 0;
+    return Math.round((value / total) * 100);
+  }
+
+  // Método para obtener el total de clientes
+  getTotalClientes(data: any[]): number {
+    if (!data || data.length === 0) return 0;
+    return data.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+  }
+
+  // Método para obtener total de cantidad (para edades)
+  getTotalCantidad(data: any[]): number {
+    if (!data || data.length === 0) return 0;
+    return data.reduce((sum, item) => sum + (item.cantidad || 0), 0);
+  }
+
+  // Método para obtener total de usuarios (para paquetes)
+  getTotalUsuarios(data: any[]): number {
+    if (!data || data.length === 0) return 0;
+    return data.reduce((sum, item) => sum + (item.usuarios || 0), 0);
+  }
+
+  // Método para asignar colores a las barras según el índice
+  getBarColorClass(index: number): string {
+    const colors = ['primary', 'pink', 'success', 'warning', 'purple'];
+    return colors[index % colors.length];
+  }
+
+  // Método para asignar colores a métodos de pago (estilo imagen)
+  getMetodoColorClass(index: number): string {
+    const colors = ['gray', 'purple', 'success'];
+    return colors[index % colors.length];
+  }
+
+  // Formatear mes (2024-01 -> Ene 2024)
+  formatMes(mesStr: string): string {
+    if (!mesStr) return '';
+    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const [anio, mes] = mesStr.split('-');
+    return `${meses[parseInt(mes) - 1]} ${anio}`;
+  }
+
+  // Obtener monto máximo para calcular porcentaje
+  getMaxMonto(data: any[]): number {
+    if (!data || data.length === 0) return 0;
+    return Math.max(...data.map(d => d.monto || 0));
+  }
+
+  // Obtener monto máximo para métodos de pago
+  getMaxMontoMetodo(data: any[]): number {
+    if (!data || data.length === 0) return 0;
+    return Math.max(...data.map(d => d.monto || 0));
   }
 
   getEdadesChartData(data: any[]) {
@@ -326,78 +381,6 @@ export class EstadisticasComponent implements OnInit {
     };
   }
 
-  // Métodos para filtros de fecha
-  toggleFiltros(): void {
-    this.mostrarFiltros = !this.mostrarFiltros;
-  }
-
-  seleccionarPeriodo(periodo: 'hoy' | 'semana' | 'mes' | 'trimestre' | 'anio' | 'personalizado'): void {
-    this.periodoSeleccionado = periodo;
-    
-    switch(periodo) {
-      case 'hoy':
-        this.establecerPeriodoHoy();
-        break;
-      case 'semana':
-        this.establecerPeriodoSemana();
-        break;
-      case 'mes':
-        this.establecerPeriodoMes();
-        break;
-      case 'trimestre':
-        this.establecerPeriodoTrimestre();
-        break;
-      case 'anio':
-        this.establecerPeriodoAnio();
-        break;
-      case 'personalizado':
-        // No hacer nada, el usuario seleccionará las fechas manualmente
-        break;
-    }
-
-    if (periodo !== 'personalizado') {
-      this.aplicarFiltros();
-    }
-  }
-
-  establecerPeriodoHoy(): void {
-    const hoy = new Date();
-    this.fechaInicio = this.formatearFecha(hoy);
-    this.fechaFin = this.formatearFecha(hoy);
-  }
-
-  establecerPeriodoSemana(): void {
-    const hoy = new Date();
-    const hace7Dias = new Date(hoy);
-    hace7Dias.setDate(hace7Dias.getDate() - 7);
-    this.fechaInicio = this.formatearFecha(hace7Dias);
-    this.fechaFin = this.formatearFecha(hoy);
-  }
-
-  establecerPeriodoMes(): void {
-    const hoy = new Date();
-    const hace30Dias = new Date(hoy);
-    hace30Dias.setDate(hace30Dias.getDate() - 30);
-    this.fechaInicio = this.formatearFecha(hace30Dias);
-    this.fechaFin = this.formatearFecha(hoy);
-  }
-
-  establecerPeriodoTrimestre(): void {
-    const hoy = new Date();
-    const hace90Dias = new Date(hoy);
-    hace90Dias.setDate(hace90Dias.getDate() - 90);
-    this.fechaInicio = this.formatearFecha(hace90Dias);
-    this.fechaFin = this.formatearFecha(hoy);
-  }
-
-  establecerPeriodoAnio(): void {
-    const hoy = new Date();
-    const hace365Dias = new Date(hoy);
-    hace365Dias.setDate(hace365Dias.getDate() - 365);
-    this.fechaInicio = this.formatearFecha(hace365Dias);
-    this.fechaFin = this.formatearFecha(hoy);
-  }
-
   formatearFecha(fecha: Date): string {
     const year = fecha.getFullYear();
     const month = String(fecha.getMonth() + 1).padStart(2, '0');
@@ -405,16 +388,51 @@ export class EstadisticasComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  aplicarFiltros(): void {
-    // Recargar todas las estadísticas agregadas con los nuevos filtros
-    this.estadisticasAgregadas.forEach(estadistica => {
-      this.cargarDatosEstadistica(estadistica);
-    });
+  // Métodos para verificar si requiere filtro
+  requiereFiltro(tipo: string): boolean {
+    return this.estadisticasConFiltro.includes(tipo);
   }
 
-  limpiarFiltros(): void {
-    this.establecerPeriodoMes();
-    this.periodoSeleccionado = 'mes';
-    this.aplicarFiltros();
+  toggleFiltros(estadistica: EstadisticaConFiltros): void {
+    estadistica.mostrarFiltros = !estadistica.mostrarFiltros;
   }
+
+  aplicarFiltroEstadistica(estadistica: EstadisticaConFiltros): void {
+    // Marcar como personalizado cuando se aplican filtros manuales
+    estadistica.periodoActivo = 'personalizado';
+    this.cargarDatosEstadistica(estadistica);
+  }
+
+  establecerPeriodoRapido(estadistica: EstadisticaConFiltros, periodo: 'semana' | 'mes' | 'anio' | 'todo'): void {
+    const hoy = new Date();
+
+    // Marcar el periodo como activo
+    estadistica.periodoActivo = periodo;
+
+    if (periodo === 'todo') {
+      // Limpiar fechas para obtener todos los datos históricos
+      estadistica.fechaInicio = undefined;
+      estadistica.fechaFin = undefined;
+    } else {
+      let fechaInicio = new Date(hoy);
+
+      switch(periodo) {
+        case 'semana':
+          fechaInicio.setDate(fechaInicio.getDate() - 7);
+          break;
+        case 'mes':
+          fechaInicio.setDate(fechaInicio.getDate() - 30);
+          break;
+        case 'anio':
+          fechaInicio.setDate(fechaInicio.getDate() - 365);
+          break;
+      }
+
+      estadistica.fechaInicio = this.formatearFecha(fechaInicio);
+      estadistica.fechaFin = this.formatearFecha(hoy);
+    }
+
+    this.cargarDatosEstadistica(estadistica);
+  }
+
 }

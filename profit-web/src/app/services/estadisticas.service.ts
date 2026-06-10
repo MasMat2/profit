@@ -7,7 +7,7 @@ export interface Estadistica {
   id: string;
   titulo: string;
   icono: string;
-  tipo: 'genero' | 'edades' | 'paquetes' | 'inscripciones' | 'saldo' | 'deudas' | 'pagos' | 'membresias' | 'ingresos' | 'clientes' | 'accesos';
+  tipo: 'genero' | 'edades' | 'paquetes' | 'inscripciones' | 'saldo' | 'deudas' | 'pagos' | 'membresias' | 'clientes' | 'accesos' | 'ingresos';
   expanded: boolean;
   data: any;
 }
@@ -37,6 +37,7 @@ export interface EstadisticaInscripciones {
 export interface EstadisticaSaldo {
   saldoTotal: number;
   fecha: Date;
+  periodo?: string;
 }
 
 export interface EstadisticaDeudas {
@@ -91,14 +92,6 @@ export class EstadisticasService {
         data: { masculino: 0, femenino: 0, total: 0 }
       },
       {
-        id: 'ingresos',
-        titulo: 'Ingresos',
-        icono: 'fas fa-chart-line',
-        tipo: 'ingresos',
-        expanded: false,
-        data: { ingresoTotal: 0, periodo: 'Mes actual', desglose: [] }
-      },
-      {
         id: 'edades',
         titulo: 'Distribución por Edad',
         icono: 'fas fa-birthday-cake',
@@ -124,11 +117,11 @@ export class EstadisticasService {
       },
       {
         id: 'saldo',
-        titulo: 'Saldo al Corte',
+        titulo: 'Ingresos por Período',
         icono: 'fas fa-wallet',
         tipo: 'saldo',
         expanded: false,
-        data: { saldoTotal: 0, fecha: new Date() }
+        data: { saldoTotal: 0, fecha: new Date(), periodo: 'Hoy' }
       },
       {
         id: 'deudas',
@@ -169,6 +162,20 @@ export class EstadisticasService {
         tipo: 'accesos',
         expanded: false,
         data: []
+      },
+      {
+        id: 'ingresos',
+        titulo: 'Ingresos',
+        icono: 'fas fa-chart-line',
+        tipo: 'ingresos',
+        expanded: false,
+        data: {
+          ingresoTotal: 0,
+          totalPagos: 0,
+          promedioPorPago: 0,
+          mensuales: [],
+          porMetodo: []
+        }
       }
     ]);
   }
@@ -201,8 +208,11 @@ export class EstadisticasService {
     return this.http.get<EstadisticaInscripciones>(`${this.apiUrl}/inscripciones`, { params });
   }
 
-  getEstadisticaSaldo(): Observable<EstadisticaSaldo> {
-    return this.http.get<EstadisticaSaldo>(`${this.apiUrl}/saldo`);
+  getEstadisticaSaldo(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaSaldo> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaSaldo>(`${this.apiUrl}/saldo`, { params });
   }
 
   getEstadisticaDeudas(): Observable<EstadisticaDeudas> {
@@ -220,13 +230,6 @@ export class EstadisticasService {
     return this.http.get<EstadisticaMembresia>(`${this.apiUrl}/membresias`);
   }
 
-  getEstadisticaIngresos(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaIngreso> {
-    let params: any = {};
-    if (fechaInicio) params.fechaInicio = fechaInicio;
-    if (fechaFin) params.fechaFin = fechaFin;
-    return this.http.get<EstadisticaIngreso>(`${this.apiUrl}/ingresos`, { params });
-  }
-
   getEstadisticaTiposClientes(): Observable<EstadisticaTipoCliente[]> {
     return this.http.get<EstadisticaTipoCliente[]>(`${this.apiUrl}/tipos-clientes`);
   }
@@ -236,5 +239,19 @@ export class EstadisticasService {
     if (fechaInicio) params.fechaInicio = fechaInicio;
     if (fechaFin) params.fechaFin = fechaFin;
     return this.http.get<EstadisticaAcceso[]>(`${this.apiUrl}/accesos`, { params });
+  }
+
+  getEstadisticaIngresos(fechaInicio?: string, fechaFin?: string): Observable<{
+    ingresoTotal: number;
+    totalPagos: number;
+    promedioPorPago: number;
+    periodo: string;
+    mensuales: { mes: string; monto: number; pagos: number }[];
+    porMetodo: { metodo: string; monto: number; pagos: number }[];
+  }> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<any>(`${this.apiUrl}/ingresos`, { params });
   }
 }

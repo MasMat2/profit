@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { EstadisticasService } from './estadisticas.service';
 
 @Controller('estadisticas')
@@ -6,28 +6,43 @@ export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) {}
 
   @Get('genero')
-  getEstadisticaGenero() {
-    return this.estadisticasService.getEstadisticaGenero();
+  getEstadisticaGenero(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaGenero(fechaInicio, fechaFin);
   }
 
   @Get('edades')
-  getEstadisticaEdades() {
-    return this.estadisticasService.getEstadisticaEdades();
+  getEstadisticaEdades(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaEdades(fechaInicio, fechaFin);
   }
 
   @Get('paquetes')
-  getEstadisticaPaquetes() {
-    return this.estadisticasService.getEstadisticaPaquetes();
+  getEstadisticaPaquetes(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaPaquetes(fechaInicio, fechaFin);
   }
 
   @Get('inscripciones')
-  getEstadisticaInscripciones() {
-    return this.estadisticasService.getEstadisticaInscripciones();
+  getEstadisticaInscripciones(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaInscripciones(fechaInicio, fechaFin);
   }
 
   @Get('saldo')
-  getEstadisticaSaldo() {
-    return this.estadisticasService.getEstadisticaSaldo();
+  getEstadisticaSaldo(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaSaldo(fechaInicio, fechaFin);
   }
 
   @Get('deudas')
@@ -36,8 +51,11 @@ export class EstadisticasController {
   }
 
   @Get('pagos')
-  getEstadisticaPagos() {
-    return this.estadisticasService.getEstadisticaPagos();
+  getEstadisticaPagos(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaPagos(fechaInicio, fechaFin);
   }
 
   @Get('membresias')
@@ -46,8 +64,11 @@ export class EstadisticasController {
   }
 
   @Get('ingresos')
-  getEstadisticaIngresos() {
-    return this.estadisticasService.getEstadisticaIngresos();
+  getEstadisticaIngresos(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaIngresos(fechaInicio, fechaFin);
   }
 
   @Get('tipos-clientes')
@@ -56,8 +77,11 @@ export class EstadisticasController {
   }
 
   @Get('accesos')
-  getEstadisticaAccesos() {
-    return this.estadisticasService.getEstadisticaAccesos();
+  getEstadisticaAccesos(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getEstadisticaAccesos(fechaInicio, fechaFin);
   }
 
   @Get('ventas-diarias')

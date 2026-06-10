@@ -6,30 +6,38 @@ import { sql } from 'kysely';
 export class EstadisticasService {
   constructor(private readonly db: DatabaseService) {}
 
-  async getEstadisticaGenero() {
+  async getEstadisticaGenero(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    
-    const result = await kysely
+
+    let query = kysely
       .selectFrom('tbsocios')
       .select([
         sql<number>`SUM(CASE WHEN sexo = 1 THEN 1 ELSE 0 END)`.as('masculino'),
         sql<number>`SUM(CASE WHEN sexo = 2 THEN 1 ELSE 0 END)`.as('femenino'),
         sql<number>`COUNT(*)`.as('total'),
       ])
-      .where('activo', '=', 1)
-      .executeTakeFirst();
+      .where('activo', '=', 1);
 
+    // Aplicar filtros de fecha si se proporcionan
+    if (fechaInicio) {
+      query = query.where(sql`DATE(fecnvo)`, '>=', fechaInicio);
+    }
+    if (fechaFin) {
+      query = query.where(sql`DATE(fecnvo)`, '<=', fechaFin);
+    }
+
+    const result = await query.executeTakeFirst();
     return result || { masculino: 0, femenino: 0, total: 0 };
   }
 
-  async getEstadisticaEdades() {
+  async getEstadisticaEdades(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    
-    const result = await kysely
+
+    let query = kysely
       .selectFrom('tbsocios')
       .select([
         sql<string>`
-          CASE 
+          CASE
             WHEN YEAR(CURDATE()) - YEAR(cumpleaños) < 18 THEN 'Menor de 18'
             WHEN YEAR(CURDATE()) - YEAR(cumpleaños) BETWEEN 18 AND 25 THEN '18-25'
             WHEN YEAR(CURDATE()) - YEAR(cumpleaños) BETWEEN 26 AND 35 THEN '26-35'
@@ -41,7 +49,17 @@ export class EstadisticasService {
         sql<number>`COUNT(*)`.as('cantidad'),
       ])
       .where('activo', '=', 1)
-      .where('cumpleaños', 'is not', null)
+      .where('cumpleaños', 'is not', null);
+
+    // Aplicar filtros de fecha
+    if (fechaInicio) {
+      query = query.where(sql`DATE(fecnvo)`, '>=', fechaInicio);
+    }
+    if (fechaFin) {
+      query = query.where(sql`DATE(fecnvo)`, '<=', fechaFin);
+    }
+
+    const result = await query
       .groupBy('rango')
       .orderBy('rango')
       .execute();
@@ -49,59 +67,125 @@ export class EstadisticasService {
     return result;
   }
 
-  async getEstadisticaPaquetes() {
+  async getEstadisticaPaquetes(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    
+
+    // Construir condición de fecha para la subquery
+    let fechaCondition = '';
+    if (fechaInicio) {
+      fechaCondition += ` AND DATE(fecnvo) >= '${fechaInicio}'`;
+    }
+    if (fechaFin) {
+      fechaCondition += ` AND DATE(fecnvo) <= '${fechaFin}'`;
+    }
+
     const result = await kysely
       .selectFrom('tbclases')
       .select([
         'nomclase as paquete',
-        sql<number>`(SELECT COUNT(*) FROM tbsocios WHERE FIND_IN_SET(LPAD(tbclases.clase, 3, '0'), clases) AND activo = 1)`.as('usuarios'),
+        sql<number>`(SELECT COUNT(*) FROM tbsocios WHERE FIND_IN_SET(LPAD(tbclases.clase, 3, '0'), clases) AND activo = 1${sql.raw(fechaCondition)})`.as('usuarios'),
       ])
       .where('activa', '=', 1)
       .orderBy('usuarios', 'desc')
+      .limit(10)
       .execute();
 
     return result;
   }
 
-  async getEstadisticaInscripciones() {
+  async getEstadisticaInscripciones(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    
-    const nuevas = await kysely
-      .selectFrom('tbsocios')
-      .select(sql<number>`COUNT(*)`.as('count'))
-      .where('fecnvo', '>=', primerDiaMes)
-      .executeTakeFirst();
 
-    const bajas = await kysely
+    // Usar fechas proporcionadas o default al mes actual
+    let fechaInicioNuevas = fechaInicio;
+    let fechaFinNuevas = fechaFin;
+    let periodoLabel = 'Personalizado';
+
+    if (!fechaInicio && !fechaFin) {
+      const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      fechaInicioNuevas = primerDiaMes.toISOString().split('T')[0];
+      fechaFinNuevas = new Date().toISOString().split('T')[0];
+      periodoLabel = 'Mes actual';
+    } else if (fechaInicio && fechaFin) {
+      periodoLabel = `${fechaInicio} - ${fechaFin}`;
+    }
+
+    let queryNuevas = kysely
+      .selectFrom('tbsocios')
+      .select(sql<number>`COUNT(*)`.as('count'));
+
+    let queryBajas = kysely
       .selectFrom('tbsocios')
       .select(sql<number>`COUNT(*)`.as('count'))
-      .where('activo', '=', 0)
-      .where('fecmod', '>=', primerDiaMes)
-      .executeTakeFirst();
+      .where('activo', '=', 0);
+
+    // Aplicar filtros de fecha
+    if (fechaInicioNuevas) {
+      queryNuevas = queryNuevas.where(sql`DATE(fecnvo)`, '>=', fechaInicioNuevas);
+      queryBajas = queryBajas.where(sql`DATE(fecmod)`, '>=', fechaInicioNuevas);
+    }
+    if (fechaFinNuevas) {
+      queryNuevas = queryNuevas.where(sql`DATE(fecnvo)`, '<=', fechaFinNuevas);
+      queryBajas = queryBajas.where(sql`DATE(fecmod)`, '<=', fechaFinNuevas);
+    }
+
+    const [nuevas, bajas] = await Promise.all([
+      queryNuevas.executeTakeFirst(),
+      queryBajas.executeTakeFirst(),
+    ]);
 
     return {
-      nuevas: nuevas?.count || 0,
-      bajas: bajas?.count || 0,
-      periodo: 'Mes actual',
+      nuevas: Number(nuevas?.count) || 0,
+      bajas: Number(bajas?.count) || 0,
+      periodo: periodoLabel,
     };
   }
 
-  async getEstadisticaSaldo() {
+  async getEstadisticaSaldo(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
     
-    const result = await kysely
+    // Query para tbtickets (ventas de contado)
+    let queryTickets = kysely
       .selectFrom('tbtickets')
-      .select(sql<number>`SUM(total)`.as('saldoTotal'))
+      .select(sql<number>`COALESCE(SUM(total), 0)`.as('total'))
       .where('cancelado', '=', 0)
-      .where('credito', '=', 0)
-      .executeTakeFirst();
+      .where('credito', '=', 0);
+    
+    // Query para tbingresos (otros ingresos)
+    let queryIngresos = kysely
+      .selectFrom('tbingresos')
+      .select(sql<number>`COALESCE(SUM(importe), 0)`.as('total'))
+      .where('cancelado', '=', 0);
+    
+    // Aplicar filtros de fecha a ambas queries
+    if (fechaInicio) {
+      queryTickets = queryTickets.where(sql`DATE(fecha)`, '>=', fechaInicio);
+      queryIngresos = queryIngresos.where(sql`DATE(fecha)`, '>=', fechaInicio);
+    }
+    
+    if (fechaFin) {
+      const fechaFinMasUno = new Date(fechaFin);
+      fechaFinMasUno.setDate(fechaFinMasUno.getDate() + 1);
+      const fechaFinStr = fechaFinMasUno.toISOString().split('T')[0];
+      queryTickets = queryTickets.where(sql`DATE(fecha)`, '<', fechaFinStr);
+      queryIngresos = queryIngresos.where(sql`DATE(fecha)`, '<', fechaFinStr);
+    }
+    
+    // Ejecutar ambas queries en paralelo
+    const [resultTickets, resultIngresos] = await Promise.all([
+      queryTickets.executeTakeFirst(),
+      queryIngresos.executeTakeFirst(),
+    ]);
+    
+    // Sumar ambos totales
+    const totalTickets = Number(resultTickets?.total) || 0;
+    const totalIngresos = Number(resultIngresos?.total) || 0;
+    const saldoTotal = totalTickets + totalIngresos;
 
     return {
-      saldoTotal: Number(result?.saldoTotal) || 0,
+      saldoTotal,
       fecha: new Date(),
+      periodo: fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : (fechaInicio || fechaFin ? 'Personalizado' : 'Histórico completo'),
     };
   }
 
@@ -124,87 +208,103 @@ export class EstadisticasService {
     };
   }
 
-  async getEstadisticaPagos() {
+  async getEstadisticaPagos(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    
+
+    // Construir condiciones de fecha para las subqueries
+    let fechaCondition = '';
+    if (fechaInicio) {
+      fechaCondition += ` AND DATE(fecha) >= '${fechaInicio}'`;
+    }
+    if (fechaFin) {
+      fechaCondition += ` AND DATE(fecha) <= '${fechaFin}'`;
+    }
+
     const result = await kysely
       .selectFrom('tbmodospago')
       .select([
         'nommodopago as tipoPago',
-        sql<number>`(SELECT COUNT(*) FROM tbmensualidades WHERE modopago = tbmodospago.modopago AND cancelado = 0)`.as('cantidad'),
-        sql<number>`(SELECT COALESCE(SUM(total), 0) FROM tbmensualidades WHERE modopago = tbmodospago.modopago AND cancelado = 0)`.as('monto'),
+        sql<number>`(SELECT COUNT(*) FROM tbmensualidades WHERE modopago = tbmodospago.modopago AND cancelado = 0${sql.raw(fechaCondition)})`.as('cantidad'),
+        sql<number>`(SELECT COALESCE(SUM(total), 0) FROM tbmensualidades WHERE modopago = tbmodospago.modopago AND cancelado = 0${sql.raw(fechaCondition)})`.as('monto'),
       ])
       .execute();
 
     return result.map((r) => ({
       tipoPago: r.tipoPago,
-      cantidad: r.cantidad,
+      cantidad: Number(r.cantidad),
       monto: Number(r.monto),
     }));
   }
 
   async getEstadisticaMembresias() {
     const kysely = this.db.getKysely();
-    
+
+    // Contar socios activos e inactivos directamente de la tabla tbsocios
+    // activo = 1 significa activo, cualquier otro valor (0, NULL) es inactivo
     const activas = await kysely
-      .selectFrom('tbmensualidades')
-      .select(sql<number>`COUNT(DISTINCT socio)`.as('count'))
-      .where('cancelado', '=', 0)
-      .where('pagado', '=', 1)
+      .selectFrom('tbsocios')
+      .select(sql<number>`COUNT(*)`.as('count'))
+      .where('activo', '=', 1)
       .executeTakeFirst();
 
     const inactivas = await kysely
-      .selectFrom('tbmensualidades')
-      .select(sql<number>`COUNT(DISTINCT socio)`.as('count'))
-      .where('cancelado', '=', 1)
+      .selectFrom('tbsocios')
+      .select(sql<number>`COUNT(*)`.as('count'))
+      .where(sql`COALESCE(activo, 0)`, '!=', 1)
       .executeTakeFirst();
 
-    const totalActivas = activas?.count || 0;
-    const totalInactivas = inactivas?.count || 0;
-    const total = totalActivas + totalInactivas;
+    const totalActivas = Number(activas?.count) || 0;
+    const totalInactivas = Number(inactivas?.count) || 0;
 
     return {
       membresiasActivas: totalActivas,
       membresiasInactivas: totalInactivas,
-      porcentajeActivas: total > 0 ? Math.round((totalActivas / total) * 100) : 0,
+      porcentajeActivas: totalActivas + totalInactivas > 0
+        ? Math.round((totalActivas / (totalActivas + totalInactivas)) * 100)
+        : 0,
     };
   }
 
-  async getEstadisticaIngresos() {
+  async getEstadisticaIngresos(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    const primerDiaMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const hace6Meses = new Date();
+    
+    // Determinar rango de fechas
+    let fechaInicioDate: Date;
+    let fechaFinDate: Date;
+    
+    if (fechaInicio && fechaFin) {
+      fechaInicioDate = new Date(fechaInicio);
+      fechaFinDate = new Date(fechaFin);
+    } else {
+      // Por defecto: mes actual
+      fechaInicioDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      fechaFinDate = new Date();
+    }
+    
+    // Calcular inicio para últimos 6 meses
+    const hace6Meses = new Date(fechaFinDate);
     hace6Meses.setMonth(hace6Meses.getMonth() - 5);
     hace6Meses.setDate(1);
     
-    const ingresoTotal = await kysely
+    // Ingreso total y cantidad de pagos en el período
+    const resumenPeriodo = await kysely
       .selectFrom('tbtickets')
-      .select(sql<number>`SUM(total)`.as('total'))
+      .select([
+        sql<number>`SUM(total)`.as('total'),
+        sql<number>`COUNT(*)`.as('cantidad'),
+      ])
       .where('cancelado', '=', 0)
-      .where('fecha', '>=', primerDiaMes)
+      .where('fecha', '>=', fechaInicioDate)
+      .where('fecha', '<=', fechaFinDate)
       .executeTakeFirst();
 
-    const desglose = await kysely
-      .selectFrom('tbdettickets')
-      .innerJoin('tbproductos', 'tbdettickets.producto', 'tbproductos.producto')
-      .innerJoin('tbtickets', 'tbdettickets.ticket', 'tbtickets.ticket')
-      .select([
-        'tbproductos.nomproducto as concepto',
-        sql<number>`SUM(tbdettickets.importe)`.as('monto'),
-      ])
-      .where('tbtickets.cancelado', '=', 0)
-      .where('tbtickets.fecha', '>=', primerDiaMes)
-      .groupBy('tbproductos.nomproducto')
-      .orderBy('monto', 'desc')
-      .limit(5)
-      .execute();
-
-    // Ingresos por mes (últimos 6 meses)
+    // Ingresos por mes (últimos 6 meses) con cantidad de pagos
     const ingresosMensuales = await kysely
       .selectFrom('tbtickets')
       .select([
         sql<string>`DATE_FORMAT(fecha, '%Y-%m')`.as('mes'),
         sql<number>`SUM(total)`.as('monto'),
+        sql<number>`COUNT(*)`.as('pagos'),
       ])
       .where('cancelado', '=', 0)
       .where('fecha', '>=', hace6Meses)
@@ -212,16 +312,39 @@ export class EstadisticasService {
       .orderBy('mes', 'asc')
       .execute();
 
+    // Ingresos por método de pago
+    const ingresosPorMetodo = await kysely
+      .selectFrom('tbtickets')
+      .innerJoin('tbmodospago', 'tbtickets.modopago', 'tbmodospago.modopago')
+      .select([
+        'tbmodospago.nommodopago as metodo',
+        sql<number>`SUM(tbtickets.total)`.as('monto'),
+        sql<number>`COUNT(*)`.as('pagos'),
+      ])
+      .where('tbtickets.cancelado', '=', 0)
+      .where('tbtickets.fecha', '>=', fechaInicioDate)
+      .where('tbtickets.fecha', '<=', fechaFinDate)
+      .groupBy('tbmodospago.nommodopago')
+      .orderBy('monto', 'desc')
+      .execute();
+
+    const totalIngresos = Number(resumenPeriodo?.total) || 0;
+    const totalPagos = Number(resumenPeriodo?.cantidad) || 0;
+
     return {
-      ingresoTotal: Number(ingresoTotal?.total) || 0,
-      periodo: 'Mes actual',
-      desglose: desglose.map((d) => ({
-        concepto: d.concepto,
-        monto: Number(d.monto),
-      })),
+      ingresoTotal: totalIngresos,
+      totalPagos: totalPagos,
+      promedioPorPago: totalPagos > 0 ? Math.round(totalIngresos / totalPagos) : 0,
+      periodo: fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : 'Mes actual',
       mensuales: ingresosMensuales.map((m) => ({
         mes: m.mes,
         monto: Number(m.monto),
+        pagos: Number(m.pagos),
+      })),
+      porMetodo: ingresosPorMetodo.map((m) => ({
+        metodo: m.metodo,
+        monto: Number(m.monto),
+        pagos: Number(m.pagos),
       })),
     };
   }
@@ -250,20 +373,35 @@ export class EstadisticasService {
     return result;
   }
 
-  async getEstadisticaAccesos() {
+  async getEstadisticaAccesos(fechaInicio?: string, fechaFin?: string) {
     const kysely = this.db.getKysely();
-    const hace7Dias = new Date();
-    hace7Dias.setDate(hace7Dias.getDate() - 7);
-    
-    const result = await kysely
+
+    let query = kysely
       .selectFrom('tbasistencia')
       .select([
         sql<Date>`DATE(fecha)`.as('fecha'),
         sql<number>`COUNT(*)`.as('cantidad'),
-      ])
-      .where('fecha', '>=', hace7Dias)
+      ]);
+
+    // Aplicar filtros de fecha
+    if (fechaInicio) {
+      query = query.where(sql`DATE(fecha)`, '>=', fechaInicio);
+    }
+    if (fechaFin) {
+      query = query.where(sql`DATE(fecha)`, '<=', fechaFin);
+    }
+
+    // Si no hay filtros, limitar a últimos 14 días
+    if (!fechaInicio && !fechaFin) {
+      const hace14Dias = new Date();
+      hace14Dias.setDate(hace14Dias.getDate() - 14);
+      query = query.where('fecha', '>=', hace14Dias);
+    }
+
+    const result = await query
       .groupBy(sql`DATE(fecha)`)
       .orderBy('fecha', 'desc')
+      .limit(14)
       .execute();
 
     return result;
