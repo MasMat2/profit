@@ -8,6 +8,7 @@ import { FormasPagoModule } from './formas-pago/formas-pago.module';
 import { ClasesModule } from './clases/clases.module';
 import { PuntoVentaModule } from './punto-venta/punto-venta.module';
 import { RegistroTicketsModule } from './registro-tickets/registro-tickets.module';
+import { EstadisticasModule } from './estadisticas/estadisticas.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RegistroTicketsModule } from './registro-tickets/registro-tickets.modul
     ClasesModule,
     PuntoVentaModule,
     RegistroTicketsModule,
+    EstadisticasModule,
   ],
   controllers: [AppController],
   providers: [AppService],
