@@ -52,8 +52,8 @@
   </div>
 </div>
 
-<app-ticket-modal
-  *ngIf="mostrarTicket"
+<app-ticket-print
+  [show]="mostrarTicket"
   [ticketData]="ticketData"
-  (cerrar)="cerrarTicket()">
-</app-ticket-modal>
+  (onClose)="cerrarTicket()">
+</app-ticket-print>

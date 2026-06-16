@@ -376,3 +376,45 @@
 textarea {
   resize: vertical;
 }
+
+.pago-mixto-section {
+  background: #F0F9FF;
+  border: 1.5px solid #BAE6FD;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.pago-mixto-titulo {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0369A1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.75rem;
+}
+
+.pago-mixto-fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.pago-mixto-suma {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+
+  &.suma-ok {
+    background: #DCFCE7;
+    color: #15803D;
+  }
+
+  &.suma-error {
+    background: #FEF2F2;
+    color: #DC2626;
+  }
+}

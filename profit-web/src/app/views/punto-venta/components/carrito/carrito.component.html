@@ -118,28 +118,69 @@
 
     <div class="form-field">
       <label>Forma de Pago</label>
-      <select [(ngModel)]="formaPago" class="select-input">
-        <option *ngFor="let fp of formasPago" [value]="fp">{{ fp }}</option>
+      <select [(ngModel)]="formaPago" class="select-input" (ngModelChange)="onFormaPagoChange()">
+        <option *ngFor="let fp of formasPago" [value]="fp.nomfp">{{ fp.nomfp }}</option>
       </select>
     </div>
 
-    <div class="form-field">
-      <label>Monto Recibido</label>
-      <input
-        type="number"
-        [(ngModel)]="abonado"
-        (input)="calcularCambio()"
-        min="0"
-        step="0.01"
-        autofocus />
+    <!-- Pago Mixto -->
+    <div class="pago-mixto-section" *ngIf="esPagoMixto">
+      <div class="pago-mixto-titulo">Distribución del Pago</div>
+      <div class="pago-mixto-fila">
+        <div class="form-field">
+          <label>Efectivo</label>
+          <input
+            type="number"
+            [(ngModel)]="montoEfectivo"
+            (input)="onMontoEfectivoChange()"
+            min="0"
+            [max]="totalConDescuento"
+            step="0.01"
+            placeholder="0.00" />
+        </div>
+        <div class="form-field">
+          <label>Otro Método</label>
+          <select [(ngModel)]="otroMetodoPago" class="select-input">
+            <option *ngFor="let fp of formasPagoSecundarias" [value]="fp.nomfp">{{ fp.nomfp }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Monto Otro</label>
+          <input
+            type="number"
+            [(ngModel)]="montoOtroMetodo"
+            (input)="onMontoOtroChange()"
+            min="0"
+            [max]="totalConDescuento"
+            step="0.01"
+            placeholder="0.00" />
+        </div>
+      </div>
+      <div class="pago-mixto-suma" [class.suma-ok]="(montoEfectivo + montoOtroMetodo) === totalConDescuento" [class.suma-error]="(montoEfectivo + montoOtroMetodo) !== totalConDescuento">
+        Suma: {{ (montoEfectivo + montoOtroMetodo) | currency:'MXN' }} / Total: {{ totalConDescuento | currency:'MXN' }}
+      </div>
     </div>
 
-    <div class="cobro-cambio">
-      <span>Cambio:</span>
-      <span class="cambio-monto">{{ cambio | currency:'MXN' }}</span>
-    </div>
+    <!-- Pago simple -->
+    <ng-container *ngIf="!esPagoMixto">
+      <div class="form-field">
+        <label>Monto Recibido</label>
+        <input
+          type="number"
+          [(ngModel)]="abonado"
+          (input)="calcularCambio()"
+          min="0"
+          step="0.01"
+          autofocus />
+      </div>
 
-    <div class="form-field" *ngIf="formaPago !== 'EFECTIVO'">
+      <div class="cobro-cambio">
+        <span>Cambio:</span>
+        <span class="cambio-monto">{{ cambio | currency:'MXN' }}</span>
+      </div>
+    </ng-container>
+
+    <div class="form-field" *ngIf="formaPago?.toLowerCase() !== 'efectivo'">
       <label>Referencia / No. Transacción</label>
       <input
         type="text"

@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PuntoVentaService, ItemVenta, Cliente, VentaDTO } from '@services/punto-venta.service';
 import { ToastService } from '@services/shared/toast.service';
 import { SharedModalComponent } from '@views/shared/shared-modal/shared-modal.component';
+import { FormasPagoService, FormaPago } from '@services/formas-pago.service';
 
 @Component({
   selector: 'app-carrito',
@@ -33,12 +34,16 @@ export class CarritoComponent implements OnInit, OnDestroy {
   cargandoClientes = false;
 
   mostrarModalCobro = false;
-  formaPago: string = 'EFECTIVO';
+  formaPago: string = '';
   abonado: number = 0;
   cambio: number = 0;
   referencia: string = '';
   comentarios: string = '';
-  formasPago = ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MIXTO'];
+  formasPago: FormaPago[] = [];
+
+  montoEfectivo: number = 0;
+  montoOtroMetodo: number = 0;
+  otroMetodoPago: string = '';
 
   private buscarClienteSubject = new Subject<string>();
   private readonly MINIMO_CARACTERES_CLIENTE = 2;
@@ -47,10 +52,12 @@ export class CarritoComponent implements OnInit, OnDestroy {
   constructor(
     private puntoVentaService: PuntoVentaService,
     private toast: ToastService,
-    private http: HttpClient
+    private http: HttpClient,
+    private formasPagoService: FormasPagoService
   ) {}
 
   ngOnInit(): void {
+    this.cargarFormasPago();
     this.buscarClienteSubject
       .pipe(
         debounceTime(this.DEBOUNCE_TIME),
@@ -59,6 +66,20 @@ export class CarritoComponent implements OnInit, OnDestroy {
       .subscribe(searchTerm => {
         this.realizarBusquedaClientes(searchTerm);
       });
+  }
+
+  cargarFormasPago(): void {
+    this.formasPagoService.getFormasPago().subscribe({
+      next: (data) => {
+        this.formasPago = data;
+        if (data.length > 0) {
+          this.formaPago = data[0].nomfp;
+        }
+      },
+      error: () => {
+        this.toast.show('Error al cargar formas de pago', 'error');
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -146,13 +167,40 @@ export class CarritoComponent implements OnInit, OnDestroy {
     this.calcularCambio();
   }
 
+  get esPagoMixto(): boolean {
+    return this.formaPago?.toLowerCase().includes('mixto') ?? false;
+  }
+
+  get formasPagoSecundarias(): FormaPago[] {
+    return this.formasPago.filter(fp => !fp.nomfp.toLowerCase().includes('mixto') && !fp.nomfp.toLowerCase().includes('efectivo'));
+  }
+
+  onFormaPagoChange(): void {
+    if (this.esPagoMixto) {
+      this.montoEfectivo = 0;
+      this.montoOtroMetodo = this.totalConDescuento;
+      this.otroMetodoPago = this.formasPagoSecundarias.length > 0 ? this.formasPagoSecundarias[0].nomfp : '';
+    }
+  }
+
+  onMontoEfectivoChange(): void {
+    this.montoOtroMetodo = Math.max(0, this.totalConDescuento - this.montoEfectivo);
+  }
+
+  onMontoOtroChange(): void {
+    this.montoEfectivo = Math.max(0, this.totalConDescuento - this.montoOtroMetodo);
+  }
+
   cerrarModalCobro(): void {
     this.mostrarModalCobro = false;
-    this.formaPago = 'EFECTIVO';
+    this.formaPago = this.formasPago.length > 0 ? this.formasPago[0].nomfp : '';
     this.abonado = 0;
     this.cambio = 0;
     this.referencia = '';
     this.comentarios = '';
+    this.montoEfectivo = 0;
+    this.montoOtroMetodo = 0;
+    this.otroMetodoPago = '';
   }
 
   calcularCambio(): void {
@@ -161,10 +209,24 @@ export class CarritoComponent implements OnInit, OnDestroy {
   }
 
   procesarCobro(): void {
-    if (this.abonado < this.totalConDescuento) {
+    if (this.esPagoMixto) {
+      const sumaMixto = this.montoEfectivo + this.montoOtroMetodo;
+      if (Math.abs(sumaMixto - this.totalConDescuento) > 0.01) {
+        this.toast.show(`Los montos deben sumar $${this.totalConDescuento.toFixed(2)}`, 'error');
+        return;
+      }
+      if (!this.otroMetodoPago) {
+        this.toast.show('Selecciona el segundo método de pago', 'error');
+        return;
+      }
+    } else if (this.abonado < this.totalConDescuento) {
       this.toast.show('El monto abonado es insuficiente', 'error');
       return;
     }
+
+    const formaPagoFinal = this.esPagoMixto
+      ? `Mixto: $${this.montoEfectivo.toFixed(2)} Efectivo / $${this.montoOtroMetodo.toFixed(2)} ${this.otroMetodoPago}`
+      : this.formaPago;
 
     const venta: VentaDTO = {
       clienteId: this.clienteSeleccionado?.id,
@@ -174,11 +236,11 @@ export class CarritoComponent implements OnInit, OnDestroy {
         precio: item.producto.precio,
         subtotal: item.subtotal
       })),
-      formaPago: this.formaPago,
+      formaPago: formaPagoFinal,
       total: this.total,
       descuento: this.descuento,
-      abonado: this.abonado,
-      cambio: this.cambio,
+      abonado: this.esPagoMixto ? this.totalConDescuento : this.abonado,
+      cambio: this.esPagoMixto ? 0 : this.cambio,
       referencia: this.referencia,
       comentarios: this.comentarios
     };
@@ -202,9 +264,9 @@ export class CarritoComponent implements OnInit, OnDestroy {
           descuento: this.descuento,
           iva: iva,
           total: this.totalConDescuento,
-          formaPago: this.formaPago,
-          pagado: this.abonado,
-          cambio: this.cambio
+          formaPago: formaPagoFinal,
+          pagado: this.esPagoMixto ? this.totalConDescuento : this.abonado,
+          cambio: this.esPagoMixto ? 0 : this.cambio
         };
 
         this.ventaCompletada.emit(ticketData);

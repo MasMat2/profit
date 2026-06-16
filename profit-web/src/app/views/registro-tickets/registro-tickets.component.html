@@ -257,15 +257,52 @@
 
         <div class="form-field">
           <label>Forma de Pago</label>
-          <select [(ngModel)]="formaPago">
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta">Tarjeta</option>
-            <option value="Transferencia">Transferencia</option>
-            <option value="Cheque">Cheque</option>
+          <select [(ngModel)]="formaPago" (ngModelChange)="onFormaPagoChange()">
+            <option *ngFor="let fp of formasPago" [value]="fp.nomfp">{{ fp.nomfp }}</option>
           </select>
         </div>
 
-        <div class="form-field" *ngIf="formaPago !== 'Efectivo'">
+        <!-- Pago Mixto -->
+        <div class="pago-mixto-section" *ngIf="esPagoMixto">
+          <div class="pago-mixto-titulo">Distribución del Pago</div>
+          <div class="pago-mixto-fila">
+            <div class="form-field">
+              <label>Efectivo</label>
+              <input 
+                type="number" 
+                [(ngModel)]="montoEfectivoCobro"
+                (input)="onMontoEfectivoCobroChange()"
+                min="0"
+                [max]="totalConDescuentoCobro"
+                step="0.01"
+                placeholder="0.00">
+            </div>
+            <div class="form-field">
+              <label>Otro Método</label>
+              <select [(ngModel)]="otroMetodoPagoCobro">
+                <option *ngFor="let fp of formasPagoSecundarias" [value]="fp.nomfp">{{ fp.nomfp }}</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Monto Otro</label>
+              <input 
+                type="number" 
+                [(ngModel)]="montoOtroMetodoCobro"
+                (input)="onMontoOtroCobroChange()"
+                min="0"
+                [max]="totalConDescuentoCobro"
+                step="0.01"
+                placeholder="0.00">
+            </div>
+          </div>
+          <div class="pago-mixto-suma" 
+            [class.suma-ok]="(montoEfectivoCobro + montoOtroMetodoCobro) === totalConDescuentoCobro"
+            [class.suma-error]="(montoEfectivoCobro + montoOtroMetodoCobro) !== totalConDescuentoCobro">
+            Suma: {{ (montoEfectivoCobro + montoOtroMetodoCobro) | currency:'MXN' }} / Total: {{ totalConDescuentoCobro | currency:'MXN' }}
+          </div>
+        </div>
+
+        <div class="form-field" *ngIf="!esPagoMixto && formaPago?.toLowerCase() !== 'efectivo'">
           <label>Referencia</label>
           <input 
             type="text" 

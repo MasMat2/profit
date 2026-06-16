@@ -6,6 +6,7 @@ import { ToastService } from '../../services/shared/toast.service';
 import { TicketPrintComponent, TicketData } from '../../shared/components/ticket-print/ticket-print.component';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { FormasPagoService, FormaPago } from '../../services/formas-pago.service';
 
 interface Mensualidad {
   idmens: number;
@@ -66,9 +67,14 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
   
   montoCobro: number = 0;
   descuentoCobro: number = 0;
-  formaPago: string = 'Efectivo';
+  formaPago: string = '';
   referencia: string = '';
   comentariosCobro: string = '';
+  formasPago: FormaPago[] = [];
+
+  montoEfectivoCobro: number = 0;
+  montoOtroMetodoCobro: number = 0;
+  otroMetodoPagoCobro: string = '';
   
   cargandoMensualidades: boolean = false;
   cargandoTickets: boolean = false;
@@ -83,7 +89,8 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private toast: ToastService
+    private toast: ToastService,
+    private formasPagoService: FormasPagoService
   ) {}
 
   get fechaActual(): Date {
@@ -91,6 +98,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.cargarFormasPago();
     this.busquedaMensualidadSubject
       .pipe(
         debounceTime(this.DEBOUNCE_TIME),
@@ -108,6 +116,20 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
       .subscribe(busqueda => {
         this.realizarBusquedaTickets(busqueda);
       });
+  }
+
+  cargarFormasPago(): void {
+    this.formasPagoService.getFormasPago().subscribe({
+      next: (data) => {
+        this.formasPago = data;
+        if (data.length > 0) {
+          this.formaPago = data[0].nomfp;
+        }
+      },
+      error: () => {
+        this.toast.show('Error al cargar formas de pago', 'error');
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -292,10 +314,41 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
     this.registroSeleccionado = mensualidad;
     this.montoCobro = mensualidad.saldo > 0 ? mensualidad.saldo : mensualidad.total;
     this.descuentoCobro = 0;
-    this.formaPago = 'Efectivo';
+    this.formaPago = this.formasPago.length > 0 ? this.formasPago[0].nomfp : '';
     this.referencia = '';
     this.comentariosCobro = '';
+    this.montoEfectivoCobro = 0;
+    this.montoOtroMetodoCobro = 0;
+    this.otroMetodoPagoCobro = '';
     this.mostrarModalCobro = true;
+  }
+
+  get esPagoMixto(): boolean {
+    return this.formaPago?.toLowerCase().includes('mixto') ?? false;
+  }
+
+  get formasPagoSecundarias(): FormaPago[] {
+    return this.formasPago.filter(fp => !fp.nomfp.toLowerCase().includes('mixto') && !fp.nomfp.toLowerCase().includes('efectivo'));
+  }
+
+  get totalConDescuentoCobro(): number {
+    return this.montoCobro - this.descuentoCobro;
+  }
+
+  onFormaPagoChange(): void {
+    if (this.esPagoMixto) {
+      this.montoEfectivoCobro = 0;
+      this.montoOtroMetodoCobro = this.totalConDescuentoCobro;
+      this.otroMetodoPagoCobro = this.formasPagoSecundarias.length > 0 ? this.formasPagoSecundarias[0].nomfp : '';
+    }
+  }
+
+  onMontoEfectivoCobroChange(): void {
+    this.montoOtroMetodoCobro = Math.max(0, this.totalConDescuentoCobro - this.montoEfectivoCobro);
+  }
+
+  onMontoOtroCobroChange(): void {
+    this.montoEfectivoCobro = Math.max(0, this.totalConDescuentoCobro - this.montoOtroMetodoCobro);
   }
 
   cerrarModalCobro() {
@@ -303,6 +356,9 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
     this.registroSeleccionado = null;
     this.montoCobro = 0;
     this.descuentoCobro = 0;
+    this.montoEfectivoCobro = 0;
+    this.montoOtroMetodoCobro = 0;
+    this.otroMetodoPagoCobro = '';
   }
 
   procesarCobro() {
@@ -332,10 +388,26 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
 
     const totalConDescuento = this.montoCobro - this.descuentoCobro;
 
+    if (this.esPagoMixto) {
+      const sumaMixto = this.montoEfectivoCobro + this.montoOtroMetodoCobro;
+      if (Math.abs(sumaMixto - totalConDescuento) > 0.01) {
+        this.toast.show(`Los montos deben sumar ${this.formatearMoneda(totalConDescuento)}`, 'error');
+        return;
+      }
+      if (!this.otroMetodoPagoCobro) {
+        this.toast.show('Selecciona el segundo método de pago', 'error');
+        return;
+      }
+    }
+
+    const formaPagoFinal = this.esPagoMixto
+      ? `Mixto: $${this.montoEfectivoCobro.toFixed(2)} Efectivo / $${this.montoOtroMetodoCobro.toFixed(2)} ${this.otroMetodoPagoCobro}`
+      : this.formaPago;
+
     const datosCobro = {
       idmens: this.registroSeleccionado.idmens,
       monto: totalConDescuento,
-      formaPago: this.formaPago,
+      formaPago: formaPagoFinal,
       referencia: this.referencia,
       comentarios: this.comentariosCobro
     };
@@ -361,7 +433,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
           descuento: this.descuentoCobro,
           iva: 0,
           total: totalConDescuento,
-          formaPago: this.formaPago,
+          formaPago: formaPagoFinal,
           pagado: totalConDescuento,
           cambio: 0
         };

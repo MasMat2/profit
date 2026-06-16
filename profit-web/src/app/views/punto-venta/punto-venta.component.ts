@@ -8,7 +8,7 @@ import { PuntoVentaService, Categoria, Producto, Cliente, ItemVenta } from '@ser
 import { CategoriasComponent } from './components/categorias/categorias.component';
 import { ProductosListComponent } from './components/productos-list/productos-list.component';
 import { CarritoComponent } from './components/carrito/carrito.component';
-import { TicketModalComponent } from './components/ticket-modal/ticket-modal.component';
+import { TicketPrintComponent } from '@app/shared/components/ticket-print/ticket-print.component';
 
 @Component({
   selector: 'app-punto-venta',
@@ -19,7 +19,7 @@ import { TicketModalComponent } from './components/ticket-modal/ticket-modal.com
     CategoriasComponent,
     ProductosListComponent,
     CarritoComponent,
-    TicketModalComponent
+    TicketPrintComponent
   ],
   templateUrl: './punto-venta.component.html',
   styleUrls: ['./punto-venta.component.scss']
