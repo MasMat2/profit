@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
 import { RegistroTicketsService } from './registro-tickets.service';
 import { CobrarMensualidadDto } from './dto/cobrar-mensualidad.dto';
 
@@ -14,6 +14,11 @@ export class RegistroTicketsController {
   @Get('tickets')
   getTickets(@Query('busqueda') busqueda?: string) {
     return this.registroTicketsService.getTickets(busqueda);
+  }
+
+  @Get('tickets/:id/detalle')
+  getDetalleTicket(@Param('id') id: string) {
+    return this.registroTicketsService.getDetalleTicket(+id);
   }
 
   @Post('cobrar-mensualidad')

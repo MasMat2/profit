@@ -20,6 +20,8 @@ interface Mensualidad {
   saldo: number;
   descrip: string;
   modopago: number;
+  nommodopago?: string;
+  notas?: string;
   cancelado: number;
   inscrip: number;
 }
@@ -38,6 +40,7 @@ interface Ticket {
   ieps: number;
   cancelado: number;
   credito: number;
+  notas?: string;
 }
 
 @Component({
@@ -239,7 +242,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
       descuento: mensualidad.descuento,
       iva: 0,
       total: mensualidad.total,
-      formaPago: String(mensualidad.modopago || 'Efectivo'),
+      formaPago: mensualidad.nommodopago || mensualidad.notas || 'Efectivo',
       pagado: mensualidad.pagado,
       cambio: 0
     };
@@ -247,27 +250,42 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
   }
 
   abrirModalTicket(ticket: Ticket) {
-    this.ticketData = {
-      folio: ticket.ticket,
-      fecha: new Date(ticket.fecha),
-      cliente: ticket.nombreSocio || 'Cliente General',
-      productos: [
-        {
-          nombre: 'Venta',
-          cantidad: 1,
-          precio: ticket.total,
-          subtotal: ticket.total
-        }
-      ],
-      subtotal: ticket.importe,
-      descuento: ticket.descuento,
-      iva: ticket.iva,
-      total: ticket.total,
-      formaPago: ticket.credito ? 'Crédito' : 'Contado',
-      pagado: ticket.pagado,
-      cambio: 0
-    };
-    this.mostrarTicket = true;
+    this.http.get<any>(`${this.apiUrl}/tickets/${ticket.ticket}/detalle`).subscribe({
+      next: (detalle) => {
+        this.ticketData = {
+          folio: ticket.ticket,
+          fecha: new Date(ticket.fecha),
+          cliente: ticket.nombreSocio || 'Cliente General',
+          productos: detalle.productos?.length > 0 ? detalle.productos : [
+            { nombre: 'Venta', cantidad: 1, precio: Number(ticket.total), subtotal: Number(ticket.total) }
+          ],
+          subtotal: Number(detalle.ticket?.importe ?? ticket.importe),
+          descuento: Number(detalle.ticket?.descuento ?? ticket.descuento),
+          iva: Number(detalle.ticket?.iva ?? ticket.iva),
+          total: Number(detalle.ticket?.total ?? ticket.total),
+          formaPago: detalle.ticket?.formaPago || (ticket.credito ? 'Crédito' : 'Contado'),
+          pagado: Number(detalle.ticket?.pagado ?? ticket.pagado),
+          cambio: 0
+        };
+        this.mostrarTicket = true;
+      },
+      error: () => {
+        this.ticketData = {
+          folio: ticket.ticket,
+          fecha: new Date(ticket.fecha),
+          cliente: ticket.nombreSocio || 'Cliente General',
+          productos: [{ nombre: 'Venta', cantidad: 1, precio: Number(ticket.total), subtotal: Number(ticket.total) }],
+          subtotal: ticket.importe,
+          descuento: ticket.descuento,
+          iva: ticket.iva,
+          total: ticket.total,
+          formaPago: ticket.notas || (ticket.credito ? 'Crédito' : 'Contado'),
+          pagado: ticket.pagado,
+          cambio: 0
+        };
+        this.mostrarTicket = true;
+      }
+    });
   }
 
   cerrarTicket() {

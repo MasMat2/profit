@@ -268,7 +268,7 @@ export class PuntoVentaService {
           factura: '',
           plazocred: null,
           fechacred: null,
-          notas: venta.comentarios || null,
+          notas: venta.formaPago || venta.comentarios || null,
           impdesc: venta.descuento || 0,
           usumod: 1,
           usunvo: 1,

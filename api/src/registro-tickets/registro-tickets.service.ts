@@ -10,6 +10,7 @@ export class RegistroTicketsService {
     let query = this.db.getKysely()
       .selectFrom('tbmensualidades as m')
       .leftJoin('tbsocios as s', 's.id', 'm.socio')
+      .leftJoin('tbformaspago as fp', 'fp.id', 'm.modopago' as any)
       .select([
         'm.idmens',
         'm.socio',
@@ -22,6 +23,8 @@ export class RegistroTicketsService {
         'm.saldo',
         'm.descrip',
         'm.modopago',
+        'm.notas',
+        'fp.nomfp as nommodopago',
         'm.cancelado',
         'm.inscrip'
       ]);
@@ -83,6 +86,52 @@ export class RegistroTicketsService {
     return tickets;
   }
 
+  async getDetalleTicket(ticketId: number) {
+    const kysely = this.db.getKysely();
+
+    const productos = await kysely
+      .selectFrom('tbdettickets as d')
+      .leftJoin('tbproductos as p', 'p.id', 'd.producto')
+      .select([
+        'p.nomproducto',
+        'd.cnt',
+        'd.venta',
+        'd.importe'
+      ])
+      .where('d.ticket', '=', ticketId)
+      .where('d.cancelado', '=', 0)
+      .execute();
+
+    const ticket = await kysely
+      .selectFrom('tbtickets as t')
+      .select([
+        't.ticket',
+        't.fecha',
+        't.importe',
+        't.descuento',
+        't.iva',
+        't.total',
+        't.pagado',
+        't.credito',
+        't.notas'
+      ])
+      .where('t.ticket', '=', ticketId)
+      .executeTakeFirst();
+
+    return {
+      ticket: ticket ? {
+        ...ticket,
+        formaPago: ticket.notas || (ticket.credito ? 'Crédito' : 'Contado')
+      } : null,
+      productos: productos.map(d => ({
+        nombre: d.nomproducto || 'Producto',
+        cantidad: Number(d.cnt),
+        precio: Number(d.venta),
+        subtotal: Number(d.importe)
+      }))
+    };
+  }
+
   async cobrarMensualidad(cobrarDto: CobrarMensualidadDto) {
     try {
       const kysely = this.db.getKysely();
@@ -110,11 +159,21 @@ export class RegistroTicketsService {
       const nuevoSaldo = saldoActual - cobrarDto.monto;
       const estaPagada = nuevoSaldo <= 0 ? 1 : 0;
 
+      const formaPagoRow = await kysely
+        .selectFrom('tbformaspago')
+        .select(['id'])
+        .where((eb) => eb(
+          eb.fn('LOWER', ['nomfp']), '=', cobrarDto.formaPago.toLowerCase()
+        ))
+        .executeTakeFirst();
+
       await kysely
         .updateTable('tbmensualidades')
         .set({
           saldo: (nuevoSaldo >= 0 ? nuevoSaldo : 0) as any,
-          pagado: estaPagada as any
+          pagado: estaPagada as any,
+          notas: cobrarDto.formaPago,
+          ...(formaPagoRow ? { modopago: formaPagoRow.id as any } : {})
         })
         .where('idmens', '=', cobrarDto.idmens)
         .execute();
