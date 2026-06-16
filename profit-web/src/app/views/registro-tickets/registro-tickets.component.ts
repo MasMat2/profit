@@ -70,7 +70,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
   
   montoCobro: number = 0;
   descuentoCobro: number = 0;
-  formaPago: string = '';
+  formaPagoId: number = 0;
   referencia: string = '';
   comentariosCobro: string = '';
   formasPago: FormaPago[] = [];
@@ -126,7 +126,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.formasPago = data;
         if (data.length > 0) {
-          this.formaPago = data[0].nomfp;
+          this.formaPagoId = data[0].id;
         }
       },
       error: () => {
@@ -242,7 +242,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
       descuento: mensualidad.descuento,
       iva: 0,
       total: mensualidad.total,
-      formaPago: mensualidad.nommodopago || mensualidad.notas || 'Efectivo',
+      formaPago: mensualidad.notas || mensualidad.nommodopago || 'Efectivo',
       pagado: mensualidad.pagado,
       cambio: 0
     };
@@ -332,7 +332,7 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
     this.registroSeleccionado = mensualidad;
     this.montoCobro = mensualidad.saldo > 0 ? mensualidad.saldo : mensualidad.total;
     this.descuentoCobro = 0;
-    this.formaPago = this.formasPago.length > 0 ? this.formasPago[0].nomfp : '';
+    this.formaPagoId = this.formasPago.length > 0 ? this.formasPago[0].id : 0;
     this.referencia = '';
     this.comentariosCobro = '';
     this.montoEfectivoCobro = 0;
@@ -341,8 +341,12 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
     this.mostrarModalCobro = true;
   }
 
+  get formaPagoSeleccionada(): FormaPago | undefined {
+    return this.formasPago.find(fp => fp.id === Number(this.formaPagoId));
+  }
+
   get esPagoMixto(): boolean {
-    return this.formaPago?.toLowerCase().includes('mixto') ?? false;
+    return this.formaPagoSeleccionada?.nomfp.toLowerCase().includes('mixto') ?? false;
   }
 
   get formasPagoSecundarias(): FormaPago[] {
@@ -418,14 +422,16 @@ export class RegistroTicketsComponent implements OnInit, OnDestroy {
       }
     }
 
+    const nomFpSeleccionada = this.formaPagoSeleccionada?.nomfp || '';
     const formaPagoFinal = this.esPagoMixto
       ? `Mixto: $${this.montoEfectivoCobro.toFixed(2)} Efectivo / $${this.montoOtroMetodoCobro.toFixed(2)} ${this.otroMetodoPagoCobro}`
-      : this.formaPago;
+      : nomFpSeleccionada;
 
     const datosCobro = {
       idmens: this.registroSeleccionado.idmens,
       monto: totalConDescuento,
       formaPago: formaPagoFinal,
+      formaPagoId: this.esPagoMixto ? null : Number(this.formaPagoId),
       referencia: this.referencia,
       comentarios: this.comentariosCobro
     };

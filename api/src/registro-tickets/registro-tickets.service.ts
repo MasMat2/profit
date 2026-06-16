@@ -159,21 +159,13 @@ export class RegistroTicketsService {
       const nuevoSaldo = saldoActual - cobrarDto.monto;
       const estaPagada = nuevoSaldo <= 0 ? 1 : 0;
 
-      const formaPagoRow = await kysely
-        .selectFrom('tbformaspago')
-        .select(['id'])
-        .where((eb) => eb(
-          eb.fn('LOWER', ['nomfp']), '=', cobrarDto.formaPago.toLowerCase()
-        ))
-        .executeTakeFirst();
-
       await kysely
         .updateTable('tbmensualidades')
         .set({
           saldo: (nuevoSaldo >= 0 ? nuevoSaldo : 0) as any,
           pagado: estaPagada as any,
           notas: cobrarDto.formaPago,
-          ...(formaPagoRow ? { modopago: formaPagoRow.id as any } : {})
+          ...(cobrarDto.formaPagoId ? { modopago: cobrarDto.formaPagoId as any } : {})
         })
         .where('idmens', '=', cobrarDto.idmens)
         .execute();

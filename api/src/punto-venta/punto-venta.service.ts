@@ -188,8 +188,7 @@ export class PuntoVentaService {
     try {
       let query = this.db.getKysely()
         .selectFrom('tbsocios')
-        .select(['id', 'nomsocio', 'activo'])
-        .where('activo', '=', 1);
+        .select(['id', 'nomsocio', 'activo']);
 
       // Aplicar filtro de búsqueda si se proporciona
       if (busqueda && busqueda.trim().length > 0) {
