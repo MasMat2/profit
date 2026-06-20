@@ -256,4 +256,97 @@ export class SociosService {
       .execute();
     return { deleted: true };
   }
+
+  async reactivarSocio(socioId: number, usuarioId: number) {
+    // Primero actualizar el socio a activo = 1
+    await this.db
+      .updateTable('tbsocios')
+      .set({
+        activo: 1,
+        usumod: usuarioId,
+        fecmod: new Date(),
+        envia: 1
+      })
+      .where('socio', '=', socioId)
+      .execute();
+
+    // Luego insertar el log de reactivación
+    await this.db
+      .insertInto('tblogsocio')
+      .values({
+        id: 0, // Auto-incremental
+        socio: socioId,
+        usuario: usuarioId,
+        log: 'Reactivó al socio.',
+        usunvo: usuarioId,
+        fecnvo: new Date(),
+        usumod: 0,
+        fecmod: new Date('1900-01-01 00:00:00'),
+        envia: 1
+      })
+      .execute();
+
+    return this.getSocioBySocioNumber(socioId);
+  }
+
+  async darDeBajaSocio(socioId: number, usuarioId: number) {
+    // Primero actualizar el socio a activo = 0
+    await this.db
+      .updateTable('tbsocios')
+      .set({
+        activo: 0,
+        usumod: usuarioId,
+        fecmod: new Date(),
+        envia: 1
+      })
+      .where('socio', '=', socioId)
+      .execute();
+
+    // Luego insertar el log de baja
+    await this.db
+      .insertInto('tblogsocio')
+      .values({
+        id: 0, // Auto-incremental
+        socio: socioId,
+        usuario: usuarioId,
+        log: 'Dió de baja al socio.',
+        usunvo: usuarioId,
+        fecnvo: new Date(),
+        usumod: 0,
+        fecmod: new Date('1900-01-01 00:00:00'),
+        envia: 1
+      })
+      .execute();
+
+    return this.getSocioBySocioNumber(socioId);
+  }
+
+  async getSocioBySocioNumber(socioNumber: number) {
+    return this.db
+      .selectFrom('tbsocios')
+      .selectAll()
+      .where('socio', '=', socioNumber)
+      .executeTakeFirst() ?? null;
+  }
+
+  async getLogsBySocio(socioId: number) {
+    return this.db
+      .selectFrom('tblogsocio as l')
+      .leftJoin('tbusuarios as u', 'u.usuario', 'l.usuario')
+      .select([
+        'l.id',
+        'l.socio',
+        'l.usuario',
+        'l.log',
+        'l.fecnvo',
+        'l.usunvo',
+        'l.fecmod',
+        'l.usumod',
+        'l.envia',
+        'u.nombre'
+      ])
+      .where('l.socio', '=', socioId)
+      .orderBy('l.fecnvo', 'desc')
+      .execute();
+  }
 }

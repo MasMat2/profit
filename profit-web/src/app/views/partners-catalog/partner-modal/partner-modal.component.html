@@ -158,16 +158,7 @@
               </div>
 
               <div class="form-row">
-                <div class="form-group">
-                  <label>Estatus *</label>
-                  <select class="form-control" formControlName="estatus">
-                    <option *ngFor="let status of availableStatuses" [value]="status">
-                      {{ status }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="form-group">
+                <div class="form-group full-width">
                   <label class="checkbox-label">
                     <input type="checkbox" formControlName="becado" />
                     <span>Socio Becado</span>
@@ -186,17 +177,7 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <div class="form-group full-width">
-                  <label>Periodicidad de Pago *</label>
-                  <select class="form-control" formControlName="periodicidad">
-                    <option *ngFor="let period of availablePeriods" [value]="period">
-                      {{ period }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
+              
               <!-- Sección de Cobro Inicial -->
               <div class="payment-card" *ngIf="!partner || partner.id === 0">
                 <div class="payment-card-header">
@@ -363,6 +344,7 @@
                   <th>Total</th>
                   <th>Saldo</th>
                   <th>Estatus</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -384,6 +366,16 @@
                     }">
                       {{ sub.cancelado ? 'Cancelada' : (sub.pagado ? 'Pagada' : 'Pendiente') }}
                     </span>
+                  </td>
+                  <td>
+                    <button 
+                      class="btn-primary btn-sm" 
+                      (click)="onCobrarMensualidad(sub)"
+                      *ngIf="!sub.pagado && !sub.cancelado && sub.saldo > 0"
+                      title="Cobrar mensualidad">
+                      <i class="fas fa-dollar-sign"></i>
+                      Cobrar
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -438,14 +430,25 @@
     <!-- Footer -->
     <div class="modal-footer">
       <div class="footer-left">
-        <button 
-          class="btn-danger" 
-          (click)="onDelete()"
-          *ngIf="partner && partner.id !== 0"
-          title="Eliminar socio">
-          <i class="fas fa-trash-alt"></i>
-          Eliminar Socio
-        </button>
+        <!-- Botones de Alta/Baja para socios existentes -->
+        <ng-container *ngIf="partner && partner.id !== 0">
+          <button 
+            class="btn-danger" 
+            (click)="onDarDeBaja()"
+            *ngIf="partner.estatus === 'Activo' || partner.estatus === 'Becado'"
+            title="Dar de baja al socio">
+            <i class="fas fa-user-slash"></i>
+            Dar de Baja
+          </button>
+          <button 
+            class="btn-success" 
+            (click)="onReactivar()"
+            *ngIf="partner.estatus === 'Inactivo'"
+            title="Reactivar socio">
+            <i class="fas fa-user-check"></i>
+            Reactivar
+          </button>
+        </ng-container>
       </div>
       <div class="footer-right">
         <button class="btn-secondary" (click)="onCancel()">
@@ -488,3 +491,112 @@
   (fingerprintSaved)="onFingerprintCaptured($event)"
   (fingerprintDeleted)="onFingerprintCleared()"
 ></app-fingerprint-modal>
+
+<!-- Modal de Cobro de Mensualidad -->
+<div class="modal-overlay" *ngIf="showCobroModal" (click)="closeCobroModal()">
+  <div class="modal-container cobro-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Cobrar Mensualidad</h2>
+      <button class="btn-close" (click)="closeCobroModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="mensualidadACobrar">
+      <div class="mensualidad-info">
+        <div class="info-row">
+          <span class="label">Socio:</span>
+          <span class="value">{{ partner?.nombre }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Descripción:</span>
+          <span class="value">{{ mensualidadACobrar.descripcion }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Fecha:</span>
+          <span class="value">{{ formatDate(mensualidadACobrar.fecha) }}</span>
+        </div>
+        <div class="info-row total-row">
+          <span class="label">Importe:</span>
+          <span class="value">{{ formatCurrency(mensualidadACobrar.importe) }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="cobroForm" class="cobro-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Forma de Pago *</label>
+            <select class="form-control" formControlName="formaPago">
+              <option value="">Seleccionar...</option>
+              <option *ngFor="let fp of formasPago" [value]="fp.id">
+                {{ fp.nomfp }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Descuento</label>
+            <input 
+              type="number" 
+              class="form-control"
+              formControlName="descuento"
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              (input)="calcularTotalConDescuento()"
+            />
+          </div>
+          <div class="form-group">
+            <label>Total a Pagar</label>
+            <div class="total-display">
+              {{ formatCurrency(calcularTotalConDescuento()) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" *ngIf="cobroForm.get('descuento')?.value > 0">
+          <div class="form-group full-width">
+            <label>Motivo del Descuento</label>
+            <input 
+              type="text" 
+              class="form-control"
+              formControlName="motivoDescuento"
+              placeholder="Especificar motivo del descuento"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Referencia</label>
+            <input 
+              type="text" 
+              class="form-control"
+              formControlName="referencia"
+              placeholder="Número de referencia (opcional)"
+            />
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCobroModal()">
+        Cancelar
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="procesarCobro()"
+        [disabled]="cobroForm.invalid"
+      >
+        <i class="fas fa-dollar-sign"></i>
+        Procesar Cobro
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmación -->
+<app-confirmation-modal></app-confirmation-modal>

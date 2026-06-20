@@ -89,12 +89,39 @@ export class PartnersCatalogComponent implements OnInit {
     },
     {
       headerName: 'Acciones',
-      width: 100,
+      width: 180,
       sortable: false,
       filter: false,
       floatingFilter: false,
-      cellRenderer: () =>
-        `<button style="background:none;border:none;cursor:pointer;color:#6B7280;font-size:16px;padding:4px 8px;border-radius:6px" title="Ver detalles"><i class="fas fa-eye"></i></button>`,
+      cellRenderer: (params: any) => {
+        const partner = params.data;
+        const esActivo = partner.estatus === 'Activo' || partner.estatus === 'Becado';
+        
+        return `
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;height:100%">
+            <button 
+              onclick="window['viewPartner'](${partner.id})" 
+              style="background:none;border:none;cursor:pointer;color:#6B7280;font-size:16px;padding:4px 8px;border-radius:6px" 
+              title="Ver detalles">
+              <i class="fas fa-eye"></i>
+            </button>
+            ${esActivo ? 
+              `<button 
+                onclick="window['darDeBajaSocio'](${partner.socio}, ${partner.id})" 
+                style="background:none;border:none;cursor:pointer;color:#EF4444;font-size:16px;padding:4px 8px;border-radius:6px" 
+                title="Dar de baja">
+                <i class="fas fa-user-slash"></i>
+              </button>` :
+              `<button 
+                onclick="window['reactivarSocio'](${partner.socio}, ${partner.id})" 
+                style="background:none;border:none;cursor:pointer;color:#10B981;font-size:16px;padding:4px 8px;border-radius:6px" 
+                title="Reactivar socio">
+                <i class="fas fa-user-check"></i>
+              </button>`
+            }
+          </div>
+        `;
+      },
     },
   ];
 
@@ -102,6 +129,15 @@ export class PartnersCatalogComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPartners();
+    // Exponer métodos globalmente para que puedan ser llamados desde los botones del grid
+    (window as any).viewPartner = (id: number) => {
+      const partner = this.partners.find(p => p.id === id);
+      if (partner) {
+        this.openPartnerModal(partner);
+      }
+    };
+    (window as any).darDeBajaSocio = (socioId: number, id: number) => this.darDeBajaSocio(socioId, id);
+    (window as any).reactivarSocio = (socioId: number, id: number) => this.reactivarSocio(socioId, id);
   }
 
   loadPartners(): void {
@@ -124,5 +160,49 @@ export class PartnersCatalogComponent implements OnInit {
     this.showModal = false;
     this.selectedPartner = undefined;
     this.loadPartners();
+  }
+
+  darDeBajaSocio(socioId: number, partnerId: number): void {
+    if (confirm('¿Está seguro que desea dar de baja a este socio?')) {
+      // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
+      const usuarioId = 1;
+      
+      this.partnersService.darDeBajaSocio(socioId, usuarioId).subscribe({
+        next: (partner) => {
+          // Actualizar el socio en la lista local
+          const index = this.partners.findIndex(p => p.id === partnerId);
+          if (index !== -1) {
+            this.partners[index] = partner;
+          }
+          console.log('Socio dado de baja exitosamente:', partner);
+        },
+        error: (error) => {
+          console.error('Error al dar de baja al socio:', error);
+          alert('Error al dar de baja al socio. Por favor intente nuevamente.');
+        }
+      });
+    }
+  }
+
+  reactivarSocio(socioId: number, partnerId: number): void {
+    if (confirm('¿Está seguro que desea reactivar a este socio?')) {
+      // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
+      const usuarioId = 1;
+      
+      this.partnersService.reactivarSocio(socioId, usuarioId).subscribe({
+        next: (partner) => {
+          // Actualizar el socio en la lista local
+          const index = this.partners.findIndex(p => p.id === partnerId);
+          if (index !== -1) {
+            this.partners[index] = partner;
+          }
+          console.log('Socio reactivado exitosamente:', partner);
+        },
+        error: (error) => {
+          console.error('Error al reactivar al socio:', error);
+          alert('Error al reactivar al socio. Por favor intente nuevamente.');
+        }
+      });
+    }
   }
 }

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Partner, PartnerStatus, PaymentPeriod, FingerprintData } from '../../../models/partner.model';
 import { PartnersService } from '../../../services/partners.service';
+import { ConfirmationService } from '../../../services/confirmation.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ClassAssignmentModalComponent } from '../class-assignment-modal/class-assignment-modal.component';
 import { PaymentTicketModalComponent, PaymentTicket } from '../payment-ticket-modal/payment-ticket-modal.component';
 import { FingerprintModalComponent } from '../fingerprint-modal/fingerprint-modal.component';
@@ -10,7 +12,7 @@ import { FingerprintModalComponent } from '../fingerprint-modal/fingerprint-moda
 @Component({
   selector: 'app-partner-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ClassAssignmentModalComponent, PaymentTicketModalComponent, FingerprintModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmationModalComponent, ClassAssignmentModalComponent, PaymentTicketModalComponent, FingerprintModalComponent],
   templateUrl: './partner-modal.component.html',
   styleUrls: ['./partner-modal.component.scss']
 })
@@ -29,6 +31,10 @@ export class PartnerModalComponent implements OnInit {
   loadingSubscriptions: boolean = false;
   fingerprintData: FingerprintData | null = null;
   showFingerprintModal: boolean = false;
+  showCobroModal: boolean = false;
+  mensualidadACobrar: any = null;
+  cobroForm!: FormGroup;
+  formasPago: any[] = [];
 
   PartnerStatus = PartnerStatus;
   PaymentPeriod = PaymentPeriod;
@@ -37,11 +43,14 @@ export class PartnerModalComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private partnersService: PartnersService
+    private partnersService: PartnersService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.initForm();
+    this.initCobroForm();
+    this.loadFormasPago();
     if (this.partner) {
       this.loadPartnerData();
       this.loadMensualidades();
@@ -90,6 +99,7 @@ export class PartnerModalComponent implements OnInit {
   mapMensualidadToSubscription(mensualidad: any): any {
     return {
       id: mensualidad.id,
+      idMens: mensualidad.idmens, // Agregar campo idMens para el cobro
       fecha: new Date(mensualidad.fecha),
       descripcion: mensualidad.descrip,
       importe: mensualidad.importe,
@@ -116,9 +126,7 @@ export class PartnerModalComponent implements OnInit {
       correo: ['', [Validators.required, Validators.email]],
       sexo: ['M', Validators.required],
       fechaNacimiento: ['', Validators.required],
-      estatus: [PartnerStatus.ACTIVO, Validators.required],
       becado: [false],
-      periodicidad: [PaymentPeriod.MENSUAL, Validators.required],
       comentarios: [''],
       montoInscripcion: [0, [Validators.min(0)]],
       descuentoInscripcion: [0, [Validators.min(0)]],
@@ -134,9 +142,7 @@ export class PartnerModalComponent implements OnInit {
         correo: this.partner.correo,
         sexo: this.partner.sexo,
         fechaNacimiento: this.formatDateForInput(this.partner.fechaNacimiento),
-        estatus: this.partner.estatus,
         becado: this.partner.becado,
-        periodicidad: this.partner.periodicidad,
         comentarios: this.partner.comentarios
       });
 
@@ -277,16 +283,17 @@ export class PartnerModalComponent implements OnInit {
       // Crear un partner temporal para el modal de asignación
       const tempPartner: Partner = {
         id: 0,
+        socio: 0, // Número de socio temporal
         nombre: this.partnerForm.get('nombre')?.value || 'Nuevo Socio',
         telefono: this.partnerForm.get('telefono')?.value || '',
         correo: this.partnerForm.get('correo')?.value || '',
         sexo: this.partnerForm.get('sexo')?.value || 'M',
         fechaNacimiento: this.partnerForm.get('fechaNacimiento')?.value || new Date(),
-        estatus: this.partnerForm.get('estatus')?.value || PartnerStatus.ACTIVO,
+        estatus: PartnerStatus.ACTIVO, // Valor por defecto para nuevos socios
         saldo: 0,
         becado: this.partnerForm.get('becado')?.value || false,
         fechaRegistro: new Date(),
-        periodicidad: this.partnerForm.get('periodicidad')?.value || PaymentPeriod.MENSUAL,
+        periodicidad: PaymentPeriod.MENSUAL, // Valor por defecto aunque no se muestre en formulario
         clases: this.temporaryClasses,
         suscripciones: [],
         ventas: [],
@@ -530,5 +537,129 @@ export class PartnerModalComponent implements OnInit {
 
   closeFingerprintModal(): void {
     this.showFingerprintModal = false;
+  }
+
+  onDarDeBaja(): void {
+    if (!this.partner || this.partner.id === 0) return;
+    
+    if (confirm('¿Está seguro que desea dar de baja a este socio?')) {
+      // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
+      const usuarioId = 1;
+      
+      this.partnersService.darDeBajaSocio(this.partner.socio, usuarioId).subscribe({
+        next: (updatedPartner) => {
+          this.partner = updatedPartner;
+          console.log('Socio dado de baja exitosamente:', updatedPartner);
+          alert('Socio dado de baja exitosamente');
+          this.close.emit();
+        },
+        error: (error) => {
+          console.error('Error al dar de baja al socio:', error);
+          alert('Error al dar de baja al socio. Por favor intente nuevamente.');
+        }
+      });
+    }
+  }
+
+  onReactivar(): void {
+    if (!this.partner || this.partner.id === 0) return;
+    
+    if (confirm('¿Está seguro que desea reactivar a este socio?')) {
+      // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
+      const usuarioId = 1;
+      
+      this.partnersService.reactivarSocio(this.partner.socio, usuarioId).subscribe({
+        next: (updatedPartner) => {
+          this.partner = updatedPartner;
+          console.log('Socio reactivado exitosamente:', updatedPartner);
+          alert('Socio reactivado exitosamente');
+          this.close.emit();
+        },
+        error: (error) => {
+          console.error('Error al reactivar al socio:', error);
+          alert('Error al reactivar al socio. Por favor intente nuevamente.');
+        }
+      });
+    }
+  }
+
+  initCobroForm(): void {
+    this.cobroForm = this.fb.group({
+      formaPago: ['', Validators.required],
+      descuento: [0, [Validators.min(0)]],
+      referencia: [''],
+      motivoDescuento: ['']
+    });
+  }
+
+  loadFormasPago(): void {
+    this.partnersService.getFormasPago().subscribe({
+      next: (formas) => {
+        this.formasPago = formas;
+      },
+      error: (error) => {
+        console.error('Error al cargar formas de pago:', error);
+      }
+    });
+  }
+
+  onCobrarMensualidad(mensualidad: any): void {
+    this.mensualidadACobrar = mensualidad;
+    this.cobroForm.patchValue({
+      descuento: mensualidad.descuento || 0,
+      referencia: '',
+      motivoDescuento: ''
+    });
+    this.showCobroModal = true;
+  }
+
+  closeCobroModal(): void {
+    this.showCobroModal = false;
+    this.mensualidadACobrar = null;
+    this.cobroForm.reset();
+  }
+
+  procesarCobro(): void {
+    if (!this.mensualidadACobrar || this.cobroForm.invalid) return;
+
+    const cobroData = {
+      idMens: this.mensualidadACobrar.idMens,
+      formaPago: this.cobroForm.get('formaPago')?.value,
+      descuento: this.cobroForm.get('descuento')?.value || 0,
+      referencia: this.cobroForm.get('referencia')?.value || '',
+      motivoDescuento: this.cobroForm.get('motivoDescuento')?.value || '',
+      usuarioId: 1 // ID de usuario fijo por ahora
+    };
+
+    this.partnersService.cobrarMensualidad(cobroData).subscribe({
+      next: (response) => {
+        console.log('Cobro procesado exitosamente:', response);
+        this.confirmationService.confirm({
+          title: '¡Cobro Exitoso!',
+          message: 'La mensualidad ha sido cobrada correctamente.',
+          type: 'success',
+          confirmText: 'Aceptar'
+        }).subscribe(() => {
+          this.closeCobroModal();
+          // Recargar las mensualidades para actualizar la tabla
+          this.loadMensualidades();
+        });
+      },
+      error: (error) => {
+        console.error('Error al procesar cobro:', error);
+        this.confirmationService.confirm({
+          title: 'Error en el Cobro',
+          message: 'No se pudo procesar el cobro. Por favor intente nuevamente.',
+          type: 'error',
+          confirmText: 'Aceptar'
+        }).subscribe();
+      }
+    });
+  }
+
+  calcularTotalConDescuento(): number {
+    const importe = this.mensualidadACobrar?.importe || 0;
+    const descuento = this.cobroForm.get('descuento')?.value || 0;
+    return Math.max(0, importe - descuento);
   }
 }

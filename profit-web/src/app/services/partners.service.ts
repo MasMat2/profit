@@ -16,6 +16,7 @@ export class PartnersService {
   private mapSocioToPartner(socio: SocioAPI): Partner {
     return {
       id: socio.id,
+      socio: socio.socio,
       nombre: socio.nomsocio,
       telefono: socio.tel1,
       correo: socio.correo,
@@ -234,5 +235,33 @@ export class PartnersService {
 
   eliminarHuella(socioId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${socioId}/huella`);
+  }
+
+  reactivarSocio(socioId: number, usuarioId: number): Observable<Partner> {
+    return this.http.post<SocioAPI>(`${this.apiUrl}/${socioId}/reactivar`, { usuarioId }).pipe(
+      map(socio => this.mapSocioToPartner(socio))
+    );
+  }
+
+  darDeBajaSocio(socioId: number, usuarioId: number): Observable<Partner> {
+    return this.http.post<SocioAPI>(`${this.apiUrl}/${socioId}/baja`, { usuarioId }).pipe(
+      map(socio => this.mapSocioToPartner(socio))
+    );
+  }
+
+  getLogsBySocio(socioId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${socioId}/logs`);
+  }
+
+  getFormasPago(): Observable<any[]> {
+    return this.http.get<any[]>('/formas-pago');
+  }
+
+  cobrarMensualidad(cobroData: any): Observable<any> {
+    return this.http.post('/mensualidades/cobrar', cobroData);
+  }
+
+  exportarFormasPago(): Observable<Blob> {
+    return this.http.get('/formas-pago/exportar', { responseType: 'blob' });
   }
 }

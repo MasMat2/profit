@@ -903,6 +903,33 @@
       box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
     }
   }
+
+  .btn-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #D1FAE5;
+    color: #059669;
+    border: 1px solid #6EE7B7;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    i {
+      font-size: 14px;
+    }
+
+    &:hover {
+      background-color: #059669;
+      color: #FFFFFF;
+      border-color: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(5, 150, 105, 0.3);
+    }
+  }
 }
 
 .badge {
@@ -932,5 +959,208 @@
   &.badge-scholarship {
     background-color: #DBEAFE;
     color: #1E40AF;
+  }
+}
+
+// Estilos para el modal de cobro
+.cobro-modal {
+  max-width: 450px;
+  width: 90vw;
+  
+  .modal-header {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .btn-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+      }
+    }
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .mensualidad-info {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);
+    border: 1px solid #FED7AA;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 6px rgba(249, 115, 22, 0.1);
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+      padding: 0.4rem 0;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .label {
+        font-weight: 500;
+        color: #5A6C7D;
+        font-size: 0.85rem;
+      }
+      
+      .value {
+        font-weight: 600;
+        color: #2C3E50;
+        font-size: 0.9rem;
+      }
+      
+      &.total-row {
+        border-top: 2px solid #F97316;
+        padding-top: 0.8rem;
+        margin-top: 0.8rem;
+        background: linear-gradient(90deg, rgba(249, 115, 22, 0.05) 0%, transparent 100%);
+        border-radius: 6px;
+        
+        .label {
+          color: #EA580C;
+          font-weight: 600;
+          font-size: 0.95rem;
+        }
+        
+        .value {
+          color: #EA580C;
+          font-size: 1.25rem;
+          font-weight: 700;
+        }
+      }
+    }
+  }
+  
+  .cobro-form {
+    .form-row {
+      margin-bottom: 1.25rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+    
+    .form-group {
+      margin-bottom: 0;
+      
+      label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.85rem;
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border: 2px solid #E5E7EB;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        background: white;
+        
+        &:focus {
+          outline: none;
+          border-color: #F97316;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+        
+        &::placeholder {
+          color: #9CA3AF;
+        }
+      }
+    }
+    
+    .total-display {
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.8rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+      box-shadow: 0 3px 8px rgba(249, 115, 22, 0.3);
+      margin-top: 0.4rem;
+    }
+  }
+  
+  .modal-footer {
+    background: #FFF7ED;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0 0 12px 12px;
+    border-top: 1px solid #FED7AA;
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+    
+    .btn-secondary {
+      background: white;
+      color: #6B7280;
+      border: 2px solid #E5E7EB;
+      padding: 0.6rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: #F9FAFB;
+        border-color: #D1D5DB;
+      }
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(249, 115, 22, 0.4);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      i {
+        margin-right: 0.4rem;
+      }
+    }
   }
 }

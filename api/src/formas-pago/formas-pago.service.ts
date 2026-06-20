@@ -19,6 +19,35 @@ export class FormasPagoService {
       .execute();
   }
 
+  async exportarFormasPago() {
+    const db = this.db.getKysely();
+    
+    const formasPago = await db
+      .selectFrom('tbformaspago')
+      .selectAll()
+      .orderBy('nomfp', 'asc')
+      .execute();
+    
+    // Formatear datos para exportación
+    const datosExportacion = formasPago.map(fp => ({
+      'ID Forma Pago': fp.id,
+      'Nombre Forma Pago': fp.nomfp,
+      'Clave Forma Pago': fp.c_formapago || '',
+      'Moneda': fp.c_moneda || '',
+      'Fecha Creación': fp.fecnvo ? new Date(fp.fecnvo).toLocaleString('es-MX') : '',
+      'Usuario Creación': fp.usunvo || '',
+      'Fecha Modificación': fp.fecmod && fp.fecmod.getTime() !== 0 ? new Date(fp.fecmod).toLocaleString('es-MX') : '',
+      'Usuario Modificación': fp.usumod || ''
+    }));
+    
+    return {
+      datos: datosExportacion,
+      nombreArchivo: `formas_pago_${new Date().toISOString().split('T')[0]}.csv`,
+      fechaExportacion: new Date().toLocaleString('es-MX'),
+      totalRegistros: datosExportacion.length
+    };
+  }
+
   async createFormaPago(dto: CreateFormaPagoDto) {
     const db = this.db.getKysely();
     const now = new Date();

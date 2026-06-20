@@ -1,5 +1,33 @@
 .action-bar {
   margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  
+  .btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #f8fafc;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+    
+    i {
+      font-size: 0.875rem;
+    }
+  }
 }
 
 .list-section {

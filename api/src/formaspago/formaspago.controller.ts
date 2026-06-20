@@ -1,20 +1,20 @@
-import { Controller, Get, Put, Post, Delete, Body, Param, ParseIntPipe, Res } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { FormasPagoService, CreateFormaPagoDto, UpdateFormaPagoDto } from './formas-pago.service';
+import { FormaspagoService } from './formaspago.service';
 
-@Controller('formas-pago')
-export class FormasPagoController {
-  constructor(private readonly formasPagoService: FormasPagoService) {}
+@Controller('formaspago')
+export class FormaspagoController {
+  constructor(private readonly formaspagoService: FormaspagoService) {}
 
   @Get()
-  getFormasPago() {
-    return this.formasPagoService.getFormasPago();
+  async getFormasPago() {
+    return this.formaspagoService.getFormasPago();
   }
 
   @Get('exportar')
   async exportarFormasPago(@Res() res: Response) {
     try {
-      const exportData = await this.formasPagoService.exportarFormasPago();
+      const exportData = await this.formaspagoService.exportarFormasPago();
       
       // Convertir datos a CSV
       const csvContent = this.convertToCSV(exportData.datos);
@@ -52,23 +52,5 @@ export class FormasPagoController {
     ];
     
     return csvRows.join('\n');
-  }
-
-  @Post()
-  createFormaPago(@Body() dto: CreateFormaPagoDto) {
-    return this.formasPagoService.createFormaPago(dto);
-  }
-
-  @Put(':id')
-  updateFormaPago(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateFormaPagoDto,
-  ) {
-    return this.formasPagoService.updateFormaPago(id, dto);
-  }
-
-  @Delete(':id')
-  deleteFormaPago(@Param('id', ParseIntPipe) id: number) {
-    return this.formasPagoService.deleteFormaPago(id);
   }
 }

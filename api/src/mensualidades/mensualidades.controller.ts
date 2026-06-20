@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, Body } from '@nestjs/common';
 import { MensualidadesService } from './mensualidades.service';
 
 @Controller('mensualidades')
@@ -17,5 +17,17 @@ export class MensualidadesController {
   @Get(':id')
   async getMensualidadById(@Param('id') id: string) {
     return this.mensualidadesService.getMensualidadById(+id);
+  }
+
+  @Post('cobrar')
+  async cobrarMensualidad(@Body() cobroData: {
+    idMens: number;
+    formaPago: number;
+    descuento: number;
+    referencia: string;
+    motivoDescuento: string;
+    usuarioId: number;
+  }) {
+    return this.mensualidadesService.cobrarMensualidad(cobroData);
   }
 }

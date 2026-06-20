@@ -48,4 +48,25 @@ export class SociosController {
   async eliminarHuella(@Param('id') id: string) {
     return this.sociosService.eliminarHuella(+id);
   }
+
+  @Post(':socioId/reactivar')
+  async reactivarSocio(
+    @Param('socioId') socioId: string,
+    @Body('usuarioId') usuarioId: number
+  ) {
+    return this.sociosService.reactivarSocio(+socioId, usuarioId);
+  }
+
+  @Post(':socioId/baja')
+  async darDeBajaSocio(
+    @Param('socioId') socioId: string,
+    @Body('usuarioId') usuarioId: number
+  ) {
+    return this.sociosService.darDeBajaSocio(+socioId, usuarioId);
+  }
+
+  @Get(':socioId/logs')
+  async getLogsBySocio(@Param('socioId') socioId: string) {
+    return this.sociosService.getLogsBySocio(+socioId);
+  }
 }

@@ -1,5 +1,6 @@
 export interface Partner {
   id: number;
+  socio: number; // Número de socio (campo socio de la BD)
   nombre: string;
   telefono: string;
   correo: string;

@@ -5,6 +5,7 @@ import { FormaPago } from '@services/formas-pago.service';
 import { SharedModalComponent } from '@views/shared/shared-modal/shared-modal.component';
 import { ToastService } from '@services/shared/toast.service';
 import { FormasPagoService } from '@services/formas-pago.service';
+import { PartnersService } from '@services/partners.service';
 
 @Component({
   selector: 'app-formas-pago',
@@ -27,6 +28,7 @@ export class FormasPagoComponent implements OnInit {
 
   constructor(
     private formasPagoService: FormasPagoService,
+    private partnersService: PartnersService,
     private toast: ToastService) {}
 
   ngOnInit(): void {
@@ -108,6 +110,34 @@ export class FormasPagoComponent implements OnInit {
     this.showForm = false;
     this.isEditing = false;
     this.loadFormasPago();
+  }
+
+  exportarFormasPago(): void {
+    this.partnersService.exportarFormasPago().subscribe({
+      next: (blob: Blob) => {
+        // Crear URL para el blob
+        const url = window.URL.createObjectURL(blob);
+        
+        // Crear elemento de enlace para descargar
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `formas_pago_${new Date().toISOString().split('T')[0]}.csv`;
+        
+        // Simular clic para descargar
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Liberar URL
+        window.URL.revokeObjectURL(url);
+        
+        this.toast.show('Formas de pago exportadas correctamente', 'success');
+      },
+      error: (error) => {
+        console.error('Error al exportar formas de pago:', error);
+        this.toast.show('Error al exportar formas de pago', 'error');
+      }
+    });
   }
 
 }
