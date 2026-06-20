@@ -25,7 +25,7 @@ export class EstadisticasComponent implements OnInit {
   isLoading = false;
   
   // Estadísticas que requieren filtros de fecha
-  estadisticasConFiltro = ['pagos', 'accesos', 'edades', 'paquetes', 'inscripciones', 'saldo', 'ingresos'];
+  estadisticasConFiltro = ['pagos', 'accesos', 'edades', 'paquetes', 'inscripciones', 'saldo', 'ingresos', 'tickets-global'];
   
   chartColors = {
     primary: '#4A90E2',      // Azul principal
@@ -189,6 +189,15 @@ export class EstadisticasComponent implements OnInit {
             estadistica.data = data;
           },
           error: (err) => console.error('Error cargando ingresos:', err)
+        });
+        break;
+      case 'tickets-global':
+        this.estadisticasService.getTicketsGlobal(fechaInicio, fechaFin).subscribe({
+          next: (data: any) => {
+            console.log('Datos tickets global recibidos:', data);
+            estadistica.data = data;
+          },
+          error: (err) => console.error('Error cargando tickets global:', err)
         });
         break;
     }
@@ -386,6 +395,62 @@ export class EstadisticasComponent implements OnInit {
     const month = String(fecha.getMonth() + 1).padStart(2, '0');
     const day = String(fecha.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  // Exportar tickets a Excel
+  exportarTicketsAExcel(estadistica: EstadisticaConFiltros): void {
+    if (!estadistica.data?.tickets || estadistica.data.tickets.length === 0) {
+      alert('No hay tickets para exportar');
+      return;
+    }
+
+    const tickets = estadistica.data.tickets;
+    const totales = estadistica.data.totales;
+
+    // Crear contenido CSV con método de pago
+    const headers = ['Folio', 'Fecha', 'Cliente', 'Total', 'Método de Pago', 'Tipo'];
+    const rows = tickets.map((t: any) => [
+      t.ticket,
+      new Date(t.fecha).toLocaleString('es-MX'),
+      t.cliente,
+      t.total.toFixed(2),
+      t.metodoPago || 'Sin especificar',
+      t.credito ? 'Crédito' : 'Contado'
+    ]);
+
+    // Resumen general
+    rows.push([]);
+    rows.push(['RESUMEN']);
+    rows.push(['Total Día:', '', '', totales.dia.toFixed(2), '', '']);
+    rows.push(['Total Mes:', '', '', totales.mes.toFixed(2), '', '']);
+    rows.push(['Total Año:', '', '', totales.anio.toFixed(2), '', '']);
+    rows.push(['Cantidad Tickets:', '', '', totales.cantidadTickets.toString(), '', '']);
+
+    // Desglose por método de pago
+    if (totales.porMetodo?.length > 0) {
+      rows.push([]);
+      rows.push(['DESGLOSE POR MÉTODO DE PAGO']);
+      rows.push(['Método', 'Total', '', '', '', '']);
+      totales.porMetodo.forEach((m: any) => {
+        rows.push([m.metodo, m.monto.toFixed(2), '', '', '', '']);
+      });
+    }
+
+    // Convertir a CSV
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any[]) => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    // Crear blob y descargar
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `tickets_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // Métodos para verificar si requiere filtro

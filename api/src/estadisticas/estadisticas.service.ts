@@ -312,19 +312,19 @@ export class EstadisticasService {
       .orderBy('mes', 'asc')
       .execute();
 
-    // Ingresos por método de pago
+    // Ingresos por método de pago (desde tbingresos que sí tiene modopago)
     const ingresosPorMetodo = await kysely
-      .selectFrom('tbtickets')
-      .innerJoin('tbmodospago', 'tbtickets.modopago', 'tbmodospago.modopago')
+      .selectFrom('tbingresos as i')
+      .innerJoin('tbmodospago as mp', 'i.fp', 'mp.modopago')
       .select([
-        'tbmodospago.nommodopago as metodo',
-        sql<number>`SUM(tbtickets.total)`.as('monto'),
+        'mp.nommodopago as metodo',
+        sql<number>`SUM(i.importe)`.as('monto'),
         sql<number>`COUNT(*)`.as('pagos'),
       ])
-      .where('tbtickets.cancelado', '=', 0)
-      .where('tbtickets.fecha', '>=', fechaInicioDate)
-      .where('tbtickets.fecha', '<=', fechaFinDate)
-      .groupBy('tbmodospago.nommodopago')
+      .where('i.cancelado', '=', 0)
+      .where('i.fecha', '>=', fechaInicioDate)
+      .where('i.fecha', '<=', fechaFinDate)
+      .groupBy('mp.nommodopago')
       .orderBy('monto', 'desc')
       .execute();
 
@@ -457,5 +457,114 @@ export class EstadisticasService {
       cantidadVendida: r.cantidadVendida,
       ingresoTotal: Number(r.ingresoTotal),
     }));
+  }
+
+  async getTicketsGlobal(fechaInicio?: string, fechaFin?: string) {
+    const kysely = this.db.getKysely();
+
+    // Construir query base para tickets con información del socio
+    let query = kysely
+      .selectFrom('tbtickets as t')
+      .leftJoin('tbsocios as s', 't.socio', 's.id')
+      .select([
+        't.ticket',
+        't.fecha',
+        't.total',
+        't.cancelado',
+        't.credito',
+        't.pagado',
+        't.saldo',
+        't.notas',
+        's.nomsocio as cliente',
+        sql<string>`DATE_FORMAT(t.fecha, '%Y-%m-%d')`.as('fechaDia'),
+        sql<string>`DATE_FORMAT(t.fecha, '%Y-%m')`.as('fechaMes'),
+        sql<string>`DATE_FORMAT(t.fecha, '%Y')`.as('fechaAnio'),
+      ])
+      .where('t.cancelado', '=', 0)
+      .orderBy('t.fecha', 'desc');
+
+    // Aplicar filtros de fecha
+    if (fechaInicio) {
+      query = query.where(sql`DATE(t.fecha)`, '>=', fechaInicio);
+    }
+    if (fechaFin) {
+      query = query.where(sql`DATE(t.fecha)`, '<=', fechaFin);
+    }
+
+    // Limitar a 1000 registros para evitar sobrecarga
+    const tickets = await query.limit(1000).execute();
+
+    // Calcular sumas por período
+    const hoy = new Date();
+    const hoyStr = hoy.toISOString().split('T')[0];
+    const mesActual = hoy.toISOString().slice(0, 7);
+    const anioActual = hoy.getFullYear().toString();
+
+    let totalDia = 0;
+    let totalMes = 0;
+    let totalAnio = 0;
+
+    tickets.forEach((ticket) => {
+      const monto = Number(ticket.total) || 0;
+
+      if (ticket.fechaDia === hoyStr) {
+        totalDia += monto;
+      }
+      if (ticket.fechaMes === mesActual) {
+        totalMes += monto;
+      }
+      if (ticket.fechaAnio === anioActual) {
+        totalAnio += monto;
+      }
+    });
+
+    // Formatear tickets para respuesta
+    // Extraer método de pago del campo notas (guardado como [FP:EFECTIVO])
+    // Si no existe, inferir desde credito/pagado/saldo
+    const ticketsFormateados = tickets.map((t) => {
+      let metodoPago: string;
+      const notasFP = t.notas?.match(/^\[FP:([^\]]+)\]/);
+      if (notasFP) {
+        metodoPago = notasFP[1];
+      } else if (t.credito === 1) {
+        metodoPago = 'Crédito';
+      } else if (Number(t.saldo) > 0 && t.pagado === 0) {
+        metodoPago = 'Pendiente';
+      } else {
+        metodoPago = 'Contado';
+      }
+
+      return {
+        ticket: t.ticket,
+        fecha: t.fecha,
+        cliente: t.cliente?.trim() || 'Cliente ocasional',
+        total: Number(t.total),
+        credito: t.credito === 1,
+        metodoPago,
+      };
+    });
+
+    // Recalcular totalesPorMetodo con los valores inferidos
+    const totalesPorMetodoFinal: Record<string, number> = {};
+    ticketsFormateados.forEach((t) => {
+      totalesPorMetodoFinal[t.metodoPago] = (totalesPorMetodoFinal[t.metodoPago] || 0) + t.total;
+    });
+
+    // Construir array de métodos de pago ordenado por monto
+    const porMetodo = Object.entries(totalesPorMetodoFinal)
+      .map(([metodo, monto]) => ({ metodo, monto }))
+      .sort((a, b) => b.monto - a.monto);
+
+    return {
+      tickets: ticketsFormateados,
+      totales: {
+        dia: totalDia,
+        mes: totalMes,
+        anio: totalAnio,
+        cantidadTickets: tickets.length,
+        porMetodo,
+      },
+      periodo: fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : 'Hoy',
+    };
   }
 }

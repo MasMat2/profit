@@ -93,4 +93,12 @@ export class EstadisticasController {
   getProductosMasVendidos() {
     return this.estadisticasService.getProductosMasVendidos();
   }
+
+  @Get('tickets-global')
+  getTicketsGlobal(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getTicketsGlobal(fechaInicio, fechaFin);
+  }
 }
