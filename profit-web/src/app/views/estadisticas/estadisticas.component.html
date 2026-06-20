@@ -69,20 +69,6 @@
                 <i class="fas fa-calendar-alt"></i>
                 Mes
               </button>
-              <button 
-                class="btn-periodo-rapido" 
-                [class.active]="stat.periodoActivo === 'anio'"
-                (click)="establecerPeriodoRapido(stat, 'anio')">
-                <i class="fas fa-calendar"></i>
-                Año
-              </button>
-              <button 
-                class="btn-periodo-rapido" 
-                [class.active]="stat.periodoActivo === 'todo'"
-                (click)="establecerPeriodoRapido(stat, 'todo')">
-                <i class="fas fa-history"></i>
-                Todo
-              </button>
             </div>
             <div class="filtros-grid">
               <div class="filtro-field">
@@ -271,6 +257,89 @@
                   <div class="stat-list-item" *ngFor="let acceso of stat.data">
                     <span class="stat-list-label">{{ acceso.fecha | date:'dd/MM/yyyy' }}</span>
                     <span class="stat-list-value">{{ acceso.cantidad }} accesos</span>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngSwitchCase="'tickets-global'" class="stat-content tickets-global-content">
+                <div class="kpi-grid" *ngIf="stat.data?.totales">
+                  <div class="kpi-card">
+                    <div class="kpi-icon green">
+                      <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="kpi-info">
+                      <div class="kpi-label">Total Hoy</div>
+                      <div class="kpi-value">${{ stat.data.totales.dia | number:'1.2-2' }}</div>
+                    </div>
+                  </div>
+                  <div class="kpi-card">
+                    <div class="kpi-icon blue">
+                      <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="kpi-info">
+                      <div class="kpi-label">Total Mes</div>
+                      <div class="kpi-value">${{ stat.data.totales.mes | number:'1.2-2' }}</div>
+                    </div>
+                  </div>
+                  <div class="kpi-card">
+                    <div class="kpi-icon orange">
+                      <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="kpi-info">
+                      <div class="kpi-label">Total Año</div>
+                      <div class="kpi-value">${{ stat.data.totales.anio | number:'1.2-2' }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tickets-toolbar" *ngIf="stat.data?.tickets?.length > 0">
+                  <span class="tickets-count">
+                    <i class="fas fa-receipt"></i>
+                    {{ stat.data.totales.cantidadTickets }} tickets
+                  </span>
+                  <button class="btn-export" (click)="exportarTicketsCSV(stat)">
+                    <i class="fas fa-download"></i>
+                    Exportar CSV
+                  </button>
+                </div>
+
+                <div class="tickets-table-wrapper" *ngIf="stat.data?.tickets?.length > 0; else noData">
+                  <table class="tickets-table">
+                    <thead>
+                      <tr>
+                        <th>Folio</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Método de Pago</th>
+                        <th>Tipo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let ticket of stat.data.tickets">
+                        <td class="ticket-folio">#{{ ticket.ticket }}</td>
+                        <td>{{ ticket.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>{{ ticket.cliente }}</td>
+                        <td class="ticket-total">${{ ticket.total | number:'1.2-2' }}</td>
+                        <td>{{ ticket.metodoPago }}</td>
+                        <td>
+                          <span class="ticket-badge" [class.badge-credito]="ticket.credito" [class.badge-contado]="!ticket.credito">
+                            {{ ticket.credito ? 'Crédito' : 'Contado' }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="section-title" *ngIf="stat.data?.totales?.porMetodo?.length > 0">
+                  <i class="fas fa-chart-pie"></i>
+                  Desglose por Método de Pago
+                </div>
+                <div class="stat-list" *ngIf="stat.data?.totales?.porMetodo?.length > 0">
+                  <div class="stat-list-item" *ngFor="let metodo of stat.data.totales.porMetodo">
+                    <span class="stat-list-label">{{ metodo.metodo }}</span>
+                    <span class="stat-list-value">${{ metodo.monto | number:'1.2-2' }}</span>
                   </div>
                 </div>
               </div>

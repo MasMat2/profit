@@ -306,4 +306,102 @@ export class EstadisticasService {
 
     return result;
   }
+
+  async getTicketsGlobal(fechaInicio?: string, fechaFin?: string) {
+    const kysely = this.db.getKysely();
+
+    let query = kysely
+      .selectFrom('tbtickets as t')
+      .leftJoin('tbsocios as s', 't.socio', 's.id')
+      .select([
+        't.ticket',
+        't.fecha',
+        't.total',
+        't.credito',
+        't.pagado',
+        't.saldo',
+        't.notas',
+        's.nomsocio as cliente',
+        sql<string>`DATE_FORMAT(t.fecha, '%Y-%m-%d')`.as('fechaDia'),
+        sql<string>`DATE_FORMAT(t.fecha, '%Y-%m')`.as('fechaMes'),
+        sql<string>`DATE_FORMAT(t.fecha, '%Y')`.as('fechaAnio'),
+      ])
+      .where('t.cancelado', '=', 0)
+      .orderBy('t.fecha', 'desc');
+
+    if (fechaInicio) {
+      query = query.where(sql`DATE(t.fecha)`, '>=', fechaInicio);
+    }
+    if (fechaFin) {
+      query = query.where(sql`DATE(t.fecha)`, '<=', fechaFin);
+    }
+
+    const hoy = new Date();
+    const hoyStr = hoy.toISOString().split('T')[0];
+
+    if (!fechaInicio && !fechaFin) {
+      query = query.where(sql`DATE(t.fecha)`, '=', hoyStr);
+    }
+
+    const tickets = await query.limit(1000).execute();
+    const mesActual = hoy.toISOString().slice(0, 7);
+    const anioActual = hoy.getFullYear().toString();
+
+    let totalDia = 0;
+    let totalMes = 0;
+    let totalAnio = 0;
+
+    tickets.forEach((ticket) => {
+      const monto = Number(ticket.total) || 0;
+      if (ticket.fechaDia === hoyStr) totalDia += monto;
+      if (ticket.fechaMes === mesActual) totalMes += monto;
+      if (ticket.fechaAnio === anioActual) totalAnio += monto;
+    });
+
+    const ticketsFormateados = tickets.map((t) => {
+      let metodoPago: string;
+      const notasFP = t.notas?.match(/^\[FP:([^\]]+)\]/);
+      if (notasFP) {
+        metodoPago = notasFP[1];
+      } else if (t.notas && t.notas.trim().length > 0) {
+        metodoPago = t.notas.trim();
+      } else if (t.credito === 1) {
+        metodoPago = 'Crédito';
+      } else if (Number(t.saldo) > 0 && t.pagado === 0) {
+        metodoPago = 'Pendiente';
+      } else {
+        metodoPago = 'Contado';
+      }
+
+      return {
+        ticket: t.ticket,
+        fecha: t.fecha,
+        cliente: t.cliente?.trim() || 'Cliente ocasional',
+        total: Number(t.total),
+        credito: t.credito === 1,
+        metodoPago,
+      };
+    });
+
+    const totalesPorMetodo: Record<string, number> = {};
+    ticketsFormateados.forEach((t) => {
+      totalesPorMetodo[t.metodoPago] = (totalesPorMetodo[t.metodoPago] || 0) + t.total;
+    });
+
+    const porMetodo = Object.entries(totalesPorMetodo)
+      .map(([metodo, monto]) => ({ metodo, monto }))
+      .sort((a, b) => b.monto - a.monto);
+
+    return {
+      tickets: ticketsFormateados,
+      totales: {
+        dia: totalDia,
+        mes: totalMes,
+        anio: totalAnio,
+        cantidadTickets: tickets.length,
+        porMetodo,
+      },
+      periodo: fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : 'Hoy',
+    };
+  }
 }

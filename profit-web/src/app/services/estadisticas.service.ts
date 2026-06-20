@@ -6,9 +6,30 @@ export interface Estadistica {
   id: string;
   titulo: string;
   icono: string;
-  tipo: 'genero' | 'edades' | 'paquetes' | 'inscripciones' | 'saldo' | 'deudas' | 'pagos' | 'membresias' | 'clientes' | 'accesos';
+  tipo: 'genero' | 'edades' | 'paquetes' | 'inscripciones' | 'saldo' | 'deudas' | 'pagos' | 'membresias' | 'clientes' | 'accesos' | 'tickets-global';
   expanded: boolean;
   data: any;
+}
+
+export interface TicketGlobal {
+  ticket: number;
+  fecha: Date;
+  cliente: string;
+  total: number;
+  credito: boolean;
+  metodoPago: string;
+}
+
+export interface EstadisticaTicketsGlobal {
+  tickets: TicketGlobal[];
+  totales: {
+    dia: number;
+    mes: number;
+    anio: number;
+    cantidadTickets: number;
+    porMetodo: { metodo: string; monto: number }[];
+  };
+  periodo: string;
 }
 
 @Injectable({
@@ -100,6 +121,14 @@ export class EstadisticasService {
         tipo: 'accesos',
         expanded: false,
         data: []
+      },
+      {
+        id: 'tickets-global',
+        titulo: 'Tickets Global',
+        icono: 'fas fa-receipt',
+        tipo: 'tickets-global',
+        expanded: false,
+        data: { tickets: [], totales: { dia: 0, mes: 0, anio: 0, cantidadTickets: 0, porMetodo: [] }, periodo: 'Hoy' }
       }
     ]);
   }
@@ -163,6 +192,13 @@ export class EstadisticasService {
     if (fechaInicio) params.fechaInicio = fechaInicio;
     if (fechaFin) params.fechaFin = fechaFin;
     return this.http.get<any[]>(`${this.apiUrl}/accesos`, { params });
+  }
+
+  getTicketsGlobal(fechaInicio?: string, fechaFin?: string): Observable<EstadisticaTicketsGlobal> {
+    let params: any = {};
+    if (fechaInicio) params.fechaInicio = fechaInicio;
+    if (fechaFin) params.fechaFin = fechaFin;
+    return this.http.get<EstadisticaTicketsGlobal>(`${this.apiUrl}/tickets-global`, { params });
   }
 
 }

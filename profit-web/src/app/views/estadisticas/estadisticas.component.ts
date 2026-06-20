@@ -22,7 +22,7 @@ export class EstadisticasComponent implements OnInit {
   estadisticasDisponibles: Estadistica[] = [];
   mostrarMenu = false;
   
-  estadisticasConFiltro = ['pagos', 'accesos', 'edades', 'paquetes', 'inscripciones', 'saldo'];
+  estadisticasConFiltro = ['pagos', 'accesos', 'edades', 'paquetes', 'inscripciones', 'saldo', 'tickets-global'];
 
   constructor(private estadisticasService: EstadisticasService) {}
 
@@ -149,7 +149,61 @@ export class EstadisticasComponent implements OnInit {
           error: (err) => console.error('Error cargando accesos:', err)
         });
         break;
+      case 'tickets-global':
+        this.estadisticasService.getTicketsGlobal(fechaInicio, fechaFin).subscribe({
+          next: (data: any) => {
+            estadistica.data = data;
+          },
+          error: (err) => console.error('Error cargando tickets global:', err)
+        });
+        break;
     }
+  }
+
+  exportarTicketsCSV(estadistica: EstadisticaConFiltros): void {
+    if (!estadistica.data?.tickets?.length) return;
+
+    const tickets = estadistica.data.tickets;
+    const totales = estadistica.data.totales;
+
+    const headers = ['Folio', 'Fecha', 'Cliente', 'Total', 'Método de Pago', 'Tipo'];
+    const rows = tickets.map((t: any) => [
+      t.ticket,
+      new Date(t.fecha).toLocaleString('es-MX'),
+      t.cliente,
+      t.total.toFixed(2),
+      t.metodoPago || 'Sin especificar',
+      t.credito ? 'Crédito' : 'Contado',
+    ]);
+
+    rows.push([]);
+    rows.push(['RESUMEN']);
+    rows.push(['Total Día', '', '', totales.dia.toFixed(2), '', '']);
+    rows.push(['Total Mes', '', '', totales.mes.toFixed(2), '', '']);
+    rows.push(['Total Año', '', '', totales.anio.toFixed(2), '', '']);
+    rows.push(['Cantidad Tickets', '', '', totales.cantidadTickets.toString(), '', '']);
+
+    if (totales.porMetodo?.length) {
+      rows.push([]);
+      rows.push(['DESGLOSE POR MÉTODO DE PAGO']);
+      rows.push(['Método', 'Total', '', '', '', '']);
+      totales.porMetodo.forEach((m: any) => {
+        rows.push([m.metodo, m.monto.toFixed(2), '', '', '', '']);
+      });
+    }
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any[]) => row.map((cell) => `"${cell}"`).join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', `tickets_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   getBarPercentage(value: number, total: number): number {
@@ -197,32 +251,22 @@ export class EstadisticasComponent implements OnInit {
     this.cargarDatosEstadistica(estadistica);
   }
 
-  establecerPeriodoRapido(estadistica: EstadisticaConFiltros, periodo: 'semana' | 'mes' | 'anio' | 'todo'): void {
+  establecerPeriodoRapido(estadistica: EstadisticaConFiltros, periodo: 'semana' | 'mes'): void {
     const hoy = new Date();
     estadistica.periodoActivo = periodo;
+    const fechaInicio = new Date(hoy);
 
-    if (periodo === 'todo') {
-      estadistica.fechaInicio = '2000-01-01';
-      estadistica.fechaFin = this.formatearFecha(hoy);
-    } else {
-      let fechaInicio = new Date(hoy);
-
-      switch(periodo) {
-        case 'semana':
-          fechaInicio.setDate(fechaInicio.getDate() - 7);
-          break;
-        case 'mes':
-          fechaInicio.setDate(fechaInicio.getDate() - 30);
-          break;
-        case 'anio':
-          fechaInicio.setDate(fechaInicio.getDate() - 365);
-          break;
-      }
-
-      estadistica.fechaInicio = this.formatearFecha(fechaInicio);
-      estadistica.fechaFin = this.formatearFecha(hoy);
+    switch (periodo) {
+      case 'semana':
+        fechaInicio.setDate(fechaInicio.getDate() - 7);
+        break;
+      case 'mes':
+        fechaInicio.setDate(fechaInicio.getDate() - 30);
+        break;
     }
 
+    estadistica.fechaInicio = this.formatearFecha(fechaInicio);
+    estadistica.fechaFin = this.formatearFecha(hoy);
     this.cargarDatosEstadistica(estadistica);
   }
 }

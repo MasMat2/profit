@@ -75,4 +75,12 @@ export class EstadisticasController {
   ) {
     return this.estadisticasService.getEstadisticaAccesos(fechaInicio, fechaFin);
   }
+
+  @Get('tickets-global')
+  getTicketsGlobal(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+  ) {
+    return this.estadisticasService.getTicketsGlobal(fechaInicio, fechaFin);
+  }
 }
