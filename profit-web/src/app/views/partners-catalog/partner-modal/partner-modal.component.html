@@ -258,60 +258,52 @@
             <div class="section-card classes-card">
               <div class="card-header">
                 <h3>Clases Asignadas</h3>
-                <button class="btn-secondary btn-sm" (click)="openClassAssignment()">
+                <button 
+                  class="btn-secondary btn-sm" 
+                  (click)="openClassAssignment()"
+                  *ngIf="assignedClasses.length === 0">
                   <i class="fas fa-plus"></i>
                   Asignar
                 </button>
               </div>
               
               <div class="classes-list" *ngIf="assignedClasses.length > 0">
-                <div class="assigned-class-item" *ngFor="let clase of assignedClasses">
-                  <div class="class-header-row">
-                    <div class="class-name-badge">
-                      <i class="fas fa-dumbbell"></i>
-                      <span class="class-name">{{ clase.nombre }}</span>
+                <div class="assigned-class-minimal" *ngFor="let clase of assignedClasses">
+                  <!-- Nombre de la clase -->
+                  <div class="class-name-minimal">
+                    {{ clase.nombre }}
+                  </div>
+                  
+                  <!-- Información principal -->
+                  <div class="class-info-grid">
+                    <div class="info-item">
+                      <span class="info-label">Precio:</span>
+                      <span class="info-value">{{ formatCurrency(clase.precio) }}</span>
                     </div>
-                    <div class="class-price-section">
-                      <span class="period-badge">{{ clase.periodicidad }}</span>
+                    <div class="info-item">
+                      <span class="info-label">Total a Pagar:</span>
+                      <span class="info-value price-highlight">{{ formatCurrency(clase.total) }}</span>
                     </div>
                   </div>
                   
-                  <div class="class-category-tag">{{ clase.categoria }}</div>
-                  
-                  <!-- Desglose de Cobros -->
-                  <div class="payment-breakdown">
-                    <div class="payment-row">
-                      <span class="label">Precio {{ clase.periodicidad }}:</span>
-                      <span class="value">{{ formatCurrency(clase.precio) }}</span>
-                    </div>
-                    <div class="payment-row discount" *ngIf="clase.descuento > 0">
-                      <span class="label">Descuento:</span>
-                      <span class="value negative">- {{ formatCurrency(clase.descuento) }}</span>
-                    </div>
-                    <div class="payment-row" *ngIf="clase.cobrarInscripcion">
-                      <span class="label">Inscripción:</span>
-                      <span class="value">{{ formatCurrency(clase.montoInscripcion) }}</span>
-                    </div>
-                    <div class="payment-row total">
-                      <span class="label"><strong>Total a Pagar:</strong></span>
-                      <span class="value total-amount">{{ formatCurrency(clase.total) }}</span>
-                    </div>
+                  <!-- Detalles secundarios -->
+                  <div class="class-meta">
+                    <span class="meta-item" *ngIf="clase.horario && clase.horario !== 'Por definir'">
+                      <i class="fas fa-clock"></i> {{ clase.horario }}
+                    </span>
+                    <span class="meta-item" *ngIf="clase.instructor && clase.instructor !== 'Por asignar'">
+                      <i class="fas fa-user"></i> {{ clase.instructor }}
+                    </span>
                   </div>
                   
-                  <div class="class-details-row">
-                    <div class="detail-item">
-                      <i class="fas fa-clock"></i>
-                      <span>{{ clase.horario }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <i class="fas fa-user"></i>
-                      <span>{{ clase.instructor }}</span>
-                    </div>
-                  </div>
-                  
-                  <div class="class-days" *ngIf="clase.dias && clase.dias.length > 0">
-                    <span class="day-badge" *ngFor="let dia of clase.dias">{{ dia }}</span>
-                  </div>
+                  <!-- Botón de acción -->
+                  <button 
+                    class="btn-change-minimal" 
+                    (click)="onChangeClass(clase)"
+                    *ngIf="partner?.estatus === 'Activo'">
+                    <i class="fas fa-exchange-alt"></i>
+                    Cambiar Clase
+                  </button>
                 </div>
               </div>
 
@@ -369,9 +361,16 @@
                   </td>
                   <td>
                     <button 
+                      class="btn-secondary btn-sm" 
+                      (click)="onEditarFechaMensualidad(sub)"
+                      *ngIf="!sub.pagado && !sub.cancelado"
+                      title="Editar fecha de pago">
+                      <i class="fas fa-calendar"></i>
+                    </button>
+                    <button 
                       class="btn-primary btn-sm" 
                       (click)="onCobrarMensualidad(sub)"
-                      *ngIf="!sub.pagado && !sub.cancelado && sub.saldo > 0"
+                      *ngIf="puedeCobrarse(sub)"
                       title="Cobrar mensualidad">
                       <i class="fas fa-dollar-sign"></i>
                       Cobrar
@@ -583,6 +582,10 @@
     </div>
 
     <div class="modal-footer">
+      <div *ngIf="cobroForm.invalid" class="validation-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Por favor selecciona una forma de pago</span>
+      </div>
       <button class="btn-secondary" (click)="closeCobroModal()">
         Cancelar
       </button>
@@ -590,9 +593,216 @@
         class="btn-primary" 
         (click)="procesarCobro()"
         [disabled]="cobroForm.invalid"
+        [title]="cobroForm.invalid ? 'Selecciona una forma de pago' : 'Procesar cobro'"
       >
         <i class="fas fa-dollar-sign"></i>
         Procesar Cobro
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Selección de Clase para Reactivación -->
+<div class="modal-overlay" *ngIf="showReactivationClassModal" (click)="cancelReactivacion()">
+  <div class="modal-box reactivation-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-redo"></i>
+        Reactivar Socio
+      </h3>
+      <button class="close-btn" (click)="cancelReactivacion()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="info-banner">
+        <i class="fas fa-info-circle"></i>
+        <span>Seleccione la clase que desea asignar al socio</span>
+      </div>
+      
+      <div class="classes-grid-reactivation">
+        <div 
+          class="class-card-reactivation"
+          *ngFor="let clase of availableClasses"
+          [class.selected]="selectedReactivationClass?.id === clase.id"
+          (click)="selectClase(clase)"
+        >
+          <div class="card-header-reactivation">
+            <div class="class-icon-reactivation">
+              <i class="fas fa-dumbbell"></i>
+            </div>
+            <h4 class="class-name-reactivation">{{ clase.nomclase }}</h4>
+          </div>
+          
+          <div class="card-body-reactivation">
+            <div class="price-display">
+              <span class="price-label">Precio</span>
+              <span class="price-value">{{ formatCurrency(clase.preciomes || clase.prmes || clase.precio || 0) }}</span>
+            </div>
+            <div class="period-display">
+              <span class="period-label">Período</span>
+              <span class="period-value">Mensual</span>
+            </div>
+          </div>
+          
+          <div class="selection-check">
+            <i class="fas fa-check-circle"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cancelReactivacion()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="confirmReactivacionConClase()"
+        [disabled]="!selectedReactivationClass"
+      >
+        <i class="fas fa-redo"></i>
+        Reactivar con esta Clase
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Edición de Fecha -->
+<div class="modal-overlay" *ngIf="showEditFechaModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-calendar"></i>
+        Editar Fecha de Pago
+      </h3>
+      <button class="close-btn" (click)="closeEditFechaModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Mensualidad</label>
+        <div class="mensualidad-info" *ngIf="mensualidadEditando">
+          <p><strong>Descripción:</strong> {{ mensualidadEditando.descripcion }}</p>
+          <p><strong>Fecha actual:</strong> {{ formatDate(mensualidadEditando.fecha) }}</p>
+          <p><strong>Importe:</strong> {{ formatCurrency(mensualidadEditando.importe) }}</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="nuevaFecha">Nueva Fecha de Pago *</label>
+        <form [formGroup]="editFechaForm">
+          <input 
+            type="date" 
+            id="nuevaFecha"
+            class="form-control"
+            formControlName="nuevaFecha"
+            [class.invalid]="editFechaForm.get('nuevaFecha')?.invalid && editFechaForm.get('nuevaFecha')?.touched"
+          >
+          <small class="error-message" *ngIf="editFechaForm.get('nuevaFecha')?.invalid && editFechaForm.get('nuevaFecha')?.touched">
+            La fecha es requerida
+          </small>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditFechaModal()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="onSaveFecha()"
+        [disabled]="editFechaForm.invalid"
+      >
+        <i class="fas fa-save"></i>
+        Guardar Cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Cambio de Clase -->
+<div class="modal-overlay" *ngIf="showChangeClassModal">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>
+        <i class="fas fa-exchange-alt"></i>
+        Cambiar Clase
+      </h3>
+      <button class="close-btn" (click)="closeChangeClassModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Clase Actual</label>
+        <div class="current-class-info" *ngIf="claseACambiar">
+          <p><strong>Nombre:</strong> {{ claseACambiar.nombre || claseACambiar.nomclase }}</p>
+          <p><strong>Precio:</strong> {{ formatCurrency(claseACambiar.precio || claseACambiar.preciomes || 0) }}</p>
+          <p><strong>Período:</strong> Mensual</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Seleccionar Nueva Clase *</label>
+        <div class="classes-selection-container">
+          <div class="classes-grid-scroll">
+            <div 
+              class="class-card-option" 
+              *ngFor="let clase of availableClassesForChange"
+              [class.selected]="selectedNewClass?.id === clase.id"
+              (click)="onSelectNewClass(clase)">
+              <div class="class-card-header">
+                <div class="class-icon">
+                  <i class="fas fa-dumbbell"></i>
+                </div>
+                <div class="class-info">
+                  <h4 class="class-name">{{ clase.nomclase }}</h4>
+                  <span class="class-category">GENERAL</span>
+                </div>
+              </div>
+              
+              <div class="class-card-body">
+                <div class="class-price-section">
+                  <span class="price-label">Precio</span>
+                  <span class="price-value">{{ formatCurrency(clase.preciomes || clase.prmes || clase.precio || 0) }}</span>
+                </div>
+                
+                <div class="class-period-section">
+                  <span class="period-label">Período</span>
+                  <span class="period-value">Mensual</span>
+                </div>
+              </div>
+              
+                            
+              <div class="selection-indicator">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeChangeClassModal()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button 
+        class="btn-primary" 
+        (click)="onSaveChangeClass()"
+        [disabled]="changeClassForm.invalid || !selectedNewClass"
+      >
+        <i class="fas fa-exchange-alt"></i>
+        Cambiar Clase
       </button>
     </div>
   </div>

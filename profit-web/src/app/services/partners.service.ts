@@ -176,11 +176,15 @@ export class PartnersService {
   }
 
   getMensualidadesBySocio(socioId: number): Observable<any[]> {
-    return this.http.get<any[]>(`/mensualidades/socio/${socioId}`);
+    return this.http.get<any[]>(`/mensualidades/socio/${socioId}?generarFuturas=1`);
   }
 
   getDescuentosBySocio(socioId: number): Observable<any[]> {
     return this.http.get<any[]>(`/descuentos/socio/${socioId}`);
+  }
+
+  getActiveClasses(): Observable<any[]> {
+    return this.http.get<any[]>('/classes/active');
   }
 
   private mapClassesToCategories(classes: any[]): ClassCategory[] {
@@ -237,8 +241,16 @@ export class PartnersService {
     return this.http.delete(`${this.apiUrl}/${socioId}/huella`);
   }
 
-  reactivarSocio(socioId: number, usuarioId: number): Observable<Partner> {
-    return this.http.post<SocioAPI>(`${this.apiUrl}/${socioId}/reactivar`, { usuarioId }).pipe(
+  reactivarSocio(socioId: number, usuarioId: number, claseId?: number): Observable<Partner> {
+    const body: any = { usuarioId };
+    if (claseId) {
+      body.claseId = claseId;
+      console.log(`🔍 Frontend enviando claseId: ${claseId} para socio ${socioId}`);
+    } else {
+      console.log(`⚠️ Frontend NO enviando claseId para socio ${socioId}`);
+    }
+    console.log(`🔍 Body enviado:`, body);
+    return this.http.post<SocioAPI>(`${this.apiUrl}/${socioId}/reactivar`, body).pipe(
       map(socio => this.mapSocioToPartner(socio))
     );
   }
@@ -259,6 +271,18 @@ export class PartnersService {
 
   cobrarMensualidad(cobroData: any): Observable<any> {
     return this.http.post('/mensualidades/cobrar', cobroData);
+  }
+
+  actualizarFechaMensualidad(idMens: number, fecha: string, usuarioId: number): Observable<any> {
+    return this.http.put(`/mensualidades/${idMens}/fecha`, { fecha, usuarioId });
+  }
+
+  cambiarClaseSocio(socioId: number, usuarioId: number, nuevaClaseId: number, nuevoImporte: number): Observable<any> {
+    return this.http.put(`/socios/${socioId}/cambiar-clase`, { 
+      usuarioId, 
+      nuevaClaseId, 
+      nuevoImporte 
+    });
   }
 
   exportarFormasPago(): Observable<Blob> {

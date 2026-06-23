@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, Body, Put } from '@nestjs/common';
 import { MensualidadesService } from './mensualidades.service';
 
 @Controller('mensualidades')
@@ -9,8 +9,13 @@ export class MensualidadesController {
   async getMensualidadesBySocio(
     @Param('socioId') socioId: string,
     @Query('pagado') pagado?: string,
-    @Query('cancelado') cancelado?: string
+    @Query('cancelado') cancelado?: string,
+    @Query('generarFuturas') generarFuturas?: string
   ) {
+    // Si se solicita generar mensualidades futuras, hacerlo primero
+    if (generarFuturas === '1') {
+      await this.mensualidadesService.generarMensualidadesFuturas(+socioId);
+    }
     return this.mensualidadesService.getMensualidadesBySocio(+socioId, pagado, cancelado);
   }
 
@@ -29,5 +34,16 @@ export class MensualidadesController {
     usuarioId: number;
   }) {
     return this.mensualidadesService.cobrarMensualidad(cobroData);
+  }
+
+  @Put(':id/fecha')
+  async actualizarFechaMensualidad(
+    @Param('id') id: string,
+    @Body() data: {
+      fecha: string;
+      usuarioId: number;
+    }
+  ) {
+    return this.mensualidadesService.actualizarFechaMensualidad(+id, data.fecha, data.usuarioId);
   }
 }

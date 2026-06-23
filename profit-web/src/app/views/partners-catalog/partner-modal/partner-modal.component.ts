@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Partner, PartnerStatus, PaymentPeriod, FingerprintData } from '../../../models/partner.model';
 import { PartnersService } from '../../../services/partners.service';
 import { ConfirmationService } from '../../../services/confirmation.service';
@@ -12,7 +12,7 @@ import { FingerprintModalComponent } from '../fingerprint-modal/fingerprint-moda
 @Component({
   selector: 'app-partner-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ConfirmationModalComponent, ClassAssignmentModalComponent, PaymentTicketModalComponent, FingerprintModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ConfirmationModalComponent, ClassAssignmentModalComponent, PaymentTicketModalComponent, FingerprintModalComponent],
   templateUrl: './partner-modal.component.html',
   styleUrls: ['./partner-modal.component.scss']
 })
@@ -35,6 +35,17 @@ export class PartnerModalComponent implements OnInit {
   mensualidadACobrar: any = null;
   cobroForm!: FormGroup;
   formasPago: any[] = [];
+  showReactivationClassModal: boolean = false;
+  availableClasses: any[] = [];
+  selectedReactivationClass: any = null;
+  showEditFechaModal: boolean = false;
+  mensualidadEditando: any = null;
+  editFechaForm!: FormGroup;
+  showChangeClassModal: boolean = false;
+  claseACambiar: any = null;
+  availableClassesForChange: any[] = [];
+  selectedNewClass: any = null;
+  changeClassForm!: FormGroup;
 
   PartnerStatus = PartnerStatus;
   PaymentPeriod = PaymentPeriod;
@@ -50,6 +61,8 @@ export class PartnerModalComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.initCobroForm();
+    this.initEditFechaForm();
+    this.initChangeClassForm();
     this.loadFormasPago();
     if (this.partner) {
       this.loadPartnerData();
@@ -81,10 +94,19 @@ export class PartnerModalComponent implements OnInit {
   }
 
   loadMensualidades(): void {
-    if (this.partner && this.partner.id > 0) {
+    if (this.partner && (this.partner.socio > 0 || this.partner.id > 0)) {
+      console.log('🔄 Cargando mensualidades para socio:', {
+        id: this.partner.id,
+        socio: this.partner.socio,
+        nombre: this.partner.nombre
+      });
+      
       this.loadingSubscriptions = true;
-      this.partnersService.getMensualidadesBySocio(this.partner.id).subscribe({
+      const socioId = this.partner.socio > 0 ? this.partner.socio : this.partner.id;
+      
+      this.partnersService.getMensualidadesBySocio(socioId).subscribe({
         next: (mensualidades) => {
+          console.log('📊 Mensualidades cargadas:', mensualidades.length);
           this.partner!.suscripciones = mensualidades.map(m => this.mapMensualidadToSubscription(m));
           this.loadingSubscriptions = false;
         },
@@ -93,6 +115,8 @@ export class PartnerModalComponent implements OnInit {
           this.loadingSubscriptions = false;
         }
       });
+    } else {
+      console.log('⚠️ No se pueden cargar mensualidades - partner inválido:', this.partner);
     }
   }
 
@@ -202,33 +226,44 @@ export class PartnerModalComponent implements OnInit {
 
     switch (periodicidad) {
       case 'Semanal':
-        precio = clase.prsem || 0;
-        descuento = clase.descsem || 0;
+        precio = parseFloat(clase.prsem || 0);
+        descuento = parseFloat(clase.descsem || 0);
         break;
       case 'Quincenal':
-        precio = clase.prqna || 0;
-        descuento = clase.descqna || 0;
+        precio = parseFloat(clase.prqna || 0);
+        descuento = parseFloat(clase.descqna || 0);
         break;
       case 'Mensual':
-        precio = clase.prmes || 0;
-        descuento = clase.descmes || 0;
+        precio = parseFloat(clase.prmes || 0);
+        descuento = parseFloat(clase.descmes || 0);
         break;
       case 'Trimestral':
-        precio = clase.prtrim || 0;
-        descuento = clase.desctrim || 0;
+        precio = parseFloat(clase.prtrim || 0);
+        descuento = parseFloat(clase.desctrim || 0);
         break;
       case 'Semestral':
-        precio = clase.prstre || 0;
-        descuento = clase.descstre || 0;
+        precio = parseFloat(clase.prstre || 0);
+        descuento = parseFloat(clase.descstre || 0);
         break;
       case 'Anual':
-        precio = clase.pranual || 0;
-        descuento = clase.descanual || 0;
+        precio = parseFloat(clase.pranual || 0);
+        descuento = parseFloat(clase.descanual || 0);
         break;
       default:
-        precio = clase.prmes || 0;
-        descuento = clase.descmes || 0;
+        precio = parseFloat(clase.prmes || 0);
+        descuento = parseFloat(clase.descmes || 0);
     }
+
+    // Calcular total
+    const total = precio - descuento;
+
+    console.log('📊 Mapeo de clase:', {
+      nombre: clase.nomclase,
+      periodicidad,
+      precio,
+      descuento,
+      total
+    });
 
     return {
       id: clase.id,
@@ -238,7 +273,9 @@ export class PartnerModalComponent implements OnInit {
       instructor: 'Por asignar',
       dias: [],
       precio: precio,
-      descuento: descuento
+      descuento: descuento,
+      total: total,
+      periodicidad: periodicidad || 'Mensual'
     };
   }
 
@@ -346,6 +383,9 @@ export class PartnerModalComponent implements OnInit {
           next: (response) => {
             console.log('Socio creado exitosamente:', response);
             
+            // Actualizar el objeto partner con los datos completos del socio creado
+            this.partner = response;
+            
             // Guardar huella digital si existe
             if (this.fingerprintData && response.id) {
               this.partnersService.guardarHuella(response.id, this.fingerprintData).subscribe({
@@ -404,6 +444,13 @@ export class PartnerModalComponent implements OnInit {
   closeTicketModal(): void {
     this.showTicketModal = false;
     this.ticketData = null;
+    
+    // Si es un socio nuevo, cargar sus mensualidades antes de cerrar
+    if (this.partner && this.partner.socio > 0) {
+      console.log('🔄 Cargando mensualidades del nuevo socio antes de cerrar...');
+      this.loadMensualidades();
+    }
+    
     this.close.emit();
   }
 
@@ -564,23 +611,86 @@ export class PartnerModalComponent implements OnInit {
   onReactivar(): void {
     if (!this.partner || this.partner.id === 0) return;
     
-    if (confirm('¿Está seguro que desea reactivar a este socio?')) {
-      // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
-      const usuarioId = 1;
-      
-      this.partnersService.reactivarSocio(this.partner.socio, usuarioId).subscribe({
-        next: (updatedPartner) => {
-          this.partner = updatedPartner;
-          console.log('Socio reactivado exitosamente:', updatedPartner);
-          alert('Socio reactivado exitosamente');
-          this.close.emit();
-        },
-        error: (error) => {
-          console.error('Error al reactivar al socio:', error);
-          alert('Error al reactivar al socio. Por favor intente nuevamente.');
-        }
-      });
+    // Cargar clases disponibles y mostrar modal de selección
+    this.loadAvailableClasses();
+    this.showReactivationClassModal = true;
+  }
+
+  loadAvailableClasses(): void {
+    this.partnersService.getActiveClasses().subscribe({
+      next: (classes: any[]) => {
+        this.availableClasses = classes;
+      },
+      error: (error: any) => {
+        console.error('Error al cargar clases disponibles:', error);
+      }
+    });
+  }
+
+  confirmReactivacionConClase(): void {
+    if (!this.selectedReactivationClass) {
+      alert('Por favor seleccione una clase para asignar al socio.');
+      return;
     }
+
+    if (!confirm(`¿Está seguro que desea reactivar a este socio con la clase "${this.selectedReactivationClass.nomclase}"?`)) {
+      return;
+    }
+
+    // Por ahora usamos un ID de usuario fijo (1), en una implementación real debería venir del servicio de autenticación
+    const usuarioId = 1;
+    
+    console.log('🔍 Enviando reactivación con clase:', this.selectedReactivationClass);
+    console.log('🔍 claseId a enviar:', this.selectedReactivationClass?.id);
+    
+    this.partnersService.reactivarSocio(this.partner!.socio, usuarioId, this.selectedReactivationClass.id).subscribe({
+      next: (updatedPartner) => {
+        this.partner = updatedPartner;
+        console.log('Socio reactivado exitosamente:', updatedPartner);
+        
+        // Recargar mensualidades y clases para mostrar los cambios
+        if (this.activeTab === 'suscripciones') {
+          this.loadMensualidades();
+        }
+        
+        // Recargar clases asignadas
+        this.loadClaseAsignada();
+        
+        // Mostrar confirmación sin cerrar el modal
+        this.confirmationService.confirm({
+          title: 'Socio Reactivado',
+          message: `Socio reactivado exitosamente. Se ha asignado la clase "${this.selectedReactivationClass.nomclase}", las mensualidades pasadas han sido condonadas y se ha generado una nueva mensualidad.`,
+          type: 'success',
+          confirmText: 'Aceptar'
+        }).subscribe();
+        
+        // Cerrar solo el modal de selección de clase, mantener el modal principal abierto
+        this.showReactivationClassModal = false;
+        this.selectedReactivationClass = null;
+      },
+      error: (error) => {
+        console.error('Error al reactivar al socio:', error);
+        this.confirmationService.confirm({
+          title: 'Error',
+          message: 'Error al reactivar al socio. Por favor intente nuevamente.',
+          type: 'error',
+          confirmText: 'Aceptar'
+        }).subscribe();
+      }
+    });
+  }
+
+  cancelReactivacion(): void {
+    this.showReactivationClassModal = false;
+    this.selectedReactivationClass = null;
+  }
+
+  selectClase(clase: any): void {
+    console.log('🎯 Clase seleccionada:', clase);
+    console.log('🎯 clase.clase:', clase.clase);
+    console.log('🎯 clase.id:', clase.id);
+    console.log('🎯 Propiedades completas:', Object.keys(clase));
+    this.selectedReactivationClass = clase;
   }
 
   initCobroForm(): void {
@@ -589,6 +699,19 @@ export class PartnerModalComponent implements OnInit {
       descuento: [0, [Validators.min(0)]],
       referencia: [''],
       motivoDescuento: ['']
+    });
+  }
+
+  initEditFechaForm(): void {
+    this.editFechaForm = this.fb.group({
+      nuevaFecha: [null, Validators.required]
+    });
+  }
+
+  initChangeClassForm(): void {
+    this.changeClassForm = this.fb.group({
+      nuevaClase: [null, Validators.required],
+      nuevoImporte: [null, Validators.required]
     });
   }
 
@@ -603,7 +726,84 @@ export class PartnerModalComponent implements OnInit {
     });
   }
 
+  onEditarFechaMensualidad(mensualidad: any): void {
+    this.mensualidadEditando = mensualidad;
+    this.editFechaForm.patchValue({
+      nuevaFecha: this.formatDateForInput(mensualidad.fecha)
+    });
+    this.showEditFechaModal = true;
+  }
+
+  closeEditFechaModal(): void {
+    this.showEditFechaModal = false;
+    this.mensualidadEditando = null;
+    this.editFechaForm.reset();
+  }
+
+  onSaveFecha(): void {
+    if (this.editFechaForm.valid && this.mensualidadEditando) {
+      const nuevaFecha = this.editFechaForm.get('nuevaFecha')?.value;
+      console.log('📅 Fecha seleccionada en frontend:', nuevaFecha);
+      
+      // Asegurarse de que la fecha esté en formato YYYY-MM-DD
+      const fechaFormateada = new Date(nuevaFecha).toISOString().split('T')[0];
+      console.log('📅 Fecha formateada para backend:', fechaFormateada);
+      
+      this.partnersService.actualizarFechaMensualidad(
+        this.mensualidadEditando.idMens,
+        fechaFormateada,
+        1 // TODO: Obtener ID del usuario actual
+      ).subscribe({
+        next: (response) => {
+          console.log('Fecha actualizada exitosamente:', response);
+          this.closeEditFechaModal();
+          this.loadMensualidades(); // Recargar las mensualidades
+          this.confirmationService.confirm({
+            title: 'Fecha Actualizada',
+            message: response.message || 'La fecha de pago se ha actualizado correctamente.',
+            type: 'success',
+            confirmText: 'Aceptar'
+          }).subscribe();
+        },
+        error: (error) => {
+          console.error('Error al actualizar fecha:', error);
+          this.confirmationService.confirm({
+            title: 'Error',
+            message: 'No se pudo actualizar la fecha. ' + (error.error?.message || error.message),
+            type: 'error',
+            confirmText: 'Aceptar'
+          }).subscribe();
+        }
+      });
+    }
+  }
+
+  puedeCobrarse(mensualidad: any): boolean {
+    const pagado = mensualidad.pagado === 0 || mensualidad.pagado === false || !mensualidad.pagado;
+    const cancelado = mensualidad.cancelado === 0 || mensualidad.cancelado === false || !mensualidad.cancelado;
+    const saldo = parseFloat(mensualidad.saldo || 0);
+    const total = parseFloat(mensualidad.total || 0);
+    const importe = parseFloat(mensualidad.importe || 0);
+    const tieneMonto = saldo > 0 || total > 0 || importe > 0;
+    
+    const resultado = pagado && cancelado && tieneMonto;
+    
+    console.log('🔍 Validación cobro:', {
+      idmens: mensualidad.idmens,
+      pagado: mensualidad.pagado,
+      cancelado: mensualidad.cancelado,
+      saldo: mensualidad.saldo,
+      total: mensualidad.total,
+      importe: mensualidad.importe,
+      validaciones: { pagado, cancelado, tieneMonto },
+      puedeCobrarse: resultado
+    });
+    
+    return resultado;
+  }
+
   onCobrarMensualidad(mensualidad: any): void {
+    console.log('💰 Abriendo modal de cobro para:', mensualidad);
     this.mensualidadACobrar = mensualidad;
     this.cobroForm.patchValue({
       descuento: mensualidad.descuento || 0,
@@ -613,6 +813,106 @@ export class PartnerModalComponent implements OnInit {
     this.showCobroModal = true;
   }
 
+  onChangeClass(clase: any): void {
+    this.claseACambiar = clase;
+    this.loadAvailableClassesForChange();
+    this.changeClassForm.patchValue({
+      nuevoImporte: 0
+    });
+    this.showChangeClassModal = true;
+  }
+
+  loadAvailableClassesForChange(): void {
+    this.partnersService.getActiveClasses().subscribe({
+      next: (classes: any[]) => {
+        // Filtrar la clase actual para que no aparezca en las opciones
+        this.availableClassesForChange = classes.filter(c => c.id !== this.claseACambiar.id);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar clases disponibles:', error);
+      }
+    });
+  }
+
+  closeChangeClassModal(): void {
+    this.showChangeClassModal = false;
+    this.claseACambiar = null;
+    this.selectedNewClass = null;
+    this.changeClassForm.reset();
+  }
+
+  onSelectNewClass(clase: any): void {
+    this.selectedNewClass = clase;
+    // Intentar obtener el precio de diferentes campos posibles
+    const nuevoImporte = parseFloat(clase.preciomes || clase.prmes || clase.precio || '0');
+    this.changeClassForm.patchValue({
+      nuevaClase: clase.clase,
+      nuevoImporte: nuevoImporte
+    });
+    console.log('Clase seleccionada:', clase);
+    console.log('Nuevo importe:', nuevoImporte);
+    console.log('Campos de precio disponibles:', {
+      preciomes: clase.preciomes,
+      prmes: clase.prmes,
+      precio: clase.precio
+    });
+  }
+
+  onSaveChangeClass(): void {
+    if (!this.selectedNewClass) {
+      this.confirmationService.confirm({
+        title: 'Advertencia',
+        message: 'Por favor selecciona una clase antes de continuar.',
+        type: 'warning',
+        confirmText: 'Aceptar'
+      }).subscribe();
+      return;
+    }
+
+    if (this.changeClassForm.valid && this.claseACambiar && this.selectedNewClass) {
+      const nuevaClaseId = this.changeClassForm.get('nuevaClase')?.value;
+      const nuevoImporte = this.changeClassForm.get('nuevoImporte')?.value;
+      
+      console.log('Cambiando clase:', {
+        socioId: this.partner!.socio,
+        nuevaClaseId,
+        nuevoImporte,
+        claseAnterior: this.claseACambiar,
+        claseNueva: this.selectedNewClass
+      });
+      
+      this.partnersService.cambiarClaseSocio(
+        this.partner!.socio,
+        1, // TODO: Obtener ID del usuario actual
+        nuevaClaseId,
+        nuevoImporte
+      ).subscribe({
+        next: (response) => {
+          console.log('Clase cambiada exitosamente:', response);
+          this.closeChangeClassModal();
+          this.loadClaseAsignada(); // Recargar clases asignadas
+          this.loadMensualidades(); // Recargar mensualidades
+          this.confirmationService.confirm({
+            title: 'Clase Cambiada',
+            message: `La clase ha sido cambiada exitosamente de "${this.claseACambiar.nombre || this.claseACambiar.nomclase}" a "${this.selectedNewClass.nomclase}".`,
+            type: 'success',
+            confirmText: 'Aceptar'
+          }).subscribe();
+        },
+        error: (error) => {
+          console.error('Error al cambiar clase:', error);
+          this.confirmationService.confirm({
+            title: 'Error',
+            message: 'No se pudo cambiar la clase. ' + (error.error?.message || error.message),
+            type: 'error',
+            confirmText: 'Aceptar'
+          }).subscribe();
+        }
+      });
+    }
+  }
+
+
   closeCobroModal(): void {
     this.showCobroModal = false;
     this.mensualidadACobrar = null;
@@ -620,16 +920,32 @@ export class PartnerModalComponent implements OnInit {
   }
 
   procesarCobro(): void {
-    if (!this.mensualidadACobrar || this.cobroForm.invalid) return;
+    console.log('🔍 Iniciando proceso de cobro');
+    console.log('Mensualidad a cobrar:', this.mensualidadACobrar);
+    console.log('Formulario válido:', this.cobroForm.valid);
+    console.log('Valores del formulario:', this.cobroForm.value);
+    
+    if (!this.mensualidadACobrar) {
+      console.error('❌ No hay mensualidad seleccionada');
+      return;
+    }
+    
+    if (this.cobroForm.invalid) {
+      console.error('❌ Formulario inválido');
+      console.log('Errores del formulario:', this.cobroForm.errors);
+      return;
+    }
 
     const cobroData = {
-      idMens: this.mensualidadACobrar.idMens,
+      idMens: this.mensualidadACobrar.idmens || this.mensualidadACobrar.idMens,
       formaPago: this.cobroForm.get('formaPago')?.value,
       descuento: this.cobroForm.get('descuento')?.value || 0,
       referencia: this.cobroForm.get('referencia')?.value || '',
       motivoDescuento: this.cobroForm.get('motivoDescuento')?.value || '',
       usuarioId: 1 // ID de usuario fijo por ahora
     };
+
+    console.log('📤 Datos de cobro a enviar:', cobroData);
 
     this.partnersService.cobrarMensualidad(cobroData).subscribe({
       next: (response) => {

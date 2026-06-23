@@ -52,9 +52,12 @@ export class SociosController {
   @Post(':socioId/reactivar')
   async reactivarSocio(
     @Param('socioId') socioId: string,
-    @Body('usuarioId') usuarioId: number
+    @Body('usuarioId') usuarioId: number,
+    @Body('claseId') claseId?: number
   ) {
-    return this.sociosService.reactivarSocio(+socioId, usuarioId);
+    console.log(`🎯 Controller recibido - socioId: ${socioId}, usuarioId: ${usuarioId}, claseId: ${claseId}`);
+    console.log(`🎯 Body completo:`, { usuarioId, claseId });
+    return this.sociosService.reactivarSocio(+socioId, usuarioId, claseId);
   }
 
   @Post(':socioId/baja')
@@ -63,6 +66,18 @@ export class SociosController {
     @Body('usuarioId') usuarioId: number
   ) {
     return this.sociosService.darDeBajaSocio(+socioId, usuarioId);
+  }
+
+  @Put(':socioId/cambiar-clase')
+  async cambiarClaseSocio(
+    @Param('socioId') socioId: string,
+    @Body() data: { 
+      usuarioId: number; 
+      nuevaClaseId: number;
+      nuevoImporte: number;
+    }
+  ) {
+    return this.sociosService.cambiarClaseSocio(+socioId, data.usuarioId, data.nuevaClaseId, data.nuevoImporte);
   }
 
   @Get(':socioId/logs')
