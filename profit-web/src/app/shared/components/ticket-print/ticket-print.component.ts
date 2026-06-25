@@ -41,7 +41,7 @@ export class TicketPrintComponent implements OnInit {
     telefono: '',
     rfc: ''
   };
-  logoUrl: string = 'assets/logo.png';
+  logoUrl: string = 'assets/logo - copia.png';
 
   constructor(private http: HttpClient) {}
 
