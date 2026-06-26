@@ -16,9 +16,9 @@ export class ClassAssignmentModalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   classCategories: ClassCategory[] = [];
-  selectedCategory: ClassCategory | null = null;
+  allClasses: AvailableClass[] = [];
   selectedClass: AvailableClass | null = null;
-  
+
   selectedPeriod: PaymentPeriod = PaymentPeriod.MENSUAL;
   PaymentPeriod = PaymentPeriod;
   availablePeriods = Object.values(PaymentPeriod);
@@ -35,17 +35,11 @@ export class ClassAssignmentModalComponent implements OnInit {
   loadAvailableClasses(): void {
     this.partnersService.getAvailableClasses().subscribe(categories => {
       this.classCategories = categories;
-      if (categories.length > 0) {
-        this.selectCategory(categories[0]);
+      this.allClasses = categories.flatMap(c => c.clases);
+      if (this.allClasses.length > 0) {
+        this.selectClass(this.allClasses[0]);
       }
     });
-  }
-
-  selectCategory(category: ClassCategory): void {
-    this.selectedCategory = category;
-    if (category.clases.length > 0) {
-      this.selectClass(category.clases[0]);
-    }
   }
 
   selectClass(clase: AvailableClass): void {
@@ -54,7 +48,12 @@ export class ClassAssignmentModalComponent implements OnInit {
 
   getCurrentPrice(): number {
     if (!this.selectedClass) return 0;
-    const priceConfig = this.selectedClass.precios.find(p => p.periodicidad === this.selectedPeriod);
+    return this.getClassPrice(this.selectedClass, this.selectedPeriod);
+  }
+
+  getClassPrice(clase: AvailableClass, period: PaymentPeriod): number {
+    if (!clase) return 0;
+    const priceConfig = clase.precios.find(p => p.periodicidad === period);
     return priceConfig ? priceConfig.precio : 0;
   }
 
@@ -84,8 +83,8 @@ export class ClassAssignmentModalComponent implements OnInit {
         precio: this.getCurrentPrice(),
         descuento: this.getCurrentDiscount(),
         periodicidad: this.selectedPeriod,
-        cobrarInscripcion: false,
-        montoInscripcion: 0,
+        cobrarInscripcion: this.selectedClass.cobinsc,
+        montoInscripcion: this.selectedClass.cobinsc ? this.selectedClass.prinsc : 0,
         subtotal: subtotal,
         total: subtotal
       };
@@ -95,6 +94,7 @@ export class ClassAssignmentModalComponent implements OnInit {
       if (this.partner.id === 0) {
         // Partner temporal (nuevo socio)
         this.partner.clases = updatedClases;
+        this.partner.periodicidad = this.selectedPeriod;
         this.close.emit();
       } else {
         // Partner existente

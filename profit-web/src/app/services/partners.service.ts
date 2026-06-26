@@ -71,7 +71,11 @@ export class PartnersService {
     const fechaNac = partner.fechaNacimiento ? new Date(partner.fechaNacimiento) : new Date();
     const fechaReg = partner.fechaRegistro ? new Date(partner.fechaRegistro) : new Date();
     
-    return {
+    const clases = partner.clases || [];
+    const importepago = clases.reduce((sum, c) => sum + (c.precio || 0), 0);
+    const descpo = clases.reduce((sum, c) => sum + (c.descuento || 0), 0);
+    
+    const socioData: any = {
       nomsocio: partner.nombre || '',
       tel1: partner.telefono || '',
       tel2: '',
@@ -79,23 +83,31 @@ export class PartnersService {
       sexo: partner.sexo === 'M' ? 1 : 0,
       cumpleaños: fechaNac.toISOString().split('T')[0],
       obs: partner.comentarios || '',
-      activo: partner.estatus === PartnerStatus.ACTIVO || partner.estatus === PartnerStatus.BECADO ? 1 : 0,
+      activo: partner.estatus === PartnerStatus.INACTIVO || partner.estatus === PartnerStatus.SUSPENDIDO ? 0 : 1,
       becado: partner.becado ? 1 : 0,
       modopago: this.mapPeriodToModoPago(partner.periodicidad),
-      clases: this.mapClasesArrayToString(partner.clases || []),
+      clases: this.mapClasesArrayToString(clases),
       fecnvo: fechaReg.toISOString().split('T')[0],
-      importepago: 0,
-      descpo: 0,
+      importepago,
+      descpo,
       direccion: '',
       diapago: '1',
       visitasdisp: 0,
       fecvencevis: new Date().toISOString().split('T')[0]
     };
+
+    // Incluir pagoInscripcion si existe
+    if ((partner as any).pagoInscripcion) {
+      socioData.pagoInscripcion = (partner as any).pagoInscripcion;
+    }
+
+    return socioData;
   }
 
-  private mapPeriodToModoPago(period?: PaymentPeriod): number {
+  private mapPeriodToModoPago(period?: PaymentPeriod | string): number {
     if (!period) return 3;
-    switch (period) {
+    const normalized = String(period).trim();
+    switch (normalized) {
       case PaymentPeriod.SEMANAL: return 1;
       case PaymentPeriod.QUINCENAL: return 2;
       case PaymentPeriod.MENSUAL: return 3;
@@ -209,6 +221,8 @@ export class PartnersService {
           id: clase.id,
           nombre: clase.nomclase,
           categoria: categoryName,
+          cobinsc: clase.cobinsc === 1,
+          prinsc: clase.prinsc || 0,
           precios: [
             { periodicidad: PaymentPeriod.SEMANAL, precio: clase.prsem || 0, descuento: clase.descsem || 0 },
             { periodicidad: PaymentPeriod.QUINCENAL, precio: clase.prqna || 0, descuento: clase.descqna || 0 },

@@ -335,12 +335,11 @@ export class MensualidadesService {
       return;
     }
     
-    // Calcular la siguiente fecha según el modo de pago
+    // Calcular la siguiente fecha según el modo de pago (no usar cadadias de la BD)
     const ultimaFecha = new Date(ultimaMensualidad.UltFec);
-    const siguienteFecha = new Date(ultimaFecha);
-    siguienteFecha.setDate(siguienteFecha.getDate() + socioInfo.cadadias);
+    const siguienteFecha = this.calcularFechaSiguientePeriodo(ultimaFecha, socioInfo.modopago);
     
-    console.log(`📆 Fechas - Última: ${ultimaFecha.toISOString()}, Siguiente: ${siguienteFecha.toISOString()}, Cada ${socioInfo.cadadias} días`);
+    console.log(`📆 Fechas - Última: ${ultimaFecha.toISOString()}, Siguiente: ${siguienteFecha.toISOString()}, Modo pago: ${socioInfo.modopago}`);
     
     // Obtener el precio de la mensualidad
     const precioMensualidad = await this.db
@@ -402,6 +401,33 @@ export class MensualidadesService {
       .execute();
     
     console.log(`✅ Mensualidad siguiente generada exitosamente para socio ${socioId}`);
+  }
+
+  private calcularFechaSiguientePeriodo(fecha: Date, modopago: number): Date {
+    const nuevaFecha = new Date(fecha);
+    switch (modopago) {
+      case 1: // Semanal
+        nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+        break;
+      case 2: // Quincenal
+        nuevaFecha.setDate(nuevaFecha.getDate() + 15);
+        break;
+      case 3: // Mensual
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+        break;
+      case 4: // Trimestral
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
+        break;
+      case 5: // Semestral
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
+        break;
+      case 6: // Anual
+        nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
+        break;
+      default:
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+    }
+    return nuevaFecha;
   }
 
   private generarDescripcionMensualidad(fecha: Date): string {

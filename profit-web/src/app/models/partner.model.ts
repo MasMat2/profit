@@ -97,6 +97,8 @@ export interface AvailableClass {
   nombre: string;
   categoria: string;
   precios: ClassPrice[];
+  cobinsc: boolean;
+  prinsc: number;
 }
 
 export interface ClassPrice {

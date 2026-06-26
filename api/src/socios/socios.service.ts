@@ -100,6 +100,12 @@ export class SociosService {
   }
 
   async createSocio(data: any) {
+    console.log('📝 Creando socio con datos recibidos:', {
+      modopago: data.modopago,
+      clases: data.clases,
+      pagoInscripcion: data.pagoInscripcion
+    });
+    
     const result = await this.db
       .insertInto('tbsocios')
       .values({
@@ -110,7 +116,7 @@ export class SociosService {
         tel2: data.tel2 ?? '',
         correo: data.correo ?? '',
         obs: data.obs ?? '',
-        activo: 1, // Siempre crear socios nuevos como activos
+        activo: data.activo ?? 1, // Respetar activo enviado desde frontend, default activo
         foto: data.foto ?? '',
         modopago: data.modopago ?? 3,
         importepago: data.importepago ?? 0,
@@ -154,9 +160,41 @@ export class SociosService {
       .executeTakeFirstOrThrow();
 
     const nuevoSocioId = Number(result.insertId);
-    const numeroSocio = data.socio ?? nuevoSocioId; // Usar el número de socio proporcionado o el ID como fallback
+
+    // Generar número de socio único si no se proporcionó
+    let numeroSocio = data.socio;
+    if (!numeroSocio) {
+      const maxSocioResult = await this.db
+        .selectFrom('tbsocios')
+        .select(this.db.fn.max('socio').as('maxSocio'))
+        .executeTakeFirst();
+      const maxMensualidadResult = await this.db
+        .selectFrom('tbmensualidades')
+        .select(this.db.fn.max('socio').as('maxSocio'))
+        .executeTakeFirst();
+      const maxSocio = Math.max(
+        Number(maxSocioResult?.maxSocio) || 0,
+        Number(maxMensualidadResult?.maxSocio) || 0
+      );
+      numeroSocio = maxSocio + 1;
+    }
     
     console.log(`📝 Socio creado - ID: ${nuevoSocioId}, Número socio: ${numeroSocio}`);
+    
+    // Asegurar que tbsocios.socio tenga el número correcto (evita quedar en 0)
+    if (numeroSocio !== (data.socio ?? 0)) {
+      await this.db
+        .updateTable('tbsocios')
+        .set({
+          socio: numeroSocio,
+          usumod: data.usumod ?? 1,
+          fecmod: sql`NOW()`,
+          envia: 1
+        })
+        .where('id', '=', nuevoSocioId)
+        .execute();
+      console.log(`🔧 Número de socio asignado: ${numeroSocio}`);
+    }
     
     // 1. Insertar log de alta en tblogsocio
     await this.db
@@ -181,7 +219,10 @@ export class SociosService {
     }
     
     // 3. Generar mensualidad inicial para el nuevo socio usando el número de socio
-    await this.generarMensualidadInicial(numeroSocio, data.usunvo ?? 1);
+    // Si hay pago de inscripción (monto > 0), marcar la primera mensualidad como pagada
+    const tienePagoInscripcion = data.pagoInscripcion && data.pagoInscripcion.total > 0;
+    console.log(`💰 Pago de inscripción detectado: ${tienePagoInscripcion}, Total: ${data.pagoInscripcion?.total || 0}`);
+    await this.generarMensualidadInicial(numeroSocio, data.usunvo ?? 1, tienePagoInscripcion);
 
     return this.getSocioById(nuevoSocioId);
   }
@@ -411,46 +452,92 @@ export class SociosService {
     
     console.log(`✅ Campo Clases actualizado a ,${nuevaClaseId},`);
     
-    // 10. Actualizar mensualidades pendientes (no pagadas) con el nuevo precio
-    const updateResult = await this.db
-      .updateTable('tbmensualidades')
-      .set({
-        importe: nuevoImporte.toString(),
-        usumod: usuarioId,
-        fecmod: sql`NOW()`,
-        envia: 1
-      })
+    // 10. Regenerar mensualidades pendientes (no pagadas) con el nuevo precio y fechas correctas
+    // Eliminar mensualidades pendientes existentes para evitar discrepancias de fechas
+    const deleteResult = await this.db
+      .deleteFrom('tbmensualidades')
       .where('socio', '=', socioId)
       .where('pagado', '=', 0) // Solo mensualidades pendientes
+      .where('inscrip', '=', 0) // No borrar inscripciones
       .executeTakeFirst();
     
-    const numActualizadas = Number(updateResult.numUpdatedRows) || 0;
-    console.log(`💳 ${numActualizadas} mensualidad(es) pendiente(s) actualizada(s) con nuevo precio: ${nuevoImporte}`);
+    const numEliminadas = Number(deleteResult?.numDeletedRows) || 0;
+    console.log(`🗑️ ${numEliminadas} mensualidad(es) pendiente(s) eliminada(s) por cambio de clase`);
+    
+    // Buscar la última mensualidad pagada para calcular la siguiente fecha
+    const ultimaPagada = await this.db
+      .selectFrom('tbmensualidades')
+      .select('fecha')
+      .where('socio', '=', socioId)
+      .where('pagado', '=', 1)
+      .where('inscrip', '=', 0)
+      .where('cancelado', '=', 0)
+      .orderBy('fecha', 'desc')
+      .executeTakeFirst();
+    
+    const fechaBase = ultimaPagada ? new Date(ultimaPagada.fecha) : new Date();
+    const fechaSiguiente = this.calcularFechaSiguientePeriodo(fechaBase, socioActual.modopago || 3);
+    
+    // Obtener el siguiente consecutivo para tbmensualidades
+    const mensualidadesResult = await this.db
+      .selectFrom('tbmensualidades')
+      .select(this.db.fn.max('idmens').as('consecutivo'))
+      .executeTakeFirst();
+    const nextIdMens = (mensualidadesResult?.consecutivo || 0) + 1;
+    
+    // Insertar nueva mensualidad pendiente con fecha correcta
+    await this.db
+      .insertInto('tbmensualidades')
+      .values({
+        idmens: nextIdMens,
+        socio: socioId,
+        fecha: fechaSiguiente,
+        descrip: this.generarDescripcionMensualidad(fechaSiguiente, nuevaClase?.nomclase, socioActual.modopago || 3),
+        importe: nuevoImporte.toString(),
+        descuento: '0',
+        total: nuevoImporte.toString(),
+        saldo: nuevoImporte.toString(),
+        pagado: 0,
+        fecpago: new Date('1900-01-01 00:00:00'),
+        notas: 'Mensualidad generada por cambio de clase',
+        inscrip: 0,
+        cancelado: 0,
+        modopago: socioActual.modopago || 3,
+        autcan: 0,
+        factura: '',
+        motivo: '',
+        usunvo: usuarioId,
+        fecnvo: new Date(),
+        usumod: 0,
+        fecmod: new Date('1900-01-01 00:00:00'),
+        envia: 1
+      })
+      .execute();
+    
+    console.log(`💳 Nueva mensualidad pendiente generada con precio ${nuevoImporte} y fecha ${fechaSiguiente.toISOString()}`);
     
     // 11. Insertar log del cambio de precio en mensualidades
-    if (numActualizadas > 0) {
-      await this.db
-        .insertInto('tblogsocio')
-        .values({
-          socio: socioId,
-          usuario: usuarioId,
-          log: `Actualizó ${numActualizadas} mensualidad(es) pendiente(s) al nuevo precio de $${nuevoImporte.toFixed(3)}`,
-          usunvo: usuarioId,
-          fecnvo: sql`NOW()`,
-          usumod: 0,
-          fecmod: sql`'1900-01-01 00:00:00'`,
-          envia: 1
-        })
-        .execute();
-      
-      console.log(`📋 Log de actualización de mensualidades creado`);
-    }
+    await this.db
+      .insertInto('tblogsocio')
+      .values({
+        socio: socioId,
+        usuario: usuarioId,
+        log: `Cambió de clase, se eliminaron ${numEliminadas} mensualidades pendientes y se generó 1 nueva con fecha ${fechaSiguiente.toLocaleDateString('es-MX')}`,
+        usunvo: usuarioId,
+        fecnvo: sql`NOW()`,
+        usumod: 0,
+        fecmod: sql`'1900-01-01 00:00:00'`,
+        envia: 1
+      })
+      .execute();
+    
+    console.log(`📋 Log de regeneración de mensualidades creado`);
     
     // 12. Retornar socio actualizado
     return this.getSocioById(socioId);
   }
 
-  private async generarMensualidadInicial(socioId: number, usuarioId: number) {
+  private async generarMensualidadInicial(socioId: number, usuarioId: number, marcarPagada: boolean = false) {
     console.log(`📅 Generando mensualidad inicial para nuevo socio ${socioId}`);
     
     // Intentar buscar por número de socio primero, si no encuentra, buscar por ID
@@ -463,6 +550,8 @@ export class SociosService {
         'tbsocios.modopago',
         'tbsocios.diapago',
         'tbsocios.clases',
+        'tbsocios.importepago',
+        'tbsocios.descpo',
         'tbmodospago.cadadias'
       ])
       .where('tbsocios.socio', '=', socioId)
@@ -480,6 +569,8 @@ export class SociosService {
           'tbsocios.modopago',
           'tbsocios.diapago',
           'tbsocios.clases',
+          'tbsocios.importepago',
+          'tbsocios.descpo',
           'tbmodospago.cadadias'
         ])
         .where('tbsocios.id', '=', socioId)
@@ -487,28 +578,50 @@ export class SociosService {
     }
     
     console.log(`🔍 Socio encontrado para mensualidad:`, socioInfo);
+    console.log(`📊 Modo de pago del socio: ${socioInfo?.modopago}, Días cada: ${socioInfo?.cadadias}`);
     
     if (!socioInfo) {
       console.log(`❌ No se encontró información del socio ${socioId} para generar mensualidad inicial`);
       return;
     }
     
-    // Obtener el precio de la clase asignada o precio por defecto
-    let precioMensualidad = { importe: '500.00' }; // Precio por defecto
+    // Obtener el precio de la clase asignada según su modo de pago
+    let precioMensualidad = {
+      importe: socioInfo.importepago ? socioInfo.importepago.toString() : '500.00',
+      descuento: socioInfo.descpo ? socioInfo.descpo.toString() : '0.00'
+    };
     
-    // Si el socio tiene clase asignada, usar su precio
+    // Si el socio tiene clase asignada, usar su precio y descuento según el modo de pago
+    let claseInfo: any = null;
     if (socioInfo.clases && socioInfo.clases.trim()) {
       const claseId = parseInt(socioInfo.clases.replace(',', ''));
       if (!isNaN(claseId)) {
-        const claseInfo = await this.db
+        claseInfo = await this.db
           .selectFrom('tbclases')
-          .select('prmes')
+          .select(['prsem', 'prqna', 'prmes', 'prtrim', 'prstre', 'pranual', 'descsem', 'descqna', 'descmes', 'desctrim', 'descstre', 'descanual', 'nomclase'])
           .where('id', '=', claseId)
           .executeTakeFirst();
         
         if (claseInfo) {
-          precioMensualidad = { importe: claseInfo.prmes };
-          console.log(`💰 Usando precio de clase asignada: ${claseInfo.prmes}`);
+          const precioMap: Record<number, { precio: string; descuento: string }> = {
+            1: { precio: claseInfo.prsem, descuento: claseInfo.descsem },
+            2: { precio: claseInfo.prqna, descuento: claseInfo.descqna },
+            3: { precio: claseInfo.prmes, descuento: claseInfo.descmes },
+            4: { precio: claseInfo.prtrim, descuento: claseInfo.desctrim },
+            5: { precio: claseInfo.prstre, descuento: claseInfo.descstre },
+            6: { precio: claseInfo.pranual, descuento: claseInfo.descanual }
+          };
+          
+          const config = precioMap[socioInfo.modopago] || precioMap[3];
+          const importe = parseFloat(config.precio as string) || 0;
+          const descuento = parseFloat(config.descuento as string) || 0;
+          const total = Math.max(0, importe - descuento);
+          
+          precioMensualidad = {
+            importe: importe.toFixed(2),
+            descuento: descuento.toFixed(2)
+          };
+          console.log(`💰 Usando precio de clase ${claseInfo.nomclase} (modo ${socioInfo.modopago}): importe ${importe}, descuento ${descuento}, total ${total}`);
         }
       }
     }
@@ -524,29 +637,47 @@ export class SociosService {
     const nextIdMens = (mensualidadesResult?.consecutivo || 0) + 1;
     console.log(`🔢 Siguiente ID de mensualidad: ${nextIdMens}`);
     
-    // Generar fecha de la mensualidad (usar fecha actual + días según modo de pago)
-    const fechaMensualidad = new Date();
-    fechaMensualidad.setDate(fechaMensualidad.getDate() + (socioInfo.cadadias || 30));
+    // Si marcarPagada es true, la primera mensualidad se marca como pagada (cobro de inscripción)
+    const esPagada = marcarPagada;
+    
+    // Generar fecha de la mensualidad
+    // Si se paga al inscribirse, la primera vence hoy (ya pagada) y la siguiente al final del periodo.
+    // Si no se paga, la primera vence al final del periodo.
+    let fechaMensualidad: Date;
+    if (esPagada) {
+      fechaMensualidad = new Date();
+    } else {
+      fechaMensualidad = this.calcularFechaSiguientePeriodo(new Date(), socioInfo.modopago);
+    }
     
     console.log(`📅 Fecha actual: ${new Date().toISOString()}`);
     console.log(`📅 Fecha mensualidad calculada: ${fechaMensualidad.toISOString()}`);
-    console.log(`📊 Días a agregar: ${socioInfo.cadadias || 30}`);
+    console.log(`📊 Modo de pago usado: ${socioInfo.modopago}`);
+    
+    // Calcular importe, descuento y total finales
+    const importeFinal = parseFloat(precioMensualidad.importe) || 0;
+    const descuentoFinal = parseFloat(precioMensualidad.descuento) || 0;
+    const totalFinal = Math.max(0, importeFinal - descuentoFinal);
+    
+    const fechaPago = esPagada ? new Date() : new Date('1900-01-01 00:00:00');
+    const saldoFinal = esPagada ? '0.00' : totalFinal.toFixed(2);
+    const pagadoFinal = esPagada ? 1 : 0;
     
     // Insertar mensualidad inicial
     await this.db
       .insertInto('tbmensualidades')
       .values({
         idmens: nextIdMens,
-        socio: socioInfo.socio, // Usar el número de socio correcto del objeto encontrado
+        socio: socioInfo.socio,
         fecha: fechaMensualidad,
-        descrip: this.generarDescripcionMensualidad(fechaMensualidad),
-        importe: precioMensualidad.importe,
-        descuento: '0',
-        total: precioMensualidad.importe.toString(),
-        saldo: precioMensualidad.importe.toString(),
-        pagado: 0,
-        fecpago: new Date('1900-01-01 00:00:00'),
-        notas: 'Mensualidad inicial',
+        descrip: this.generarDescripcionMensualidad(fechaMensualidad, claseInfo?.nomclase, socioInfo.modopago),
+        importe: importeFinal.toFixed(2),
+        descuento: descuentoFinal.toFixed(2),
+        total: totalFinal.toFixed(2),
+        saldo: saldoFinal,
+        pagado: pagadoFinal,
+        fecpago: fechaPago,
+        notas: esPagada ? 'Primera mensualidad - Cobro de inscripción' : 'Mensualidad inicial',
         inscrip: 0,
         cancelado: 0,
         modopago: socioInfo.modopago,
@@ -561,13 +692,93 @@ export class SociosService {
       })
       .execute();
     
-    console.log(`✅ Mensualidad inicial generada para socio ${socioId} - ID: ${nextIdMens}`);
+    console.log(`✅ Mensualidad inicial generada para socio ${socioId} - ID: ${nextIdMens} - Pagada: ${esPagada}`);
+    
+    // Si la primera mensualidad se marcó como pagada, generar la segunda mensualidad pendiente
+    if (esPagada) {
+      const segundaFecha = this.calcularFechaSiguientePeriodo(fechaMensualidad, socioInfo.modopago);
+      
+      const segundoIdMens = nextIdMens + 1;
+      
+      await this.db
+        .insertInto('tbmensualidades')
+        .values({
+          idmens: segundoIdMens,
+          socio: socioInfo.socio,
+          fecha: segundaFecha,
+          descrip: this.generarDescripcionMensualidad(segundaFecha, claseInfo?.nomclase, socioInfo.modopago),
+          importe: importeFinal.toFixed(2),
+          descuento: descuentoFinal.toFixed(2),
+          total: totalFinal.toFixed(2),
+          saldo: totalFinal.toFixed(2),
+          pagado: 0,
+          fecpago: new Date('1900-01-01 00:00:00'),
+          notas: 'Segunda mensualidad',
+          inscrip: 0,
+          cancelado: 0,
+          modopago: socioInfo.modopago,
+          autcan: 0,
+          factura: '',
+          motivo: '',
+          usunvo: usuarioId,
+          fecnvo: new Date(),
+          usumod: 0,
+          fecmod: new Date('1900-01-01 00:00:00'),
+          envia: 1
+        })
+        .execute();
+      
+      console.log(`✅ Segunda mensualidad generada para socio ${socioId} - ID: ${segundoIdMens}`);
+    }
   }
 
-  private generarDescripcionMensualidad(fecha: Date): string {
+  private calcularFechaSiguientePeriodo(fecha: Date, modopago: number): Date {
+    const nuevaFecha = new Date(fecha);
+    switch (modopago) {
+      case 1: // Semanal
+        nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+        break;
+      case 2: // Quincenal
+        nuevaFecha.setDate(nuevaFecha.getDate() + 15);
+        break;
+      case 3: // Mensual
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+        break;
+      case 4: // Trimestral
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
+        break;
+      case 5: // Semestral
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
+        break;
+      case 6: // Anual
+        nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
+        break;
+      default:
+        nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+    }
+    return nuevaFecha;
+  }
+
+  private generarDescripcionMensualidad(fecha: Date, nombreClase?: string, modopago?: number): string {
     const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const mes = meses[fecha.getMonth()];
     const año = fecha.getFullYear();
+    
+    const periodos: Record<number, string> = {
+      1: 'semanal',
+      2: 'quincenal',
+      3: 'mensual',
+      4: 'trimestral',
+      5: 'semestral',
+      6: 'anual'
+    };
+    
+    const periodo = modopago ? periodos[modopago] || 'mensual' : 'mensual';
+    
+    if (nombreClase) {
+      return `${nombreClase} ${periodo.toUpperCase()} - Mes ${mes} ${año}`;
+    }
+    
     return `Mensualidad ${mes} ${año}`;
   }
 

@@ -4,372 +4,311 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 2000;
-  padding: 20px;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .ticket-modal-container {
-  background-color: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
-  width: 100%;
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.4s ease-out;
   position: relative;
 }
 
-.modal-actions {
+.btn-close-float {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background-color: #F9FAFB;
-  border-bottom: 1px solid #E5E7EB;
-  border-radius: 12px 12px 0 0;
+  justify-content: center;
+  transition: all 0.2s;
+  color: #666;
+  z-index: 100;
 
-  .btn-print {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background-color: #4A90E2;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    i {
-      font-size: 16px;
-    }
-
-    &:hover {
-      background-color: #3A7BC8;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
-    }
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+    transform: rotate(90deg);
   }
 
-  .btn-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background-color: transparent;
-    border: none;
-    border-radius: 6px;
-    color: #6B7280;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: #F3F4F6;
-      color: #111827;
-    }
+  i {
+    font-size: 1.125rem;
   }
 }
 
 .ticket-content {
-  padding: 32px 28px;
+  padding: 2.5rem 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #2C3E50;
 }
 
 .ticket-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 
-  .logo-section {
-    margin-bottom: 16px;
-
-    .ticket-logo {
-      max-width: 120px;
-      height: auto;
-    }
+  .logo {
+    max-width: 160px;
+    height: auto;
+    margin: 0 auto 1rem auto;
+    display: block;
+    object-fit: contain;
   }
 
-  .ticket-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #F97316;
-    margin: 16px 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .ticket-info {
-    margin-top: 12px;
-    
-    p {
-      margin: 6px 0;
-      font-size: 14px;
-      color: #4B5563;
-      
-      strong {
-        color: #111827;
-      }
-    }
+  .negocio-info {
+    margin: 0.25rem 0;
+    font-size: 0.8125rem;
+    color: #5A6C7D;
+    line-height: 1.4;
   }
 }
 
-.ticket-divider {
-  border-top: 1px dashed #D1D5DB;
-  margin: 20px 0;
+.titulo-recibo {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2C3E50;
+  margin: 1.5rem 0 1rem 0;
+  letter-spacing: 0.5px;
 }
 
-.ticket-divider-bold {
-  border-top: 2px solid #F97316;
-  margin: 16px 0;
-}
+.ticket-info {
+  margin-bottom: 1.5rem;
 
-.ticket-details {
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #9A3412;
-    margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #FDBA74;
+  p {
+    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    color: #2C3E50;
+    line-height: 1.5;
 
-    i {
-      font-size: 18px;
-      color: #F97316;
-    }
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    font-size: 15px;
-
-    .label {
-      color: #6B7280;
-      font-weight: 500;
-    }
-
-    .value {
+    strong {
       font-weight: 600;
-      color: #111827;
     }
+  }
+}
 
-    &.subtotal-row {
-      border-top: 1px solid #E5E7EB;
-      margin-top: 12px;
-      padding-top: 12px;
+.tabla-productos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
 
-      .value {
-        font-weight: 700;
-        font-size: 16px;
-      }
-    }
+  thead {
+    border-bottom: 2px solid #E5E7EB;
 
-    &.discount-row {
-      .discount-value {
-        color: #10B981;
-        font-weight: 700;
-      }
-    }
-
-    &.total-row {
-      padding: 16px 0;
-
-      .label {
-        font-size: 18px;
-        font-weight: 800;
-        color: #9A3412;
-      }
-
-      .total-value {
-        font-size: 28px;
-        font-weight: 900;
-        color: #F97316;
-      }
-    }
-
-    &.classes-header {
-      margin-bottom: 8px;
+    th {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
   }
 
-  .classes-section {
-    background-color: #FFF7ED;
-    border-radius: 8px;
-    padding: 12px;
-    margin: 12px 0;
-
-    .class-item {
-      padding: 8px 0;
-      border-bottom: 1px dashed #FDBA74;
+  tbody {
+    tr {
+      border-bottom: 1px solid #F3F4F6;
 
       &:last-child {
         border-bottom: none;
       }
 
-      .class-name {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #111827;
-        margin-bottom: 4px;
-
-        i {
-          color: #F97316;
-          font-size: 12px;
-        }
-      }
-
-      .class-detail {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-left: 20px;
-
-        .period-badge {
-          font-size: 11px;
-          font-weight: 600;
-          color: #1E40AF;
-          background-color: #DBEAFE;
-          padding: 2px 8px;
-          border-radius: 8px;
-          text-transform: uppercase;
-        }
-
-        .class-price {
-          font-size: 14px;
-          font-weight: 700;
-          color: #F97316;
-        }
+      td {
+        padding: 1rem 0.5rem;
+        font-size: 0.9375rem;
+        color: #2C3E50;
       }
     }
   }
 
-  .payment-method {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 16px;
-    padding: 12px;
-    background-color: #F3F4F6;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #4B5563;
-
-    i {
-      color: #4A90E2;
-      font-size: 16px;
-    }
-
-    strong {
-      color: #111827;
-    }
-  }
-}
-
-.ticket-footer {
-  margin-top: 32px;
-  text-align: center;
-  padding-top: 20px;
-  border-top: 2px dashed #D1D5DB;
-
-  p {
-    margin: 8px 0;
-    font-size: 14px;
-    color: #6B7280;
-    
-    &:first-child {
-      font-size: 16px;
-      font-weight: 600;
-      color: #111827;
-    }
+  .text-left {
+    text-align: left;
   }
 
-  .footer-note {
-    font-size: 12px;
-    font-style: italic;
-    color: #9CA3AF;
+  .text-center {
+    text-align: center;
   }
-}
 
-.modal-footer {
-  padding: 16px 20px;
-  background-color: #F9FAFB;
-  border-top: 1px solid #E5E7EB;
-  border-radius: 0 0 12px 12px;
-  display: flex;
-  justify-content: center;
-
-  .btn-primary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 32px;
-    background-color: #10B981;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
+  .text-right {
+    text-align: right;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+  }
+}
 
-    i {
-      font-size: 16px;
-    }
+.divider {
+  border: none;
+  border-top: 1px dashed #D1D5DB;
+  margin: 1rem 0;
+}
 
-    &:hover {
-      background-color: #059669;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+.discount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+  color: #2C3E50;
+  margin-bottom: 1rem;
+
+  .discount-value {
+    color: #10B981;
+    font-weight: 600;
+  }
+}
+
+.total-section {
+  margin: 1.5rem 0;
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2C3E50;
+
+    .total-amount {
+      font-size: 1.5rem;
+      color: #FF6B35;
     }
   }
 }
 
-// Estilos de impresión
+.metodo-pago {
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  color: #2C3E50;
+
+  strong {
+    font-weight: 600;
+  }
+}
+
+.footer-mensaje {
+  text-align: center;
+  font-size: 0.9375rem;
+  color: #9CA3AF;
+  font-style: italic;
+  margin: 1.5rem 0;
+}
+
+.btn-imprimir {
+  width: 100%;
+  background: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 1.125rem;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 @media print {
-  .no-print {
-    display: none !important;
+  body * {
+    visibility: hidden;
+  }
+
+  .modal-overlay,
+  .modal-overlay * {
+    visibility: visible;
   }
 
   .modal-overlay {
-    background-color: transparent;
-    position: static;
-    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    backdrop-filter: none;
+    display: block;
   }
 
   .ticket-modal-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: none;
+    width: 80mm;
     box-shadow: none;
-    max-width: 100%;
     border-radius: 0;
-    overflow: visible;
+    margin: 0;
+    padding: 0;
+  }
+
+  .btn-close-float,
+  .btn-imprimir {
+    display: none !important;
   }
 
   .ticket-content {
-    padding: 20px;
+    padding: 10mm;
+    color: #000;
   }
 
-  .ticket-header .ticket-logo {
-    max-width: 100px;
+  .divider {
+    border-color: #000;
   }
 
-  .ticket-title {
-    font-size: 20px !important;
-  }
-
-  .detail-row.total-row .total-value {
-    font-size: 24px !important;
+  .logo,
+  .total-amount {
+    color: #FF6B35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

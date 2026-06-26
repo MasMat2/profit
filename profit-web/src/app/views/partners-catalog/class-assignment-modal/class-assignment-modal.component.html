@@ -13,39 +13,49 @@
 
     <!-- Body -->
     <div class="modal-body">
-      <div class="assignment-grid">
-        <!-- Columna 1: Lista de Clases -->
-        <div class="classes-column">
+      <div class="assignment-content">
+        <!-- Listado scrollable de clases -->
+        <div class="classes-list-panel">
           <h3>Clases Disponibles</h3>
-          
-          <div class="categories-list">
-            <div 
-              class="category-item"
-              *ngFor="let category of classCategories"
-              [class.active]="selectedCategory?.id === category.id"
-              (click)="selectCategory(category)"
-            >
-              <i class="fas fa-dumbbell"></i>
-              <span>{{ category.nombre }}</span>
-            </div>
-          </div>
-
-          <div class="classes-list" *ngIf="selectedCategory">
-            <div 
-              class="class-item"
-              *ngFor="let clase of selectedCategory.clases"
-              [class.active]="selectedClass?.id === clase.id"
+          <div class="classes-list-scroll">
+            <div
+              class="class-list-item"
+              *ngFor="let clase of allClasses"
+              [class.selected]="selectedClass?.id === clase.id"
               (click)="selectClass(clase)"
             >
-              <div class="class-name">{{ clase.nombre }}</div>
-              <div class="class-category">{{ clase.categoria }}</div>
+              <div class="class-item-info">
+                <div class="class-item-name">{{ clase.nombre }}</div>
+                <div class="class-item-price">{{ formatCurrency(getClassPrice(clase, selectedPeriod)) }}</div>
+              </div>
+              <div class="class-item-check">
+                <i class="fas fa-check"></i>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Columna 2: Precios y Descuentos -->
+        <!-- Panel de detalle de la clase seleccionada -->
         <div class="prices-column">
-          <h3>Precios</h3>
+          <h3>Detalle de la Clase</h3>
+
+          <div class="selected-class-header" *ngIf="selectedClass">
+            <div class="class-icon">
+              <i class="fas fa-dumbbell"></i>
+            </div>
+            <div class="class-info">
+              <h4 class="class-name">{{ selectedClass.nombre }}</h4>
+              <span class="class-category">{{ selectedClass.categoria }}</span>
+            </div>
+          </div>
+
+          <div class="current-classes-section" *ngIf="partner?.clases?.length">
+            <label>Clases Asignadas</label>
+            <div class="current-class-tag" *ngFor="let clase of partner?.clases">
+              <span>{{ clase.nombre }}</span>
+              <span class="class-period">{{ clase.periodicidad }}</span>
+            </div>
+          </div>
 
           <div class="period-selector">
             <label>Periodicidad</label>
@@ -65,6 +75,10 @@
               <span>Descuento:</span>
               <span class="amount">- {{ formatCurrency(getCurrentDiscount()) }}</span>
             </div>
+            <div class="price-row inscription" *ngIf="selectedClass?.cobinsc">
+              <span>Inscripción:</span>
+              <span class="amount">{{ formatCurrency(selectedClass?.prinsc || 0) }}</span>
+            </div>
             <div class="price-row subtotal">
               <span>Subtotal:</span>
               <span class="amount">{{ formatCurrency(getSubtotal()) }}</span>
@@ -76,7 +90,6 @@
             <div class="total-amount">{{ formatCurrency(getSubtotal()) }}</div>
           </div>
         </div>
-
       </div>
     </div>
 

@@ -218,10 +218,7 @@
                     <label>Método de Pago *</label>
                     <select class="form-control" formControlName="metodoPago">
                       <option value="">Seleccionar...</option>
-                      <option value="Efectivo">Efectivo</option>
-                      <option value="Tarjeta">Tarjeta</option>
-                      <option value="Transferencia">Transferencia</option>
-                      <option value="Mixto">Mixto</option>
+                      <option *ngFor="let fp of formasPago" [value]="fp.nomfp">{{ fp.nomfp }}</option>
                     </select>
                   </div>
                 </div>

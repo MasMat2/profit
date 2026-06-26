@@ -25,6 +25,7 @@ export class PartnerModalComponent implements OnInit {
   activeTab: 'datos' | 'suscripciones' | 'descuentos' | 'ventas' = 'datos';
   showClassAssignmentModal: boolean = false;
   temporaryClasses: any[] = [];
+  selectedPeriodicidad: PaymentPeriod = PaymentPeriod.MENSUAL;
   totalInscripcion: number = 0;
   showTicketModal: boolean = false;
   ticketData: PaymentTicket | null = null;
@@ -330,7 +331,7 @@ export class PartnerModalComponent implements OnInit {
         saldo: 0,
         becado: this.partnerForm.get('becado')?.value || false,
         fechaRegistro: new Date(),
-        periodicidad: PaymentPeriod.MENSUAL, // Valor por defecto aunque no se muestre en formulario
+        periodicidad: this.selectedPeriodicidad || PaymentPeriod.MENSUAL, // Usar periodicidad seleccionada si existe
         clases: this.temporaryClasses,
         suscripciones: [],
         ventas: [],
@@ -343,11 +344,23 @@ export class PartnerModalComponent implements OnInit {
 
   closeClassAssignment(): void {
     this.showClassAssignmentModal = false;
-    // Si era un partner temporal, guardar las clases y limpiar el partner
+    // Si era un partner temporal, guardar las clases y periodicidad
     if (this.partner && this.partner.id === 0) {
       this.temporaryClasses = this.partner.clases;
+      this.selectedPeriodicidad = this.partner.periodicidad;
       this.partner = undefined;
     }
+    // Actualizar el monto de inscripción según la configuración de las clases
+    this.actualizarMontoInscripcion();
+  }
+
+  private actualizarMontoInscripcion(): void {
+    const montoInscripcion = this.assignedClasses
+      .filter((clase: any) => clase.cobrarInscripcion)
+      .reduce((sum, clase: any) => sum + (clase.montoInscripcion || 0), 0);
+    
+    this.partnerForm.patchValue({ montoInscripcion }, { emitEvent: false });
+    this.calculateTotal();
   }
 
   onSubmit(): void {
@@ -355,25 +368,33 @@ export class PartnerModalComponent implements OnInit {
       const formValue = this.partnerForm.value;
       
       if (this.partner && this.partner.id !== 0) {
-        // Actualizar socio existente
-        this.partnersService.updatePartner(this.partner.id, formValue).subscribe(() => {
+        // Actualizar socio existente: preservar el estatus actual
+        this.partnersService.updatePartner(this.partner.id, {
+          ...formValue,
+          estatus: this.partner.estatus
+        }).subscribe(() => {
           this.close.emit();
         });
       } else {
         // Crear nuevo socio con clases temporales, cobro de inscripción y huella digital
         const newPartnerData = {
           ...formValue,
+          estatus: formValue.becado ? PartnerStatus.BECADO : PartnerStatus.ACTIVO,
+          periodicidad: this.selectedPeriodicidad,
           clases: this.temporaryClasses,
           fechaRegistro: new Date(),
           huella: this.fingerprintData,
           pagoInscripcion: {
             monto: formValue.montoInscripcion,
             descuento: formValue.descuentoInscripcion,
-            total: this.totalInscripcion,
+            total: this.getGranTotal(),
             metodoPago: formValue.metodoPago
           }
         };
         
+        console.log('Periodicidad seleccionada:', this.selectedPeriodicidad);
+        console.log('Total clases:', this.getTotalClases());
+        console.log('Gran total:', this.getGranTotal());
         console.log('Creando nuevo socio con datos:', newPartnerData);
         if (this.fingerprintData) {
           console.log('Huella digital incluida:', this.fingerprintData);

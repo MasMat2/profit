@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AdministracionService, Parametros } from '../../../services/administracion.service';
 
 export interface PaymentTicket {
   socioNombre: string;
@@ -18,6 +19,12 @@ export interface PaymentTicket {
   metodoPago: string;
 }
 
+export interface TicketLineItem {
+  cantidad: number;
+  descripcion: string;
+  total: number;
+}
+
 @Component({
   selector: 'app-payment-ticket-modal',
   standalone: true,
@@ -25,9 +32,51 @@ export interface PaymentTicket {
   templateUrl: './payment-ticket-modal.component.html',
   styleUrls: ['./payment-ticket-modal.component.scss']
 })
-export class PaymentTicketModalComponent {
+export class PaymentTicketModalComponent implements OnInit {
   @Input() ticket!: PaymentTicket;
   @Output() close = new EventEmitter<void>();
+
+  parametros: Parametros | null = null;
+  logoPath = 'assets/logo.png';
+
+  constructor(private administracionService: AdministracionService) {}
+
+  ngOnInit(): void {
+    this.cargarParametros();
+  }
+
+  cargarParametros(): void {
+    this.administracionService.getParametros().subscribe({
+      next: (params) => {
+        this.parametros = params;
+      },
+      error: (err) => {
+        console.error('Error al cargar parámetros:', err);
+      }
+    });
+  }
+
+  get ticketItems(): TicketLineItem[] {
+    const items: TicketLineItem[] = [];
+
+    if (this.ticket.montoInscripcion > 0) {
+      items.push({
+        cantidad: 1,
+        descripcion: 'Inscripción',
+        total: this.ticket.montoInscripcion
+      });
+    }
+
+    this.ticket.clases.forEach(clase => {
+      items.push({
+        cantidad: 1,
+        descripcion: `${clase.nombre} - ${clase.periodicidad}`,
+        total: clase.total
+      });
+    });
+
+    return items;
+  }
 
   onClose(): void {
     this.close.emit();
@@ -45,12 +94,14 @@ export class PaymentTicketModalComponent {
   }
 
   formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('es-MX', {
+    const d = new Date(date);
+    return d.toLocaleString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'long',
-      day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(date));
+      minute: '2-digit',
+      hour12: false
+    });
   }
 }
