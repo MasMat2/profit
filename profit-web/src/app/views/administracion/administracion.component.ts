@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AdministracionService, Parametros } from '../../services/administracion.service';
-import { MenuService } from '../../services/menu.service';
+import { MenuService } from '../../services/shared/menu.service';
 import { SharedModalComponent } from '../../components/shared-modal/shared-modal.component';
 import { FormasPagoComponent } from './formas-pago/formas-pago.component';
 import { ToastService } from '../../services/shared/toast.service';

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { MenuService } from '../../services/menu.service';
+import { MenuService } from '../../services/shared/menu.service';
 import { ToastService } from '../../services/shared/toast.service';
 import { ClasesService, Clase } from '../../services/clases.service';
 
