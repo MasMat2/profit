@@ -11,6 +11,8 @@ const PERIODO_COLS = [
   { periodo: 'Anual',      colPrecio: 'pranual', colDescuento: 'descanual' },
 ] as const;
 
+export type CreateClaseDto = Pick<Tbclases, 'nomclase'>;
+
 export type UpdateClaseDto = { id: number } &
   Partial<Pick<Tbclases, 'nomclase' | 'limitectes' | 'cntlimite' | 'activa' | 'cobinsc' | 'prinsc'>> & {
     precios?: { periodo: string; precioNormal: number; descuento: number }[];
@@ -19,6 +21,67 @@ export type UpdateClaseDto = { id: number } &
 @Injectable()
 export class ClasesService {
   constructor(private readonly db: DatabaseService) {}
+
+  async createClase(dto: CreateClaseDto) {
+    const db = this.db.getKysely();
+    const now = new Date();
+    const result = await db
+      .insertInto('tbclases')
+      .values({
+        nomclase: dto.nomclase,
+        clase: 0,
+        activa: 0,
+        controlhr: 0,
+        limitectes: 0,
+        cntlimite: 0,
+        impticketasist: 0,
+        cobinsc: 0,
+        prinsc: 0,
+        prsem: 0,
+        prqna: 0,
+        prmes: 0,
+        prtrim: 0,
+        prstre: 0,
+        pranual: 0,
+        descsem: 0,
+        descqna: 0,
+        descmes: 0,
+        desctrim: 0,
+        descstre: 0,
+        descanual: 0,
+        usunvo: 1,
+        fecnvo: now,
+        usumod: 0,
+        fecmod: new Date('1900-01-01'),
+        envia: 1,
+      })
+      .executeTakeFirst();
+
+    const newId = Number(result.insertId);
+    const row = await db
+      .selectFrom('tbclases')
+      .select([
+        'id', 'clase', 'nomclase', 'activa', 'cobinsc', 'prinsc',
+        'prsem', 'prqna', 'prmes', 'prtrim', 'prstre', 'pranual',
+        'descsem', 'descqna', 'descmes', 'desctrim', 'descstre', 'descanual',
+        'limitectes', 'cntlimite', 'controlhr', 'impticketasist', 'fecmod',
+      ])
+      .where('id', '=', newId)
+      .executeTakeFirstOrThrow();
+
+    const { prsem, prqna, prmes, prtrim, prstre, pranual,
+      descsem, descqna, descmes, desctrim, descstre, descanual, ...rest } = row;
+    const prices = { prsem, prqna, prmes, prtrim, prstre, pranual,
+      descsem, descqna, descmes, desctrim, descstre, descanual };
+    return {
+      ...rest,
+      precios: PERIODO_COLS.map(({ periodo, colPrecio, colDescuento }) => ({
+        periodo,
+        precioNormal: prices[colPrecio],
+        descuento: prices[colDescuento],
+      })),
+    };
+  }
 
   async updateClase(dto: UpdateClaseDto) {
     const db = this.db.getKysely();

@@ -5,11 +5,12 @@ import { ActivatedRoute } from '@angular/router';
 import { MenuService } from '../../services/shared/menu.service';
 import { ToastService } from '../../services/shared/toast.service';
 import { ClasesService, Clase } from '../../services/clases.service';
+import { SharedModalComponent } from '../../components/shared-modal/shared-modal.component';
 
 @Component({
   selector: 'app-clases',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SharedModalComponent],
   templateUrl: './clases.component.html',
   styleUrls: ['./clases.component.scss'],
 })
@@ -20,6 +21,8 @@ export class ClasesComponent implements OnInit {
   isLoadingClases = false;
   isSaving = false;
   editingPriceIndex: number | null = null;
+  showCreateModal = false;
+  newClaseName = '';
 
   pageIcon: string;
 
@@ -74,6 +77,34 @@ export class ClasesComponent implements OnInit {
 
   selectClass(c: Clase): void {
     this.selectedClass = {...c};
+  }
+
+  openCreateModal(): void {
+    this.newClaseName = '';
+    this.showCreateModal = true;
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal = false;
+  }
+
+  saveNewClase(): void {
+    if (!this.newClaseName.trim()) {
+      this.toast.show('El nombre de la clase es requerido', 'error');
+      return;
+    }
+    this.classesService.createClase({ nomclase: this.newClaseName.trim() }).subscribe({
+      next: (newClase) => {
+        this.classes.push(newClase);
+        this.classes.sort((a, b) => a.nomclase.localeCompare(b.nomclase));
+        this.selectClass(newClase);
+        this.showCreateModal = false;
+        this.toast.show('Clase creada correctamente', 'success');
+      },
+      error: () => {
+        this.toast.show('Error al crear la clase', 'error');
+      },
+    });
   }
 
   guardarInformacion(): void {

@@ -40,6 +40,10 @@ export class ClasesService {
     return this.http.get<Clase[]>(this.apiUrl);
   }
 
+  createClase(dto: { nomclase: string }): Observable<Clase> {
+    return this.http.post<Clase>(this.apiUrl, dto);
+  }
+
   updateClase(clase: Partial<Clase>): Observable<{ success: boolean }> {
     return this.http.put<{ success: boolean }>(this.apiUrl, clase);
   }
