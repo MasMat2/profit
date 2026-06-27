@@ -63,7 +63,7 @@ export class ClasesComponent implements OnInit {
     this.classesService.getAllClases().subscribe({
       next: (data) => {
         this.classes = data;
-        if (data.length > 0) this.selectedClass = data[0];
+        if (data.length > 0) this.selectedClass = { ...data[0] };
         this.isLoadingClases = false;
       },
       error: () => {
