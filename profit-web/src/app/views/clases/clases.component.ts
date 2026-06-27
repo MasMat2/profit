@@ -135,6 +135,10 @@ export class ClasesComponent implements OnInit {
         if (idx !== -1) this.classes[idx] = updated;
         this.selectedClass = {...updated};
 
+        // Switch filter only if the class moved to the other group
+        const stillVisible = this.filteredClasses.some(c => c.id === this.selectedClass.id);
+        if (!stillVisible) this.showInactive = !this.showInactive;
+
         this.editingPriceIndex = null;
         this.isSaving = false;
         this.toast.show('Cambios guardados correctamente', 'success');
