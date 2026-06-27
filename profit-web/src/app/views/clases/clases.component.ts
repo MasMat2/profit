@@ -112,6 +112,7 @@ export class ClasesComponent implements OnInit {
     this.isSaving = true;
     this.classesService.updateClase(this.selectedClass).subscribe({
       next: () => {
+        this.editingPriceIndex = null;
         this.isSaving = false;
         this.toast.show('Cambios guardados correctamente', 'success');
       },
