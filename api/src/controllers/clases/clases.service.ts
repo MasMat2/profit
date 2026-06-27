@@ -58,29 +58,7 @@ export class ClasesService {
       .executeTakeFirst();
 
     const newId = Number(result.insertId);
-    const row = await db
-      .selectFrom('tbclases')
-      .select([
-        'id', 'clase', 'nomclase', 'activa', 'cobinsc', 'prinsc',
-        'prsem', 'prqna', 'prmes', 'prtrim', 'prstre', 'pranual',
-        'descsem', 'descqna', 'descmes', 'desctrim', 'descstre', 'descanual',
-        'limitectes', 'cntlimite', 'controlhr', 'impticketasist', 'fecmod',
-      ])
-      .where('id', '=', newId)
-      .executeTakeFirstOrThrow();
-
-    const { prsem, prqna, prmes, prtrim, prstre, pranual,
-      descsem, descqna, descmes, desctrim, descstre, descanual, ...rest } = row;
-    const prices = { prsem, prqna, prmes, prtrim, prstre, pranual,
-      descsem, descqna, descmes, desctrim, descstre, descanual };
-    return {
-      ...rest,
-      precios: PERIODO_COLS.map(({ periodo, colPrecio, colDescuento }) => ({
-        periodo,
-        precioNormal: prices[colPrecio],
-        descuento: prices[colDescuento],
-      })),
-    };
+    return this.getClase(newId);
   }
 
   async updateClase(dto: UpdateClaseDto) {
@@ -117,7 +95,36 @@ export class ClasesService {
       throw new NotFoundException(`Clase con id ${id} no encontrada`);
     }
 
-    return { success: true };
+    return this.getClase(id);
+  }
+
+  private async getClase(id: number) {
+    const db = this.db.getKysely();
+    const row = await db
+      .selectFrom('tbclases')
+      .select([
+        'id', 'clase', 'nomclase', 'activa', 'cobinsc', 'prinsc',
+        'prsem', 'prqna', 'prmes', 'prtrim', 'prstre', 'pranual',
+        'descsem', 'descqna', 'descmes', 'desctrim', 'descstre', 'descanual',
+        'limitectes', 'cntlimite', 'controlhr', 'impticketasist', 'fecmod',
+      ])
+      .where('id', '=', id)
+      .executeTakeFirst();
+
+    if (!row) throw new NotFoundException(`Clase con id ${id} no encontrada`);
+
+    const { prsem, prqna, prmes, prtrim, prstre, pranual,
+      descsem, descqna, descmes, desctrim, descstre, descanual, ...rest } = row;
+    const prices = { prsem, prqna, prmes, prtrim, prstre, pranual,
+      descsem, descqna, descmes, desctrim, descstre, descanual };
+    return {
+      ...rest,
+      precios: PERIODO_COLS.map(({ periodo, colPrecio, colDescuento }) => ({
+        periodo,
+        precioNormal: prices[colPrecio],
+        descuento: prices[colDescuento],
+      })),
+    };
   }
 
   async getAllClases() {

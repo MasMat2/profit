@@ -129,7 +129,12 @@ export class ClasesComponent implements OnInit {
     if (!this.selectedClass.id) return;
     this.isSaving = true;
     this.classesService.updateClase(this.selectedClass).subscribe({
-      next: () => {
+      next: (updated) => {
+        // Actualizar la clase en la lista
+        const idx = this.classes.findIndex(c => c.id === updated.id);
+        if (idx !== -1) this.classes[idx] = updated;
+        this.selectedClass = {...updated};
+
         this.editingPriceIndex = null;
         this.isSaving = false;
         this.toast.show('Cambios guardados correctamente', 'success');

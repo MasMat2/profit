@@ -44,8 +44,8 @@ export class ClasesService {
     return this.http.post<Clase>(this.apiUrl, dto);
   }
 
-  updateClase(clase: Partial<Clase>): Observable<{ success: boolean }> {
-    return this.http.put<{ success: boolean }>(this.apiUrl, clase);
+  updateClase(clase: Partial<Clase>): Observable<Clase> {
+    return this.http.put<Clase>(this.apiUrl, clase);
   }
 
 }
