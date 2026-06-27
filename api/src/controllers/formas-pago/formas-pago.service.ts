@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import type { Tbformaspago } from '../database/database.types';
+import { DatabaseService } from '../../database/database.service';
+import type { Tbformaspago } from '../../database/database.types';
 
 export type CreateFormaPagoDto = Pick<Tbformaspago, 'nomfp'> & Partial<Pick<Tbformaspago, 'c_formapago' | 'c_moneda'>>;
 export type UpdateFormaPagoDto = Partial<Pick<Tbformaspago, 'nomfp' | 'c_formapago' | 'c_moneda'>>;

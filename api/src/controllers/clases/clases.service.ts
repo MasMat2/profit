@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import type { Tbclases } from '../database/database.types';
+import { DatabaseService } from '../../database/database.service';
+import type { Tbclases } from '../../database/database.types';
 
 const PERIODO_COLS = [
   { periodo: 'Semanal',    colPrecio: 'prsem',   colDescuento: 'descsem'   },

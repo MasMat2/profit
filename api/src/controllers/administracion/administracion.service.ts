@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import type { Tbparametros } from '../database/database.types';
+import { DatabaseService } from '../../database/database.service';
+import type { Tbparametros } from '../../database/database.types';
 
 export type UpdateParametrosDto = Partial<Pick<Tbparametros,
   'paqvisvence' | 'diaspaqvisvence' | 'aplicadescdias' |
