@@ -8,6 +8,13 @@
     <div class="page-header-text">
       <h1>Clases</h1>
     </div>
+
+    <div class="page-header-actions">
+      <button class="btn-filter" [class.active]="showInactive" (click)="toggleInactiveFilter()" title="Mostrar clases inactivas">
+        <i [class]="showInactive ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+        Inactivas
+      </button>
+    </div>
   </div>
 
   <div class="page-content"> <!-- Necessary pattern -->
@@ -26,12 +33,12 @@
             </button>
           </div>
 
-          <div *ngIf="classes.length === 0" class="empty-state">
+          <div *ngIf="filteredClasses.length === 0" class="empty-state">
             No se encontraron clases
           </div>
 
           <ul class="class-list">
-            <li *ngFor="let c of classes" class="class-item" [class.active]="selectedClass?.id === c.id"
+            <li *ngFor="let c of filteredClasses" class="class-item" [class.active]="selectedClass?.id === c.id"
               (click)="selectClass(c)">
               <span class="class-item-name">{{ c.nomclase }}</span>
             </li>

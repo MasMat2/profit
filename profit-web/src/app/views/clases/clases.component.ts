@@ -18,6 +18,8 @@ export class ClasesComponent implements OnInit {
   classes: Clase[] = [];
   selectedClass: Partial<Clase> = {};
 
+  showInactive = false;
+  private savedFilterIds: { active?: number; inactive?: number } = {};
   isLoadingClases = false;
   isSaving = false;
   editingPriceIndex: number | null = null;
@@ -34,6 +36,22 @@ export class ClasesComponent implements OnInit {
   ) {
     const segment = this.route.snapshot.url[0]?.path;
     this.pageIcon = this.menuService.getIconByRoute(segment);
+  }
+
+  get filteredClasses(): Clase[] {
+    if (this.showInactive) return this.classes.filter(c => c.activa == 0);
+    return this.classes.filter(c => c.activa == 1);
+  }
+
+  toggleInactiveFilter(): void {
+    const fromKey = this.showInactive ? 'inactive' : 'active';
+    if (this.selectedClass.id) this.savedFilterIds[fromKey] = this.selectedClass.id;
+
+    this.showInactive = !this.showInactive;
+
+    const toKey = this.showInactive ? 'inactive' : 'active';
+    const saved = this.filteredClasses.find(c => c.id === this.savedFilterIds[toKey]);
+    this.selectedClass = saved ? { ...saved } : { ...(this.filteredClasses[0] ?? {}) };
   }
 
   ngOnInit(): void {
