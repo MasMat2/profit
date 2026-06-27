@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormaPago } from '@services/formas-pago.service';
-import { SharedModalComponent } from '@views/shared/shared-modal/shared-modal.component';
+import { SharedModalComponent } from '@app/components/shared-modal/shared-modal.component';
 import { ToastService } from '@services/shared/toast.service';
 import { FormasPagoService } from '@services/formas-pago.service';
 
