@@ -111,7 +111,7 @@ export class ClasesComponent implements OnInit {
       this.toast.show('El nombre de la clase es requerido', 'error');
       return;
     }
-    this.classesService.createClase({ nomclase: this.newClaseName.trim() }).subscribe({
+    this.classesService.createClase({ nomclase: this.newClaseName.trim(), activa: this.showInactive ? 0 : 1 }).subscribe({
       next: (newClase) => {
         this.classes.push(newClase);
         this.classes.sort((a, b) => a.nomclase.localeCompare(b.nomclase));

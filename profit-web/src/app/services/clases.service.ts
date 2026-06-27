@@ -40,7 +40,7 @@ export class ClasesService {
     return this.http.get<Clase[]>(this.apiUrl);
   }
 
-  createClase(dto: { nomclase: string }): Observable<Clase> {
+  createClase(dto: { nomclase: string; activa: number }): Observable<Clase> {
     return this.http.post<Clase>(this.apiUrl, dto);
   }
 

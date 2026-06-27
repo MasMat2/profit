@@ -11,7 +11,7 @@ const PERIODO_COLS = [
   { periodo: 'Anual',      colPrecio: 'pranual', colDescuento: 'descanual' },
 ] as const;
 
-export type CreateClaseDto = Pick<Tbclases, 'nomclase'>;
+export type CreateClaseDto = Pick<Tbclases, 'nomclase' | 'activa'>;
 
 export type UpdateClaseDto = { id: number } &
   Partial<Pick<Tbclases, 'nomclase' | 'limitectes' | 'cntlimite' | 'activa' | 'cobinsc' | 'prinsc'>> & {
@@ -30,7 +30,7 @@ export class ClasesService {
       .values({
         nomclase: dto.nomclase,
         clase: 0,
-        activa: 0,
+        activa: dto.activa,
         controlhr: 0,
         limitectes: 0,
         cntlimite: 0,
