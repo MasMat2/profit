@@ -116,8 +116,24 @@
                    [class]="obtenerEstadoMembresia(resultadoAcceso?.cliente?.fechaVencimiento).clase">
                 <i class="fas fa-calendar-check"></i>
                 <div>
-                  <small>{{ obtenerEstadoMembresia(resultadoAcceso?.cliente?.fechaVencimiento).texto || 'Vence' }}</small>
+                  <small>Próximo pago</small>
                   <strong>{{ resultadoAcceso?.cliente?.fechaVencimiento | date:'dd/MM/yyyy' }}</strong>
+                </div>
+              </div>
+              
+              <div class="detail-item" *ngIf="resultadoAcceso?.cliente?.clase">
+                <i class="fas fa-dumbbell"></i>
+                <div>
+                  <small>Clase</small>
+                  <strong>{{ resultadoAcceso?.cliente?.clase }}</strong>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                  <small>Visitas</small>
+                  <strong>{{ resultadoAcceso?.cliente?.visitasPeriodo ?? 0 }}</strong>
                 </div>
               </div>
               

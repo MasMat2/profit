@@ -15,6 +15,8 @@ export interface SocioAcceso {
   tipoMembresia?: string;
   fechaVencimiento?: string;
   vigenciaVisitas?: string;
+  clase?: string;
+  visitasPeriodo?: number;
 }
 
 @Injectable({

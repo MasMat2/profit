@@ -9,6 +9,8 @@ export interface SocioAccesoDto {
   tipoMembresia?: string;
   fechaVencimiento?: Date | null;
   vigenciaVisitas?: Date | null;
+  clase?: string;
+  visitasPeriodo: number;
 }
 
 @Injectable()
@@ -28,6 +30,7 @@ export class AsistenciaService {
         'modopago',
         'diapago',
         'visvig',
+        'clases',
       ])
       .where('socio', '=', socioId)
       .executeTakeFirst();
@@ -36,11 +39,37 @@ export class AsistenciaService {
       throw new NotFoundException(`Socio ${socioId} no encontrado`);
     }
 
-    const modo = await db
-      .selectFrom('tbmodospago')
-      .select(['nommodopago'])
-      .where('modopago', '=', socio.modopago)
-      .executeTakeFirst();
+    const claseIds = (socio.clases ?? '')
+      .split(',')
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !isNaN(n));
+
+    const [modo, visitasResult, clasesRows] = await Promise.all([
+      db
+        .selectFrom('tbmodospago')
+        .select(['nommodopago'])
+        .where('modopago', '=', socio.modopago)
+        .executeTakeFirst(),
+      socio.diapago
+        ? db
+            .selectFrom('tbasistencia')
+            .select((eb) => eb.fn.countAll<number>().as('total'))
+            .where('socio', '=', socio.socio)
+            .where('fecha', '>=', socio.diapago)
+            .executeTakeFirst()
+        : Promise.resolve(null),
+      claseIds.length > 0
+        ? db
+            .selectFrom('tbclases')
+            .select(['nomclase'])
+            .where('clase', 'in', claseIds)
+            .execute()
+        : Promise.resolve([]),
+    ]);
+
+    const claseNombre = clasesRows.length > 0
+      ? clasesRows.map((r) => r.nomclase).join(', ')
+      : undefined;
 
     return {
       id: socio.id,
@@ -50,6 +79,8 @@ export class AsistenciaService {
       tipoMembresia: modo?.nommodopago,
       fechaVencimiento: socio.diapago,
       vigenciaVisitas: socio.visvig,
+      clase: claseNombre,
+      visitasPeriodo: Number(visitasResult?.total ?? 0),
     };
   }
 }

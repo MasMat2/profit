@@ -13,6 +13,8 @@ interface Cliente {
   tipoMembresia?: string;
   montoPago?: number;
   vigenciaVisitas?: Date;
+  clase?: string;
+  visitasPeriodo?: number;
 }
 
 interface ResultadoAcceso {
@@ -156,6 +158,8 @@ export class AccessClientComponent implements OnInit, OnDestroy {
         tipoMembresia: socio.tipoMembresia,
         fechaVencimiento: socio.fechaVencimiento ? new Date(socio.fechaVencimiento) : undefined,
         vigenciaVisitas: socio.vigenciaVisitas ? new Date(socio.vigenciaVisitas) : undefined,
+        clase: socio.clase,
+        visitasPeriodo: socio.visitasPeriodo,
       },
       asistencia: {
         success: true,
