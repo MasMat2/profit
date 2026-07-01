@@ -12,15 +12,19 @@ export const tokenInterceptor: HttpInterceptorFn = (
   const router = inject(Router);
   const token: string | null = localStorage.getItem('token');
 
-  const newReq = req.clone({
-    url: environment.apiUrl + req.url,
-    ...(token && {
-      setHeaders: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      }
-    })
-  });
+  const isAbsolute = req.url.startsWith('http');
+
+  const newReq = isAbsolute
+    ? req
+    : req.clone({
+        url: environment.apiUrl + req.url,
+        ...(token && {
+          setHeaders: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        })
+      });
 
   return next(newReq).pipe(
     catchError(error => {

@@ -1,0 +1,153 @@
+<div class="component-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i class="fas fa-fingerprint"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Registro de Asistencia</h1>
+      <p class="page-subtitle">Verificación de acceso por huella digital</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+  <!-- Contenedor principal -->
+  <div class="access-content">
+    
+    <!-- Panel de verificación -->
+    <div class="verification-panel">
+      
+      <!-- Área de lectura de huella -->
+      <div class="fingerprint-area">
+        <div class="fingerprint-icon" [class.scanning]="verificando">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        
+        <h2 class="instruction-text">
+          {{ verificando ? 'Verificando...' : 'Coloca tu huella digital' }}
+        </h2>
+        
+        <!-- DEV_MODE: delete this ng-container and its contents when removing dev mode -->
+        <ng-container *ngIf="DEV_MODE">
+          <div class="dev-input-area">
+            <input 
+              type="text" 
+              class="input-huella"
+              [(ngModel)]="huellaInput"
+              placeholder="ID de socio (modo desarrollo)"
+              (keyup.enter)="verificarHuella()"
+              [disabled]="verificando"
+            >
+            <button 
+              class="btn-verificar"
+              (click)="verificarHuella()"
+              [disabled]="verificando || !huellaInput.trim()"
+            >
+              <i class="fas fa-check"></i>
+              Verificar
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Estado de carga -->
+        <div class="loading-dots" *ngIf="verificando">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="help-panel">
+      <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+      <ul>
+        <li>
+          <i class="fas fa-hand-point-right"></i>
+          Coloca tu dedo en el lector de huellas
+        </li>
+        <li>
+          <i class="fas fa-clock"></i>
+          Mantén el dedo quieto hasta que se complete la lectura
+        </li>
+        <li>
+          <i class="fas fa-check-double"></i>
+          El sistema verificará automáticamente tu acceso
+        </li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Modal de Resultado (Overlay) -->
+<div class="result-modal-overlay" *ngIf="mostrarResultado" (click)="limpiarResultado()">
+  <div class="result-modal" (click)="$event.stopPropagation()">
+    
+    <!-- Acceso permitido -->
+    <div class="result-success" *ngIf="resultadoAcceso?.success">
+      <button class="btn-close-modal" (click)="limpiarResultado()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      
+      <h3 class="result-title">¡Acceso Permitido!</h3>
+      
+      <div class="client-info" *ngIf="resultadoAcceso?.cliente">
+        <div class="client-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        
+        <div class="client-details">
+          <p class="client-name">{{ resultadoAcceso?.cliente?.nombre }}</p>
+          <p class="client-id">ID: {{ resultadoAcceso?.cliente?.id }}</p>
+          
+          <!-- Información de Membresía -->
+          <div class="membership-info" *ngIf="resultadoAcceso?.cliente?.tipoMembresia">
+            <div class="membership-badge">
+              <i class="fas fa-id-card"></i>
+              <span>{{ resultadoAcceso?.cliente?.tipoMembresia }}</span>
+            </div>
+            
+            <div class="membership-details">
+              <div class="detail-item vencimiento" 
+                   [class]="obtenerEstadoMembresia(resultadoAcceso?.cliente?.fechaVencimiento).clase">
+                <i class="fas fa-calendar-check"></i>
+                <div>
+                  <small>{{ obtenerEstadoMembresia(resultadoAcceso?.cliente?.fechaVencimiento).texto || 'Vence' }}</small>
+                  <strong>{{ resultadoAcceso?.cliente?.fechaVencimiento | date:'dd/MM/yyyy' }}</strong>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div class="timestamp">
+        <i class="fas fa-clock"></i>
+        {{ resultadoAcceso?.asistencia?.fecha | date:'dd/MM/yyyy HH:mm:ss' }}
+      </div>
+    </div>
+
+    <!-- Acceso denegado -->
+    <div class="result-error" *ngIf="!resultadoAcceso?.success">
+      <div class="error-icon">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      
+      <h3 class="result-title">Socio No Encontrado</h3>
+      <p class="error-message">
+        La huella no está registrada en el sistema o el socio está inactivo.
+      </p>
+      
+      <button class="btn-retry" (click)="limpiarResultado()">
+        <i class="fas fa-redo"></i>
+        Intentar de nuevo
+      </button>
+    </div>
+  </div>
+</div>
