@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../services/shared/toast.service';
-import { AccesoService, SocioAcceso } from '../../services/acceso.service';
+import { AccesoService, AccesoDto, SocioAcceso } from '../../services/acceso.service';
 
 declare var Fingerprint: any;
 
@@ -133,16 +133,20 @@ export class AccessClientComponent implements OnInit, OnDestroy {
   // #endregion Fingerprint SDK
 
   private cargarSocio(socioId: number): void {
-    this.accesoService.getSocioAcceso(socioId).subscribe({
-      next: (socio) => {
-        this.resultadoAcceso = this.construirResultado(socio);
-        this.mostrarResultado = true;
-        this.verificando = false;
-        this.toastService.show('Acceso registrado exitosamente', 'success');
-        setTimeout(() => this.limpiarResultado(), 30000);
+    this.accesoService.registrarAcceso(socioId).subscribe({
+      next: (res: AccesoDto) => {
+        if (res.acceso && res.socio) {
+          this.resultadoAcceso = this.construirResultado(res.socio);
+          this.mostrarResultado = true;
+          this.verificando = false;
+          this.toastService.show('Acceso registrado exitosamente', 'success');
+          setTimeout(() => this.limpiarResultado(), 30000);
+        } else {
+          this.mostrarAccesoDenegado(res.motivo);
+        }
       },
-      error: (err) => {
-        console.error('Error al obtener datos del socio:', err);
+      error: (err: unknown) => {
+        console.error('Error al registrar acceso:', err);
         this.mostrarAccesoDenegado();
       }
     });
@@ -157,7 +161,6 @@ export class AccessClientComponent implements OnInit, OnDestroy {
         nombre: socio.nombre,
         tipoMembresia: socio.tipoMembresia,
         fechaVencimiento: socio.fechaVencimiento ? new Date(socio.fechaVencimiento) : undefined,
-        vigenciaVisitas: socio.vigenciaVisitas ? new Date(socio.vigenciaVisitas) : undefined,
         clase: socio.clase,
         visitasPeriodo: socio.visitasPeriodo,
       },
@@ -168,10 +171,10 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     };
   }
 
-  private mostrarAccesoDenegado(): void {
+  private mostrarAccesoDenegado(motivo?: string): void {
     this.resultadoAcceso = {
       success: false,
-      message: 'Socio no encontrado'
+      message: motivo ?? 'Acceso denegado'
     };
     this.mostrarResultado = true;
     this.verificando = false;

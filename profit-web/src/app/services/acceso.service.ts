@@ -12,11 +12,17 @@ export interface SocioAcceso {
   socio: number;
   nombre: string;
   activo: number;
+  becado: number;
   tipoMembresia?: string;
   fechaVencimiento?: string;
-  vigenciaVisitas?: string;
   clase?: string;
   visitasPeriodo?: number;
+}
+
+export interface AccesoDto {
+  acceso: boolean;
+  motivo?: string;
+  socio?: SocioAcceso;
 }
 
 @Injectable({
@@ -40,10 +46,10 @@ export class AccesoService {
   }
 
   /**
-   * Retrieves full socio data (plus active membership) from NestJS
-   * for the matched socio id.
+   * Checks eligibility, inserts the attendance record, and returns the
+   * socio profile in a single call.
    */
-  getSocioAcceso(socioId: number): Observable<SocioAcceso> {
-    return this.http.get<SocioAcceso>(`${this.apiUrl}/socio/${socioId}`);
+  registrarAcceso(socioId: number): Observable<AccesoDto> {
+    return this.http.post<AccesoDto>(`${this.apiUrl}/acceso/${socioId}`, {});
   }
 }
