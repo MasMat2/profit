@@ -1,0 +1,42 @@
+<div class="component-page"> <!-- Necessary pattern -->
+  <div class="page-header"> <!-- Necessary pattern -->
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Catalogo de Socios</h1>
+    </div>
+  </div>
+
+  <div class="page-content"> <!-- Necessary pattern -->
+      <!-- <div *ngIf="isLoadingParametros" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i> Cargando...
+      </div> -->
+
+      <!-- <ng-container *ngIf="!isLoadingParametros"> -->
+      <ng-container>
+
+      <app-grid
+        [rowData]="socios"
+        [columnDefs]="columnDefs"
+        [rowHeight]="60"
+        (rowClicked)="abrirModalSocio($event)"
+      />
+
+        <!-- <div class="cards-row"> -->
+
+          <!-- Información del Negocio -->
+          <!-- <div class="card">
+            <h2 class="section-title">Información del Negocio</h2>
+
+          </div>
+        </div>  -->
+        <!-- /.cards-row -->
+
+
+
+      </ng-container>
+  </div>
+
+</div>
+

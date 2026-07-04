@@ -27,6 +27,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.AccessClientComponent
                     ),
             },
+            {
+                path: 'socios',
+                loadComponent: () =>
+                    import('../socios/socios.component').then(
+                        (m) => m.SociosComponent
+                    ),
+            },
         ]
     },
 ];
