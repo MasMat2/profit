@@ -30,7 +30,7 @@ export class SociosComponent implements OnInit {
       filter: 'agNumberColumnFilter',
     },
     {
-      field: 'nombre',
+      field: 'nomsocio',
       headerName: 'Nombre',
       flex: 2,
       cellRenderer: (params: any) => `
@@ -43,7 +43,7 @@ export class SociosComponent implements OnInit {
           </div>
         </div>`,
     },
-    { field: 'telefono', headerName: 'Teléfono', width: 140 },
+    { field: 'tel1', headerName: 'Teléfono', width: 140 },
     { field: 'correo', headerName: 'Correo Electrónico', flex: 2 },
     {
       field: 'estatus',
@@ -61,8 +61,8 @@ export class SociosComponent implements OnInit {
       },
     },
     {
-      field: 'saldo',
-      headerName: 'Mensualidad',
+      field: 'importepago',
+      headerName: 'Subscripción',
       width: 130,
       filter: 'agNumberColumnFilter',
       valueFormatter: (p: any) =>
@@ -70,7 +70,7 @@ export class SociosComponent implements OnInit {
       cellStyle: (p: any) => ({ color: p.value >= 0 ? '#10B981' : '#EF4444', fontWeight: '600' }),
     },
     {
-      field: 'fechaRegistro',
+      field: 'fecnvo',
       headerName: 'F. Registro',
       width: 130,
       filter: 'agDateColumnFilter',

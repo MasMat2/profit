@@ -4,6 +4,7 @@ import { AdministracionModule } from './controllers/administracion/administracio
 import { FormasPagoModule } from './controllers/formas-pago/formas-pago.module';
 import { ClasesModule } from './controllers/clases/clases.module';
 import { AsistenciaModule } from './controllers/asistencia/asistencia.module';
+import { SociosModule } from './controllers/socios/socios.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AsistenciaModule } from './controllers/asistencia/asistencia.module';
     FormasPagoModule,
     ClasesModule,
     AsistenciaModule,
+    SociosModule,
   ],
 })
 export class AppModule {}
