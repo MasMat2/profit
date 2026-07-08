@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import { SociosService } from './socios.service';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { CreateSocioDto, SociosService, UpdateSocioDto } from './socios.service';
 
 @Controller('socios')
 export class SociosController {
@@ -8,5 +8,20 @@ export class SociosController {
   @Get()
   getAllSocios() {
     return this.sociosService.getAllSocios();
+  }
+
+  @Get(':id')
+  getSocioById(@Param('id', ParseIntPipe) id: number) {
+    return this.sociosService.getSocioById(id);
+  }
+
+  @Post()
+  createSocio(@Body() body: CreateSocioDto) {
+    return this.sociosService.createSocio(body);
+  }
+
+  @Put(':id')
+  updateSocio(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateSocioDto) {
+    return this.sociosService.updateSocio(id, body);
   }
 }

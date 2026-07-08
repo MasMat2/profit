@@ -84,6 +84,12 @@
       color: var(--primary-color);
       margin: 0 0 1.25rem 0;
     }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
   }
  
   .actions-row {

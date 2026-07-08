@@ -6,6 +6,13 @@
     <div class="page-header-text">
       <h1>Catalogo de Socios</h1>
     </div>
+
+    <div class="page-header-actions">
+      <button class="btn-save" (click)="abrirModalNuevoSocio()">
+        <i class="fas fa-plus"></i>
+        Agregar Socio
+      </button>
+    </div>
   </div>
 
   <div class="page-content"> <!-- Necessary pattern -->
@@ -39,4 +46,11 @@
   </div>
 
 </div>
+
+<app-socio-modal
+  *ngIf="isSocioModalOpen"
+  [socioId]="selectedSocioId"
+  (closed)="cerrarModalSocio()"
+  (saved)="onSocioGuardado()">
+</app-socio-modal>
 

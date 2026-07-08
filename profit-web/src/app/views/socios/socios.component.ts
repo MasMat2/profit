@@ -8,11 +8,12 @@ import { ToastService } from '../../services/shared/toast.service';
 import { AppGridComponent } from '../../components/app-grid/app-grid.component';
 import { ColDef } from 'ag-grid-community';
 import { SociosService } from '../../services/socios.service';
+import { SocioModalComponent } from './socio-modal/socio-modal.component';
 
 @Component({
   selector: 'app-socios',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent, AppGridComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, AppGridComponent, SocioModalComponent],
   templateUrl: './socios.component.html',
   styleUrls: ['./socios.component.scss'],
 })
@@ -140,6 +141,9 @@ export class SociosComponent implements OnInit {
     this.pageIcon = this.menuService.getIconByRoute(segment);
   }
 
+  isSocioModalOpen = false;
+  selectedSocioId?: number;
+
   ngOnInit(): void {
     this.loadPartners();
   }
@@ -151,9 +155,22 @@ export class SociosComponent implements OnInit {
   }
 
   abrirModalSocio(event: any): void {
-    console.log('Abrir modal socio', event);
+    this.selectedSocioId = event?.id;
+    this.isSocioModalOpen = true;
   }
 
+  abrirModalNuevoSocio(): void {
+    this.selectedSocioId = undefined;
+    this.isSocioModalOpen = true;
+  }
 
+  cerrarModalSocio(): void {
+    this.isSocioModalOpen = false;
+  }
+
+  onSocioGuardado(): void {
+    this.isSocioModalOpen = false;
+    this.loadPartners();
+  }
 
 }
