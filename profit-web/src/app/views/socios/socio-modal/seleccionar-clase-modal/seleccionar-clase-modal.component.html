@@ -1,0 +1,68 @@
+<app-shared-modal
+  modalTitle="Cambiar Clase de Socio"
+  [viewportWidth]="'70vw'"
+  [showSaveButton]="true"
+  (save)="asignarClase()"
+  (close)="onClose()">
+
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoading" class="cards-row seleccionar-clase-row">
+
+    <!-- Listado de Clases -->
+    <div class="card">
+      <h2 class="section-title">Clases Disponibles</h2>
+
+      <div *ngIf="clases.length === 0" class="empty-state">
+        No hay clases activas
+      </div>
+
+      <ul class="class-list">
+        <li
+          *ngFor="let c of clases"
+          class="class-item"
+          [class.active]="selectedClase?.id === c.id"
+          (click)="selectClase(c)">
+          <span class="class-item-name">{{ c.nomclase }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Precios / Periodicidad -->
+    <div class="card card--grow">
+      <h2 class="section-title">Precios y Periodicidad</h2>
+
+      <div *ngIf="!selectedClase" class="empty-state">
+        Selecciona una clase para ver sus precios
+      </div>
+
+      <table *ngIf="selectedClase" class="prices-table">
+        <thead>
+          <tr>
+            <th>PERIODO</th>
+            <th>PRECIO NORMAL</th>
+            <th>DESCUENTO</th>
+            <th>PRECIO FINAL</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr
+            *ngFor="let precio of selectedClase.precios"
+            class="selectable"
+            [class.active]="selectedPeriodo === precio.periodo"
+            (click)="selectPeriodo(precio.periodo)">
+            <td class="period-cell">{{ precio.periodo }}</td>
+            <td><span class="price-display">{{ formatCurrency(precio.precioNormal) }}</span></td>
+            <td><span class="price-display">{{ formatCurrency(precio.descuento) }}</span></td>
+            <td><span class="price-display">{{ formatCurrency(precio.precioNormal - precio.descuento) }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</app-shared-modal>

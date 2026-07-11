@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { SharedModalComponent } from '@components/shared-modal/shared-modal.component';
 import { ToastService } from '@services/shared/toast.service';
 import { CreateSocioDto, Socio, SociosService, UpdateSocioDto } from '@services/socios.service';
+import { SeleccionarClaseModalComponent } from './seleccionar-clase-modal/seleccionar-clase-modal.component';
 
 type SocioTab = 'general' | 'suscripciones' | 'ventas' | 'log';
 
 @Component({
   selector: 'app-socio-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, SeleccionarClaseModalComponent],
   templateUrl: './socio-modal.component.html',
   styleUrls: ['./socio-modal.component.scss'],
 })
@@ -23,6 +24,8 @@ export class SocioModalComponent implements OnChanges {
 
   isLoading = false;
   isSaving = false;
+
+  showSeleccionarClaseModal = false;
 
   socio: Partial<Socio> = {};
 
@@ -105,7 +108,16 @@ export class SocioModalComponent implements OnChanges {
   }
 
   cambiarClase(): void {
-    console.log('Cambiar clase - pendiente de implementar submodal');
+    this.showSeleccionarClaseModal = true;
+  }
+
+  onClaseAsignada(socioActualizado: Socio): void {
+    this.socio = { ...socioActualizado };
+    this.showSeleccionarClaseModal = false;
+  }
+
+  onSeleccionarClaseModalClosed(): void {
+    this.showSeleccionarClaseModal = false;
   }
 
   modificarDiaPago(): void {

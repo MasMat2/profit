@@ -1,0 +1,20 @@
+// Component-specific styles.
+// Shared classes (.card, .class-list, .prices-table, .loading-state) live in
+// src/styles/_shared.scss.
+
+.seleccionar-clase-row {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+
+  .card--grow {
+    min-width: 0;
+  }
+}
+
+.empty-state {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+}

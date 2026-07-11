@@ -214,3 +214,10 @@
   </ng-container>
 
 </app-shared-modal>
+
+<app-seleccionar-clase-modal
+  *ngIf="showSeleccionarClaseModal && socioId"
+  [socioId]="socioId"
+  (asignada)="onClaseAsignada($event)"
+  (closed)="onSeleccionarClaseModalClosed()">
+</app-seleccionar-clase-modal>

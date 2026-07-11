@@ -72,4 +72,8 @@ export class SociosService {
     return this.http.put<Socio>(`${this.apiUrl}/${id}`, dto);
   }
 
+  cambiarClase(id: number, dto: { claseId: number; periodo: string }): Observable<Socio> {
+    return this.http.post<Socio>(`${this.apiUrl}/${id}/cambiar-clase`, dto);
+  }
+
 }

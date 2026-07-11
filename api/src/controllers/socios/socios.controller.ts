@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
-import { CreateSocioDto, SociosService, UpdateSocioDto } from './socios.service';
+import { CambiarClaseDto, CreateSocioDto, SociosService, UpdateSocioDto } from './socios.service';
 
 @Controller('socios')
 export class SociosController {
@@ -23,5 +23,10 @@ export class SociosController {
   @Put(':id')
   updateSocio(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateSocioDto) {
     return this.sociosService.updateSocio(id, body);
+  }
+
+  @Post(':id/cambiar-clase')
+  cambiarClase(@Param('id', ParseIntPipe) id: number, @Body() body: CambiarClaseDto) {
+    return this.sociosService.cambiarClase(id, body);
   }
 }

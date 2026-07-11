@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { sql } from 'kysely';
 
@@ -26,7 +26,29 @@ export interface UpdateSocioDto {
   diapago?: Date;
 }
 
+export interface CambiarClaseDto {
+  claseId: number;
+  periodo: string;
+}
+
 const EMPTY_DATE = new Date('1900-01-01T00:00:00');
+
+const PERIODO_COLS = [
+  { periodo: 'Semanal',    colPrecio: 'prsem',   colDescuento: 'descsem'   },
+  { periodo: 'Quincenal',  colPrecio: 'prqna',   colDescuento: 'descqna'   },
+  { periodo: 'Mensual',    colPrecio: 'prmes',   colDescuento: 'descmes'   },
+  { periodo: 'Trimestral', colPrecio: 'prtrim',  colDescuento: 'desctrim'  },
+  { periodo: 'Semestral',  colPrecio: 'prstre',  colDescuento: 'descstre'  },
+  { periodo: 'Anual',      colPrecio: 'pranual', colDescuento: 'descanual' },
+] as const;
+
+function formatClasesField(claseIds: number[]): string {
+  return claseIds.map((id) => `,${String(id).padStart(3, '0')}`).join('');
+}
+
+function formatCurrency(value: number): string {
+  return value.toLocaleString('es-MX', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+}
 
 @Injectable()
 export class SociosService {
@@ -172,6 +194,138 @@ export class SociosService {
     }
 
     return this.getSocioById(id);
+  }
+
+  async cambiarClase(id: number, dto: CambiarClaseDto) {
+    const periodoRow = PERIODO_COLS.find((p) => p.periodo === dto.periodo);
+    if (!periodoRow) {
+      throw new BadRequestException(`Periodo '${dto.periodo}' no es válido`);
+    }
+
+    const db = this.db.getKysely();
+
+    return db.transaction().execute(async (trx) => {
+      const socio = await trx
+        .selectFrom('tbsocios')
+        .select(['id', 'socio', 'importepago', 'clases'])
+        .where('id', '=', id)
+        .executeTakeFirst();
+
+      if (!socio) {
+        throw new NotFoundException(`Socio con id ${id} no encontrado`);
+      }
+
+      const nuevaClase = await trx
+        .selectFrom('tbclases')
+        .select(['clase', 'nomclase', periodoRow.colPrecio, periodoRow.colDescuento])
+        .where('clase', '=', dto.claseId)
+        .executeTakeFirst();
+
+      if (!nuevaClase) {
+        throw new NotFoundException(`Clase con id ${dto.claseId} no encontrada`);
+      }
+
+      const precioNormal = Number(nuevaClase[periodoRow.colPrecio]);
+      const descuento = Number(nuevaClase[periodoRow.colDescuento]);
+      const nuevoImporte = precioNormal - descuento;
+      const viejoImporte = Number(socio.importepago);
+      const now = new Date();
+
+      // 1. Actualizar importe del socio
+      await trx
+        .updateTable('tbsocios')
+        .set({ importepago: nuevoImporte, fecmod: now, envia: 1 } as any)
+        .where('id', '=', id)
+        .executeTakeFirst();
+
+      // 2. Log de cambio de importe
+      if (nuevoImporte !== viejoImporte) {
+        await trx
+          .insertInto('tblogsocio')
+          .values({
+            socio: socio.socio,
+            usuario: 1,
+            log: `Modificó el importe a pagar de $${formatCurrency(viejoImporte)} por $${formatCurrency(nuevoImporte)}`,
+            usunvo: 1,
+            fecnvo: now,
+            usumod: 0,
+            fecmod: EMPTY_DATE,
+            envia: 1,
+          })
+          .execute();
+      }
+
+      // 3. Clases previas asignadas al socio
+      const oldClaseIds = (socio.clases ?? '')
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n) && n > 0);
+
+      if (oldClaseIds.length > 0) {
+        const oldClases = await trx
+          .selectFrom('tbclases')
+          .select(['clase', 'nomclase'])
+          .where('clase', 'in', oldClaseIds)
+          .execute();
+
+        for (const oldClase of oldClases) {
+          await trx
+            .insertInto('tblogsocio')
+            .values({
+              socio: socio.socio,
+              usuario: 1,
+              log: `Eliminó la clase de ${oldClase.nomclase.trim()} $${formatCurrency(viejoImporte)}`,
+              usunvo: 1,
+              fecnvo: now,
+              usumod: 0,
+              fecmod: EMPTY_DATE,
+              envia: 1,
+            })
+            .execute();
+        }
+      }
+
+      // 4. Log de clase agregada
+      await trx
+        .insertInto('tblogsocio')
+        .values({
+          socio: socio.socio,
+          usuario: 1,
+          log: `Agregó la clase de ${nuevaClase.nomclase.trim()} $${formatCurrency(precioNormal)}`,
+          usunvo: 1,
+          fecnvo: now,
+          usumod: 0,
+          fecmod: EMPTY_DATE,
+          envia: 1,
+        })
+        .execute();
+
+      // 5. Reemplazar asignación en tbhorariossocio
+      await trx.deleteFrom('tbhorariossocio').where('socio', '=', socio.socio).execute();
+
+      await trx
+        .insertInto('tbhorariossocio')
+        .values({
+          socio: socio.socio,
+          clase: nuevaClase.clase,
+          horario: 0,
+          usunvo: 1,
+          fecnvo: now,
+          usumod: 0,
+          fecmod: EMPTY_DATE,
+          envia: 1,
+        })
+        .execute();
+
+      // 6. Sincronizar campo desnormalizado tbsocios.Clases
+      await trx
+        .updateTable('tbsocios')
+        .set({ clases: formatClasesField([nuevaClase.clase]), usumod: 1, fecmod: now, envia: 1 } as any)
+        .where('id', '=', id)
+        .executeTakeFirst();
+
+      return { id };
+    }).then(({ id }) => this.getSocioById(id));
   }
 
   async getAllSocios() {

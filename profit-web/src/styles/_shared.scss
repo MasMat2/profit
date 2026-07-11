@@ -231,4 +231,161 @@
 }
 
 
+// ── Selectable list (e.g. clases, items) ─────────────────────────────────────
+
+.class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+
+  .class-item {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    cursor: pointer;
+    transition: background 0.15s;
+
+    .class-item-name {
+      font-size: 0.875rem;
+      color: var(--text-color);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--secondary-color);
+    }
+
+    &.active {
+      background: var(--light-focus-ring-color);
+      border-left: 3px solid var(--primary-color);
+      padding-left: calc(0.75rem - 3px);
+
+      .class-item-name {
+        font-weight: 600;
+        color: var(--primary-color);
+      }
+    }
+  }
+}
+
+
+// ── Price input & table ───────────────────────────────────────────────────────
+
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .currency-symbol {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+  }
+
+  .price-input {
+    width: 100%;
+    max-width: 80px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px var(--light-focus-ring-color);
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+}
+
+.prices-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+
+  thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--secondary-color);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--surface-b);
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--surface-b);
+    }
+
+    &.selectable {
+      cursor: pointer;
+    }
+
+    &.active {
+      background-color: var(--light-focus-ring-color);
+    }
+  }
+
+  tbody td {
+    padding: 0.875rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+
+    &.period-cell {
+      font-weight: 600;
+    }
+
+    .price-display {
+      font-size: 0.875rem;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+
+    &.action-cell {
+      text-align: center;
+      width: 40px;
+
+      .edit-icon {
+        font-size: 18px;
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: all 0.2s;
+        opacity: 0.6;
+
+        &:hover {
+          opacity: 1;
+          transform: scale(1.1);
+        }
+
+        &.editing {
+          color: var(--success-color);
+          opacity: 1;
+
+          &:hover {
+            transform: scale(1.15);
+          }
+        }
+      }
+    }
+  }
+}
+
+
 

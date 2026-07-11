@@ -2,10 +2,6 @@
 // Shared classes (.card, .form-field, .checkbox-field, .btn-outline, .btn-save,
 // .btn-cancel, .cards-row) live in src/styles/_shared.scss.
 
-.socio-modal {
-  // background-color: var(--surface-c);
-} 
-
 .socio-modal-tabs {
   display: flex;
   gap: 0.25rem;
@@ -34,10 +30,6 @@
       border-bottom-color: var(--primary-color);
     }
   }
-}
-
-.card{
-  // border: none;
 }
 
 .tab-content {
@@ -121,33 +113,7 @@
   }
 }
 
-.price-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  .currency-symbol {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-color-secondary);
-  }
-
-  .price-input {
-    width: 100%;
-    padding: 0.625rem 0.875rem;
-    border: 1px solid var(--surface-border);
-    border-radius: var(--border-radius);
-    font-size: 0.9rem;
-    color: var(--text-color);
-    transition: border-color 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px var(--focus-ring-color);
-    }
-  }
-}
+// .price-input-wrapper vive en src/styles/_shared.scss
 
 .class-actions {
   display: flex;
