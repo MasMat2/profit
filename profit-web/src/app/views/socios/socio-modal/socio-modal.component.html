@@ -130,12 +130,16 @@
       <div class="col-right">
         <div class="card">
 
-          <div class="info-row">
+          <div class="info-row info-row--clase">
             <span class="info-label">Clase Asignada:</span>
             <span class="info-value">{{ socio.clase?.nombre || 'Sin clase asignada' }}</span>
           </div>
 
-          <div class="two-col">
+          <div class="info-row info-row--periodicidad">
+            <span class="info-value">{{ socio.periodicidad || 'Sin periodicidad' }}</span>
+          </div>
+
+          <div class="two-col precio-descuento-row">
             <div class="form-field">
               <label for="precio">Precio de la Clase</label>
               <div class="price-input-wrapper">
@@ -153,14 +157,31 @@
               </div>
             </div>
             <div class="form-field">
-              <label for="diapago">Fecha de Pago</label>
-              <input
-                type="date"
-                id="diapago"
-                [(ngModel)]="diapagoValue"
-                name="diapago"
-              >
+              <label for="descuento">Descuento</label>
+              <div class="price-input-wrapper">
+                <span class="currency-symbol">$</span>
+                <input
+                  type="number"
+                  id="descuento"
+                  class="price-input"
+                  [(ngModel)]="socio.descuento"
+                  name="descuento"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                >
+              </div>
             </div>
+          </div>
+
+          <div class="form-field diapago-field">
+            <label for="diapago">Fecha de Pago</label>
+            <input
+              type="date"
+              id="diapago"
+              [(ngModel)]="diapagoValue"
+              name="diapago"
+            >
           </div>
 
           <div class="checkbox-field">

@@ -111,9 +111,34 @@
     color: var(--primary-color-darker);
     font-weight: 600;
   }
+
+  &--clase {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  &--periodicidad {
+    justify-content: flex-end;
+    padding-top: 0;
+    margin-bottom: 0.5rem;
+
+    .info-value {
+      color: var(--text-color-secondary);
+    }
+  }
 }
 
 // .price-input-wrapper vive en src/styles/_shared.scss
+
+.precio-descuento-row {
+  .price-input-wrapper .price-input {
+    max-width: 100%;
+  }
+}
+
+.diapago-field {
+  max-width: 50%;
+}
 
 .class-actions {
   display: flex;

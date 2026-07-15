@@ -24,6 +24,7 @@ export interface UpdateSocioDto {
   comentarios?: string;
   importepago?: number;
   diapago?: Date;
+  descuento?: number;
 }
 
 export interface CambiarClaseDto {
@@ -74,6 +75,8 @@ export class SociosService {
         'clases',
         'importepago',
         'diapago',
+        'descpo',
+        'modopago',
       ])
       .where('id', '=', id)
       .executeTakeFirst();
@@ -88,21 +91,32 @@ export class SociosService {
       .filter((n) => !isNaN(n) && n > 0);
     const claseId = claseIds[0] ?? null;
 
-    const clase = claseId
-      ? await db
-          .selectFrom('tbclases')
-          .select(['clase', 'nomclase'])
-          .where('clase', '=', claseId)
-          .executeTakeFirst()
-      : undefined;
+    const [clase, modo] = await Promise.all([
+      claseId
+        ? db
+            .selectFrom('tbclases')
+            .select(['clase', 'nomclase'])
+            .where('clase', '=', claseId)
+            .executeTakeFirst()
+        : Promise.resolve(undefined),
+      socio.modopago
+        ? db
+            .selectFrom('tbmodospago')
+            .select(['nommodopago'])
+            .where('modopago', '=', socio.modopago)
+            .executeTakeFirst()
+        : Promise.resolve(undefined),
+    ]);
 
-    const { obs, cumpleaños, clases, importepago, ...rest } = socio;
+    const { obs, cumpleaños, clases, importepago, descpo, modopago, ...rest } = socio;
 
     return {
       ...rest,
       fechaNacimiento: cumpleaños,
       comentarios: obs,
       precio: importepago,
+      descuento: descpo,
+      periodicidad: modo?.nommodopago?.trim() ?? null,
       clase: clase ? { id: clase.clase, nombre: clase.nomclase } : null,
     };
   }
@@ -182,6 +196,7 @@ export class SociosService {
     if (dto.comentarios !== undefined) updateData['obs'] = dto.comentarios;
     if (dto.importepago !== undefined) updateData['importepago'] = dto.importepago;
     if (dto.diapago !== undefined) updateData['diapago'] = dto.diapago;
+    if (dto.descuento !== undefined) updateData['descpo'] = dto.descuento;
 
     const result = await db
       .updateTable('tbsocios')
@@ -225,16 +240,32 @@ export class SociosService {
         throw new NotFoundException(`Clase con id ${dto.claseId} no encontrada`);
       }
 
+      const modo = await trx
+        .selectFrom('tbmodospago')
+        .select(['modopago'])
+        .where('nommodopago', 'like', `%${dto.periodo}%`)
+        .executeTakeFirst();
+
+      if (!modo) {
+        throw new BadRequestException(`No se encontró un modo de pago para el periodo '${dto.periodo}'`);
+      }
+
       const precioNormal = Number(nuevaClase[periodoRow.colPrecio]);
       const descuento = Number(nuevaClase[periodoRow.colDescuento]);
       const nuevoImporte = precioNormal - descuento;
       const viejoImporte = Number(socio.importepago);
       const now = new Date();
 
-      // 1. Actualizar importe del socio
+      // 1. Actualizar importe, descuento y periodicidad del socio
       await trx
         .updateTable('tbsocios')
-        .set({ importepago: nuevoImporte, fecmod: now, envia: 1 } as any)
+        .set({
+          importepago: nuevoImporte,
+          descpo: descuento,
+          modopago: modo.modopago,
+          fecmod: now,
+          envia: 1,
+        } as any)
         .where('id', '=', id)
         .executeTakeFirst();
 

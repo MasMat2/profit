@@ -21,6 +21,8 @@ export interface Socio {
   activo: number;
   diapago: Date | string;
   precio: number;
+  descuento: number;
+  periodicidad: string | null;
   clase: ClaseAsignada | null;
 }
 
@@ -46,6 +48,7 @@ export interface UpdateSocioDto {
   comentarios?: string;
   importepago?: number;
   diapago?: Date | string;
+  descuento?: number;
 }
 
 @Injectable({

@@ -144,6 +144,7 @@ export class SocioModalComponent implements OnChanges {
         comentarios: this.socio.comentarios ?? undefined,
         importepago: this.socio.precio,
         diapago: this.socio.diapago,
+        descuento: this.socio.descuento,
       };
 
       this.sociosService.updateSocio(this.socioId, dto).subscribe({
