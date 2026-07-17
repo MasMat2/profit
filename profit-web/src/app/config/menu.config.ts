@@ -77,6 +77,12 @@ export const MENU_CONFIG: MenuSection[] = [
         name: 'Registro de Tickets', 
         icon: 'fas fa-ticket-alt',
         route: 'registro-tickets'
+      },
+      {
+        id: 'caja',
+        name: 'Caja',
+        icon: 'fas fa-cash-register',
+        route: 'caja'
       }
     ]
   }

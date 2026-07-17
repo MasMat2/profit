@@ -156,6 +156,7 @@ export class ClasesService {
         'impticketasist',
         'fecmod',
       ])
+      .where('activa', '=', 1)
       .orderBy('nomclase', 'asc')
       .execute();
 

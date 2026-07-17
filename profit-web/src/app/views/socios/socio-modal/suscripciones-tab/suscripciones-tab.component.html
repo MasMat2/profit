@@ -1,0 +1,73 @@
+<div *ngIf="isLoading" class="loading-state">
+  <i class="fas fa-spinner fa-spin"></i> Cargando...
+</div>
+
+<div *ngIf="!isLoading" class="tab-content-suscripciones">
+
+  <div class="card pago-card">
+    <div class="info-row">
+      <span class="info-label">Próximo Pago:</span>
+      <span class="info-value">{{ socio.diapago ? (socio.diapago | date:'dd/MM/yyyy') : 'Sin fecha' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Importe:</span>
+      <span class="info-value">${{ (socio.precio ?? 0) - (socio.descuento ?? 0) | number:'1.2-2' }}</span>
+    </div>
+
+    <div class="two-col pago-actions">
+      <div class="form-field">
+        <label for="formaPago">Forma de Pago</label>
+        <select id="formaPago" [(ngModel)]="selectedFp" name="formaPago">
+          <option *ngFor="let fp of formasPago" [ngValue]="fp.id">{{ fp.nomfp }}</option>
+        </select>
+      </div>
+      <button
+        type="button"
+        class="btn-outline btn-pagar"
+        [disabled]="isPaying || !selectedFp"
+        (click)="pagarProximaMensualidad()">
+        <i class="fas fa-cash-register"></i>
+        {{ isPaying ? 'Procesando...' : 'Pagar Próxima Membresía' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card historial-card">
+    <h3 class="section-title">Historial de Mensualidades</h3>
+
+    <div *ngIf="isLoadingMensualidades" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+
+    <div *ngIf="!isLoadingMensualidades && mensualidades.length === 0" class="tab-placeholder">
+      <i class="fas fa-id-card"></i>
+      <p>No hay mensualidades registradas</p>
+    </div>
+
+    <table *ngIf="!isLoadingMensualidades && mensualidades.length > 0" class="mensualidades-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Descripción</th>
+          <th>Total</th>
+          <th>Estatus</th>
+          <th>Fecha de Pago</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of mensualidades">
+          <td>{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+          <td>{{ m.descrip }}</td>
+          <td>${{ m.total | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge" [class.badge--pagado]="m.pagado === 1" [class.badge--pendiente]="m.pagado !== 1">
+              {{ m.pagado === 1 ? 'Pagado' : 'Pendiente' }}
+            </span>
+          </td>
+          <td>{{ m.pagado === 1 ? (m.fecpago | date:'dd/MM/yyyy') : '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
+import { CajaService } from '../caja/caja.service';
 import { sql } from 'kysely';
 
 export interface CreateSocioDto {
@@ -32,6 +33,10 @@ export interface CambiarClaseDto {
   periodo: string;
 }
 
+export interface PagarMensualidadDto {
+  fp: number;
+}
+
 const EMPTY_DATE = new Date('1900-01-01T00:00:00');
 
 const PERIODO_COLS = [
@@ -53,7 +58,10 @@ function formatCurrency(value: number): string {
 
 @Injectable()
 export class SociosService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly cajaService: CajaService,
+  ) {}
 
   async getSocioById(id: number) {
     const db = this.db.getKysely();
@@ -393,5 +401,185 @@ export class SociosService {
       estatus: becado === 1 ? 'Becado' : activo === 1 ? 'Activo' : 'Inactivo',
       tieneHuella: Number(huellaCount) > 0,
     }));
+  }
+
+  async getMensualidades(id: number) {
+    const db = this.db.getKysely();
+
+    const socio = await db
+      .selectFrom('tbsocios')
+      .select(['socio'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+
+    if (!socio) {
+      throw new NotFoundException(`Socio con id ${id} no encontrado`);
+    }
+
+    const rows = await db
+      .selectFrom('tbmensualidades')
+      .select(['id', 'idmens', 'fecha', 'descrip', 'importe', 'descuento', 'total', 'pagado', 'saldo', 'fecpago', 'cancelado'])
+      .where('socio', '=', socio.socio)
+      .where('cancelado', '=', 0)
+      .orderBy('fecha', 'desc')
+      .orderBy('id', 'desc')
+      .execute();
+
+    return rows.map((row) => ({
+      ...row,
+      importe: Number(row.importe),
+      descuento: Number(row.descuento),
+      total: Number(row.total),
+      saldo: Number(row.saldo),
+    }));
+  }
+
+  async pagarMensualidad(id: number, dto: PagarMensualidadDto) {
+    await this.cajaService.assertAbierta();
+
+    const db = this.db.getKysely();
+
+    await db.transaction().execute(async (trx) => {
+      const socio = await trx
+        .selectFrom('tbsocios')
+        .select(['id', 'socio', 'importepago', 'descpo', 'diapago', 'modopago'])
+        .where('id', '=', id)
+        .executeTakeFirst();
+
+      if (!socio) {
+        throw new NotFoundException(`Socio con id ${id} no encontrado`);
+      }
+
+      const now = new Date();
+
+      let pendiente = await trx
+        .selectFrom('tbmensualidades')
+        .select(['idmens', 'total'])
+        .where('socio', '=', socio.socio)
+        .where('cancelado', '=', 0)
+        .where('pagado', '=', 0)
+        .orderBy('fecha', 'asc')
+        .executeTakeFirst();
+
+      if (!pendiente) {
+        const maxIdMensRow = await trx
+          .selectFrom('tbmensualidades')
+          .select(sql<string>`coalesce(max(idmens), 0)`.as('maxId'))
+          .executeTakeFirst();
+        const nuevoIdMens = Number(maxIdMensRow?.maxId ?? 0) + 1;
+
+        const importe = Number(socio.importepago);
+        const descuento = Number(socio.descpo);
+        const total = importe - descuento;
+        const fechaCargo = socio.diapago && new Date(socio.diapago).getTime() > 0 ? socio.diapago : now;
+        const fechaLabel = new Date(fechaCargo).toLocaleDateString('en-GB').replace(/\//g, '/');
+
+        await trx
+          .insertInto('tbmensualidades')
+          .values({
+            autcan: 0,
+            cancelado: 0,
+            descrip: `SUSCRIPCION MENSUAL${fechaLabel}`,
+            descuento,
+            envia: 1,
+            factura: '',
+            fecha: fechaCargo,
+            fecmod: EMPTY_DATE,
+            fecnvo: now,
+            fecpago: EMPTY_DATE,
+            idmens: nuevoIdMens,
+            importe,
+            inscrip: 0,
+            modopago: socio.modopago,
+            motivo: '',
+            notas: '',
+            pagado: 0,
+            saldo: total,
+            socio: socio.socio,
+            total,
+            usumod: 0,
+            usunvo: 1,
+          })
+          .execute();
+
+        pendiente = { idmens: nuevoIdMens, total } as any;
+      }
+
+      const totalPagar = Number(pendiente!.total);
+
+      const maxIdingRow = await trx
+        .selectFrom('tbingresos')
+        .select(sql<string>`coalesce(max(iding), 0)`.as('maxId'))
+        .executeTakeFirst();
+      const nuevoIding = Number(maxIdingRow?.maxId ?? 0) + 1;
+
+      await trx
+        .insertInto('tbingresos')
+        .values({
+          cancelado: 0,
+          corte: 0,
+          envia: 1,
+          fecha: now,
+          fecmod: EMPTY_DATE,
+          fecnvo: now,
+          fp: dto.fp,
+          iding: nuevoIding,
+          idmens: pendiente!.idmens,
+          importe: totalPagar,
+          referencia: '',
+          socio: socio.socio,
+          ticket: 0,
+          usuario: 1,
+          usumod: 0,
+          usunvo: 1,
+        })
+        .execute();
+
+      await trx
+        .updateTable('tbmensualidades')
+        .set({
+          pagado: 1,
+          saldo: 0,
+          fecpago: now,
+          usumod: 1,
+          fecmod: now,
+          envia: 1,
+        } as any)
+        .where('idmens', '=', pendiente!.idmens)
+        .execute();
+
+      const modo = await trx
+        .selectFrom('tbmodospago')
+        .select(['cadadias'])
+        .where('modopago', '=', socio.modopago)
+        .executeTakeFirst();
+
+      const cadadias = modo ? Number(modo.cadadias) : 0;
+      const baseFecha = socio.diapago && new Date(socio.diapago).getTime() > 0 ? new Date(socio.diapago) : now;
+      const nuevoDiaPago = new Date(baseFecha);
+      nuevoDiaPago.setDate(nuevoDiaPago.getDate() + cadadias);
+
+      await trx
+        .updateTable('tbsocios')
+        .set({ diapago: nuevoDiaPago, usumod: 1, fecmod: now, envia: 1 } as any)
+        .where('id', '=', id)
+        .executeTakeFirst();
+
+      await trx
+        .insertInto('tblogsocio')
+        .values({
+          socio: socio.socio,
+          usuario: 1,
+          log: `Pagó mensualidad de $${formatCurrency(totalPagar)}`,
+          usunvo: 1,
+          fecnvo: now,
+          usumod: 0,
+          fecmod: EMPTY_DATE,
+          envia: 1,
+        })
+        .execute();
+    });
+
+    return this.getSocioById(id);
   }
 }

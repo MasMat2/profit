@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { SharedModalComponent } from '@components/shared-modal/shared-modal.component';
 import { ToastService } from '@services/shared/toast.service';
 import { ClasesService, Clase } from '@services/clases.service';
@@ -32,14 +34,20 @@ export class SeleccionarClaseModalComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadClases();
+    this.loadClasesYSocioActual();
   }
 
-  loadClases(): void {
+  loadClasesYSocioActual(): void {
     this.isLoading = true;
-    this.clasesService.getAllClases().subscribe({
-      next: (data) => {
-        this.clases = data.filter((c) => c.activa === 1);
+    forkJoin({
+      clases: this.clasesService.getAllClases(),
+      socio: this.sociosService.getSocioById(this.socioId).pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({ clases, socio }) => {
+        this.clases = clases.filter((c) => c.activa === 1);
+        if (socio) {
+          this.preseleccionarClaseActual(socio);
+        }
         this.isLoading = false;
       },
       error: () => {
@@ -47,6 +55,28 @@ export class SeleccionarClaseModalComponent implements OnInit {
         this.toast.show('Error al cargar las clases.', 'error');
       },
     });
+  }
+
+  private preseleccionarClaseActual(socio: Socio): void {
+    if (!socio.clase) {
+      return;
+    }
+
+    const claseActual = this.clases.find((c) => c.clase === socio.clase!.id);
+    if (!claseActual) {
+      return;
+    }
+
+    this.selectClase(claseActual);
+
+    if (socio.periodicidad) {
+      const precioMatch = claseActual.precios.find(
+        (p) => p.periodo.toLowerCase() === socio.periodicidad!.toLowerCase()
+      );
+      if (precioMatch) {
+        this.selectedPeriodo = precioMatch.periodo;
+      }
+    }
   }
 
   selectClase(c: Clase): void {

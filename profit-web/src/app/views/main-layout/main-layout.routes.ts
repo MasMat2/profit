@@ -34,6 +34,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.SociosComponent
                     ),
             },
+            {
+                path: 'caja',
+                loadComponent: () =>
+                    import('../caja/caja.component').then(
+                        (m) => m.CajaComponent
+                    ),
+            },
         ]
     },
 ];

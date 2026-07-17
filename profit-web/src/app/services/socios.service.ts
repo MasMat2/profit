@@ -51,6 +51,20 @@ export interface UpdateSocioDto {
   descuento?: number;
 }
 
+export interface Mensualidad {
+  id: number;
+  idmens: number;
+  fecha: Date | string;
+  descrip: string;
+  importe: number;
+  descuento: number;
+  total: number;
+  pagado: number;
+  saldo: number;
+  fecpago: Date | string;
+  cancelado: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -77,6 +91,14 @@ export class SociosService {
 
   cambiarClase(id: number, dto: { claseId: number; periodo: string }): Observable<Socio> {
     return this.http.post<Socio>(`${this.apiUrl}/${id}/cambiar-clase`, dto);
+  }
+
+  getMensualidades(id: number): Observable<Mensualidad[]> {
+    return this.http.get<Mensualidad[]>(`${this.apiUrl}/${id}/mensualidades`);
+  }
+
+  pagarMensualidad(id: number, fp: number): Observable<Socio> {
+    return this.http.post<Socio>(`${this.apiUrl}/${id}/pagar-mensualidad`, { fp });
   }
 
 }

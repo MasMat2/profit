@@ -2,10 +2,7 @@
   [modalTitle]="modalTitle"
   [viewportWidth]="'60vw'"
   [showSaveButton]="true"
-  (save)="onSave()"
   (close)="onClose()">
-
-  
 
   <div class="socio-modal-tabs">
     <button
@@ -38,207 +35,29 @@
     </button>
   </div>
 
-  <div *ngIf="isLoading" class="loading-state">
-    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  <!-- ── Tab: Datos Generales ─────────────────────────────────────── -->
+  <app-socio-general-tab
+    *ngIf="activeTab === 'general'"
+    [socioId]="socioId"
+    (saved)="onGeneralSaved()">
+  </app-socio-general-tab>
+
+  <!-- ── Tab: Suscripciones ───────────────────────────────────────── -->
+  <app-socio-suscripciones-tab
+    *ngIf="activeTab === 'suscripciones'"
+    [socioId]="socioId">
+  </app-socio-suscripciones-tab>
+
+  <!-- ── Tab: Ventas ──────────────────────────────────────────────── -->
+  <div *ngIf="activeTab === 'ventas'" class="tab-placeholder">
+    <i class="fas fa-receipt"></i>
+    <p>Próximamente</p>
   </div>
 
-  <ng-container *ngIf="!isLoading">
-
-    <!-- ── Tab: Datos Generales ─────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'general'" class="tab-content cards-row">
-
-      <div class="card">
-
-        <div class="form-field">
-          <label for="nomsocio">Nombre Completo *</label>
-          <input
-            type="text"
-            id="nomsocio"
-            [(ngModel)]="socio.nomsocio"
-            name="nomsocio"
-            placeholder="Nombre completo del socio"
-          >
-        </div>
-
-        <div class="two-col">
-          <div class="form-field">
-            <label for="tel1">Teléfono Principal</label>
-            <input
-              type="text"
-              id="tel1"
-              [(ngModel)]="socio.tel1"
-              name="tel1"
-              placeholder="Teléfono principal"
-            >
-          </div>
-          <div class="form-field">
-            <label for="tel2">Teléfono Secundario</label>
-            <input
-              type="text"
-              id="tel2"
-              [(ngModel)]="socio.tel2"
-              name="tel2"
-              placeholder="Teléfono secundario"
-            >
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="correo">Correo Electrónico</label>
-          <input
-            type="email"
-            id="correo"
-            [(ngModel)]="socio.correo"
-            name="correo"
-            placeholder="correo@ejemplo.com"
-          >
-        </div>
-
-        <div class="two-col">
-          <div class="form-field">
-            <label for="sexo">Sexo</label>
-            <select id="sexo" [(ngModel)]="socio.sexo" name="sexo">
-              <option [ngValue]="0">Seleccionar...</option>
-              <option [ngValue]="1">Masculino</option>
-              <option [ngValue]="2">Femenino</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label for="fechaNacimiento">Fecha de Nacimiento</label>
-            <input
-              type="date"
-              id="fechaNacimiento"
-              [(ngModel)]="fechaNacimientoValue"
-              name="fechaNacimiento"
-            >
-          </div>
-        </div>
-
-        <div class="form-field">
-          <label for="comentarios">Comentarios</label>
-          <textarea
-            id="comentarios"
-            rows="3"
-            [(ngModel)]="socio.comentarios"
-            name="comentarios"
-            placeholder="Comentarios adicionales"
-          ></textarea>
-        </div>
-
-      </div>
-
-      <div class="col-right">
-        <div class="card">
-
-          <div class="info-row info-row--clase">
-            <span class="info-label">Clase Asignada:</span>
-            <span class="info-value">{{ socio.clase?.nombre || 'Sin clase asignada' }}</span>
-          </div>
-
-          <div class="info-row info-row--periodicidad">
-            <span class="info-value">{{ socio.periodicidad || 'Sin periodicidad' }}</span>
-          </div>
-
-          <div class="two-col precio-descuento-row">
-            <div class="form-field">
-              <label for="precio">Precio de la Clase</label>
-              <div class="price-input-wrapper">
-                <span class="currency-symbol">$</span>
-                <input
-                  type="number"
-                  id="precio"
-                  class="price-input"
-                  [(ngModel)]="socio.precio"
-                  name="precio"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                >
-              </div>
-            </div>
-            <div class="form-field">
-              <label for="descuento">Descuento</label>
-              <div class="price-input-wrapper">
-                <span class="currency-symbol">$</span>
-                <input
-                  type="number"
-                  id="descuento"
-                  class="price-input"
-                  [(ngModel)]="socio.descuento"
-                  name="descuento"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                >
-              </div>
-            </div>
-          </div>
-
-          <div class="form-field diapago-field">
-            <label for="diapago">Fecha de Pago</label>
-            <input
-              type="date"
-              id="diapago"
-              [(ngModel)]="diapagoValue"
-              name="diapago"
-            >
-          </div>
-
-          <div class="checkbox-field">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="becadoChecked" name="becado">
-              Socio Becado
-            </label>
-          </div>
-
-
-          <div class="class-actions">
-            <button type="button" class="btn-outline" (click)="cambiarClase()">
-              <i class="fas fa-exchange-alt"></i>
-              Cambiar Clase
-            </button>
-            <!-- <button type="button" class="btn-outline" (click)="modificarDiaPago()">
-              <i class="fas fa-calendar-alt"></i>
-              Modificar Día de Pago
-            </button> -->
-          </div>
-        </div>
-
-        <div class="card huella-card">
-          <button type="button" class="btn-outline" (click)="registrarHuella()">
-            <i class="fas fa-fingerprint"></i>
-            Registrar Huella
-          </button>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── Tab: Suscripciones ───────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'suscripciones'" class="tab-placeholder">
-      <i class="fas fa-id-card"></i>
-      <p>Próximamente</p>
-    </div>
-
-    <!-- ── Tab: Ventas ──────────────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'ventas'" class="tab-placeholder">
-      <i class="fas fa-receipt"></i>
-      <p>Próximamente</p>
-    </div>
-
-    <!-- ── Tab: Log de Modificaciones ───────────────────────────────── -->
-    <div *ngIf="activeTab === 'log'" class="tab-placeholder">
-      <i class="fas fa-history"></i>
-      <p>Próximamente</p>
-    </div>
-
-  </ng-container>
+  <!-- ── Tab: Log de Modificaciones ───────────────────────────────── -->
+  <div *ngIf="activeTab === 'log'" class="tab-placeholder">
+    <i class="fas fa-history"></i>
+    <p>Próximamente</p>
+  </div>
 
 </app-shared-modal>
-
-<app-seleccionar-clase-modal
-  *ngIf="showSeleccionarClaseModal && socioId"
-  [socioId]="socioId"
-  (asignada)="onClaseAsignada($event)"
-  (closed)="onSeleccionarClaseModalClosed()">
-</app-seleccionar-clase-modal>

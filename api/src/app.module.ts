@@ -5,6 +5,7 @@ import { FormasPagoModule } from './controllers/formas-pago/formas-pago.module';
 import { ClasesModule } from './controllers/clases/clases.module';
 import { AsistenciaModule } from './controllers/asistencia/asistencia.module';
 import { SociosModule } from './controllers/socios/socios.module';
+import { CajaModule } from './controllers/caja/caja.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SociosModule } from './controllers/socios/socios.module';
     ClasesModule,
     AsistenciaModule,
     SociosModule,
+    CajaModule,
   ],
 })
 export class AppModule {}

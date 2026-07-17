@@ -1,0 +1,104 @@
+<div class="component-page">
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Caja</h1>
+      <p class="page-subtitle">Apertura y cierre de caja</p>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div *ngIf="isLoadingEstado" class="loading-state">
+      <i class="fas fa-spinner fa-spin"></i> Cargando...
+    </div>
+
+    <ng-container *ngIf="!isLoadingEstado">
+      <div class="cards-row">
+
+        <div class="card estado-card">
+          <h2 class="section-title">Estado de la Caja</h2>
+
+          <div class="estado-banner" [class.estado-banner--abierta]="estado.abierta" [class.estado-banner--cerrada]="!estado.abierta">
+            <i class="fas" [class.fa-lock-open]="estado.abierta" [class.fa-lock]="!estado.abierta"></i>
+            <span>{{ estado.abierta ? 'Caja Abierta' : 'Caja Cerrada' }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="estado.abierta && estado.apertura">
+            <span class="info-label">Abierta desde:</span>
+            <span class="info-value">{{ estado.apertura.fecnvo | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+
+          <button
+            *ngIf="!estado.abierta"
+            type="button"
+            class="btn-save"
+            [disabled]="isProcessing"
+            (click)="abrirCaja()">
+            <i class="fas fa-lock-open"></i>
+            {{ isProcessing ? 'Procesando...' : 'Abrir Caja' }}
+          </button>
+
+          <button
+            *ngIf="estado.abierta && !showCerrarForm"
+            type="button"
+            class="btn-outline"
+            [disabled]="isProcessing"
+            (click)="openCerrarForm()">
+            <i class="fas fa-lock"></i>
+            Cerrar Corte
+          </button>
+
+          <div *ngIf="showCerrarForm" class="cerrar-form">
+            <div class="form-field">
+              <label for="obsCierre">Observaciones (opcional)</label>
+              <textarea id="obsCierre" rows="3" [(ngModel)]="obsCierre" name="obsCierre" placeholder="Notas del corte"></textarea>
+            </div>
+            <div class="cerrar-form-actions">
+              <button type="button" class="btn-cancel" [disabled]="isProcessing" (click)="closeCerrarForm()">Cancelar</button>
+              <button type="button" class="btn-save" [disabled]="isProcessing" (click)="confirmarCierre()">
+                {{ isProcessing ? 'Procesando...' : 'Confirmar Cierre' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card historial-card">
+        <h2 class="section-title">Historial de Cortes</h2>
+
+        <div *ngIf="isLoadingCortes" class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i> Cargando...
+        </div>
+
+        <div *ngIf="!isLoadingCortes && cortes.length === 0" class="tab-placeholder">
+          <i class="fas fa-cash-register"></i>
+          <p>No hay cortes registrados</p>
+        </div>
+
+        <table *ngIf="!isLoadingCortes && cortes.length > 0" class="cortes-table">
+          <thead>
+            <tr>
+              <th>Corte</th>
+              <th>Fecha</th>
+              <th>Ingresos</th>
+              <th>Gastos</th>
+              <th>Observaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of cortes">
+              <td>{{ c.corte }}</td>
+              <td>{{ c.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>${{ c.totingresos | number:'1.2-2' }}</td>
+              <td>${{ c.gastos | number:'1.2-2' }}</td>
+              <td>{{ c.obs || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</div>
