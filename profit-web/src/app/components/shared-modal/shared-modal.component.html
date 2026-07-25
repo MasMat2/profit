@@ -1,5 +1,5 @@
 <div class="modal-backdrop" (click)="onClose()">
-  <div class="modal-content" [ngClass]="size" [style.max-width]="viewportWidth" (click)="$event.stopPropagation()">
+  <div class="modal-content" [ngClass]="size" [style.--modal-max-width]="viewportWidth" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2 class="modal-title">
         {{ modalTitle }}
