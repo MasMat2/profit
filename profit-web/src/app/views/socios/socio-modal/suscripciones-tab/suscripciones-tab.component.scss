@@ -4,20 +4,40 @@
 .tab-content-suscripciones {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+
+  .pago-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 1.75rem;
+    margin-bottom: 0.5rem;
+    background: var(--surface-a);
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+
+    .info-row {
+      padding: 0;
+      margin-bottom: 0;
+    }
+
+    .pago-actions {
+      margin-left: auto;
+    }
+  }
 
   .pago-actions {
     display: flex;
-    margin-top: 0.75rem;
+    margin-top: 0;
 
     .btn-pagar {
-      flex: 1;
       min-width: 220px;
       height: 42px;
     }
   }
 
   .historial-card {
+    padding: 1rem;
     .section-title {
       margin-top: 0;
       margin-bottom: 1rem;
@@ -27,8 +47,9 @@
 
 .info-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
   padding: 0.75rem 0;
   margin-bottom: 0.5rem;
 

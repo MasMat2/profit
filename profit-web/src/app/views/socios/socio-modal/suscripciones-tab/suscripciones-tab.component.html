@@ -6,12 +6,12 @@
 
   <div class="card pago-card">
     <div class="info-row">
-      <span class="info-label">Próximo Pago:</span>
-      <span class="info-value">{{ socio.diapago ? (socio.diapago | date:'dd/MM/yyyy') : 'Sin fecha' }}</span>
-    </div>
-    <div class="info-row">
       <span class="info-label">Importe:</span>
       <span class="info-value">${{ socio.precio ?? 0 | number:'1.2-2' }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Próximo Pago:</span>
+      <span class="info-value">{{ socio.diapago ? (socio.diapago | date:'dd/MM/yyyy') : 'Sin fecha' }}</span>
     </div>
 
     <div class="pago-actions">
