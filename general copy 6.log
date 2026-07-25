@@ -1,0 +1,150 @@
+root at 194.238.29.232 in ~
+$ docker exec -it mysql55_local tail -f /var/lib/mysql/ea1a2f09ed2e.log
+260522  4:42:38   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/log/mysql/general.log'
+260522  4:42:51   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/log/mysql/general.log'
+260522  4:44:00   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/log/mysql/general.log'
+260522  4:44:43   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/log/mysql/general.log
+260522  4:44:58   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/log/mysql/general.log'
+260522  4:49:21   832 Query     /* ApplicationName=DBeaver 24.3.2 - SQLEditor <Script-74.sql> */ SET GLOBAL general_log_file = '/var/lib/mysql/mysql/general.log'
+mysqld, Version: 5.5.62 (MySQL Community Server (GPL)). started with:
+Tcp port: 3306  Unix socket: /tmp/mysql.sock
+Time                 Id Command    Argument
+260717  5:27:19   621 Quit
+260717  5:27:44   560 Query     update `tbparametros` set `id` = 1, `paqvisvence` = 1, `diaspaqvisvence` = 0, `aplicadescdias` = 3, `empresa` = 'PROFIT CENTRO DE MEDICINA PREVENTIVA SA DE CV 2                                                     ', `dir1` = 'AV VASCONCELOS #430                                                                                                                                   ', `dir2` = 'LOMAS DEL VALLE                                                                                                                                       ', `dir3` = 'SAN PEDRO GARZA GARCIA, NUEVO LEON                                                                                                                    ', `tels` = '(81) 8335-3911 / 22                     ', `sucursal` = 1
+                  560 Query     select `id`, `paqvisvence`, `diaspaqvisvence`, `aplicadescdias`, `empresa`, `dir1`, `dir2`, `dir3`, `tels`, `sucursal` from `tbparametros`
+260717  5:27:58   622 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  622 Query     SET NAMES utf8
+                  622 Query     SET character_set_results = NULL
+                  622 Query     SET SQL_AUTO_IS_NULL = 0
+                  622 Query     Select * From tbprogramas WHERE Opcion=1.40000000000000000e+001  AND SubOpcion=2.00000000000000000e+000
+                  622 Quit
+260717  5:27:59   623 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  623 Query     SET NAMES utf8
+                  623 Query     SET character_set_results = NULL
+                  623 Query     SET SQL_AUTO_IS_NULL = 0
+                  623 Query     Select Socio AS Clave, NomSocio AS Descripcion, Tel1, Tel2, 0.00 AS Sel From tbsocios WHERE Activo=1 AND ModoPago>1 AND Becado=0
+                  623 Quit
+260717  5:28:07   624 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  624 Query     SET NAMES utf8
+                  624 Query     SET character_set_results = NULL
+                  624 Query     SET SQL_AUTO_IS_NULL = 0
+                  624 Query     Select Socio,NomSocio,Foto,DiaPago,Fotostr From tbsocios WHERE Socio=5.07200000000000000e+003
+                  624 Quit
+                  625 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  625 Query     SET NAMES utf8
+                  625 Query     SET character_set_results = NULL
+                  625 Query     SET SQL_AUTO_IS_NULL = 0
+                  625 Query     Select *,0.00 AS Sel From tbmensualidades WHERE Socio=5.07200000000000000e+003  AND Cancelado=0 AND Saldo>0
+260717  5:28:08   625 Quit
+260717  5:28:11   626 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  626 Query     SET NAMES utf8
+                  626 Query     SET character_set_results = NULL
+260717  5:28:12   626 Query     SET SQL_AUTO_IS_NULL = 0
+                  626 Query     Select * From tbhorariossocio WHERE Socio=5.07200000000000000e+003
+                  626 Quit
+260717  5:28:13   627 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  627 Query     SET NAMES utf8
+                  627 Query     SET character_set_results = NULL
+260717  5:28:14   627 Query     SET SQL_AUTO_IS_NULL = 0
+                  627 Query     Select IDMens From tbmensualidades WHERE Socio=5.07200000000000000e+003  AND Fecha=_latin1'2027-02-04 00:00:00'
+                  627 Quit
+                  628 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  628 Query     SET NAMES utf8
+                  628 Query     SET character_set_results = NULL
+                  628 Query     SET SQL_AUTO_IS_NULL = 0
+                  628 Query     Select ModoPago,ImportePago From tbsocios WHERE Socio=5.07200000000000000e+003
+                  628 Quit
+                  629 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  629 Query     SET NAMES utf8
+260717  5:28:15   629 Query     SET character_set_results = NULL
+                  629 Query     SET SQL_AUTO_IS_NULL = 0
+                  629 Query     select max(idmens) as consecutivo from tbmensualidades
+                  629 Quit
+                  630 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  630 Query     SET NAMES utf8
+                  630 Query     SET character_set_results = NULL
+                  630 Query     SET SQL_AUTO_IS_NULL = 0
+                  630 Query     Select nommodopago,cadadias From tbmodospago WHERE modopago=4.00000000000000000e+000
+                  630 Quit
+                  631 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  631 Query     SET NAMES utf8
+260717  5:28:16   631 Query     SET character_set_results = NULL
+                  631 Query     SET SQL_AUTO_IS_NULL = 0
+                  631 Query     SELECT * FROM tbmensualidades WHERE Envia = 2
+                  631 Query     INSERT INTO tbmensualidades (ID,IDMENS,SOCIO,FECHA,MODOPAGO,IMPORTE,DESCUENTO,TOTAL,PAGADO,SALDO,DESCRIP,INSCRIP,FECPAGO,CANCELADO,AUTCAN,MOTIVO,NOTAS,USUNVO,FECNVO,USUMOD,FECMOD,ENVIA,FACTURA) VALUES (0.00000000000000000e+000 ,5.91220000000000000e+004 ,5.07200000000000000e+003 ,_latin1'2027-02-04 00:00:00' ,4.00000000000000000e+000 ,2.59000000000000000e+003 ,0.00000000000000000e+000 ,2.59000000000000000e+003 ,0.00000000000000000e+000 ,2.59000000000000000e+003 ,_latin1'SUSCRIPCION TIPO MENSUAL Febrero 2027' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,_latin1'' ,_latin1'' ,1.00000000000000000e+000 ,_latin1'2026-07-16 23:28:16' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,1.00000000000000000e+000 ,_latin1'' )
+                  631 Quit
+                  632 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  632 Query     SET NAMES utf8
+                  632 Query     SET character_set_results = NULL
+                  632 Query     SET SQL_AUTO_IS_NULL = 0
+                  632 Query     Select a.*,b.NomSocio,b.Foto,b.Fotostr,b.DescPO,b.Campo1,c.NomModoPago From tbmensualidades a left join tbsocios b on a.socio=b.socio left join tbmodospago c on a.modopago=c.modopago WHERE IDMens=5.91220000000000000e+004
+                  632 Quit
+260717  5:28:17   633 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  633 Query     SET NAMES utf8
+                  633 Query     SET character_set_results = NULL
+                  633 Query     SET SQL_AUTO_IS_NULL = 0
+                  633 Query     Select FP,NomFP From tbformaspago
+                  633 Quit
+260717  5:29:54   634 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  634 Query     SET NAMES utf8
+                  634 Query     SET character_set_results = NULL
+                  634 Query     SET SQL_AUTO_IS_NULL = 0
+                  634 Query     select max(iding) as consecutivo from tbingresos
+                  634 Quit
+260717  5:29:55   635 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  635 Query     SET NAMES utf8
+                  635 Query     SET character_set_results = NULL
+                  635 Query     SET SQL_AUTO_IS_NULL = 0
+                  635 Query     SELECT * FROM tbingresos WHERE Envia = 2
+                  635 Query     INSERT INTO tbingresos (ID,IDING,FECHA,TICKET,IDMENS,SOCIO,USUARIO,IMPORTE,FP,REFERENCIA,CORTE,CANCELADO,USUNVO,FECNVO,USUMOD,FECMOD,ENVIA) VALUES (0.00000000000000000e+000 ,5.30060000000000000e+004 ,_latin1'2026-07-16 23:29:54' ,0.00000000000000000e+000 ,5.91220000000000000e+004 ,5.07200000000000000e+003 ,1.00000000000000000e+000 ,2.00500000000000000e+003 ,1.00000000000000000e+000 ,_latin1'                              ' ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,1.00000000000000000e+000 ,_latin1'2026-07-16 23:29:55' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,1.00000000000000000e+000 )
+                  635 Quit
+                  636 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  636 Query     SET NAMES utf8
+                  636 Query     SET character_set_results = NULL
+                  636 Query     SET SQL_AUTO_IS_NULL = 0
+                  636 Query     select max(iding) as consecutivo from tbingresos
+260717  5:29:56   636 Quit
+                  637 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  637 Query     SET NAMES utf8
+                  637 Query     SET character_set_results = NULL
+                  637 Query     SET SQL_AUTO_IS_NULL = 0
+                  637 Query     SELECT * FROM tbingresos WHERE Envia = 2
+                  637 Query     INSERT INTO tbingresos (ID,IDING,FECHA,TICKET,IDMENS,SOCIO,USUARIO,IMPORTE,FP,REFERENCIA,CORTE,CANCELADO,USUNVO,FECNVO,USUMOD,FECMOD,ENVIA) VALUES (0.00000000000000000e+000 ,5.30070000000000000e+004 ,_latin1'2026-07-16 23:29:55' ,0.00000000000000000e+000 ,5.91220000000000000e+004 ,5.07200000000000000e+003 ,1.00000000000000000e+000 ,5.84000000000000000e+002 ,5.00000000000000000e+000 ,_latin1'                              ' ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,1.00000000000000000e+000 ,_latin1'2026-07-16 23:29:56' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,1.00000000000000000e+000 )
+                  637 Quit
+                  638 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  638 Query     SET NAMES utf8
+                  638 Query     SET character_set_results = NULL
+260717  5:29:57   638 Query     SET SQL_AUTO_IS_NULL = 0
+                  638 Query     UPDATE tbmensualidades SET Descuento = 1.00000000000000000e+000 ,Total = 2.58900000000000000e+003 ,Saldo = 0.00000000000000000e+000 ,Pagado = 1.00000000000000000e+000 ,FecPago = _latin1'2026-07-16 23:29:56' ,Notas = _latin1'' ,UsuMod=1.00000000000000000e+000 ,FecMod=_latin1'2026-07-16 23:29:57' ,Envia=1.00000000000000000e+000  WHERE IDMens=5.91220000000000000e+004
+                  638 Quit
+                  639 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  639 Query     SET NAMES utf8
+                  639 Query     SET character_set_results = NULL
+                  639 Query     SET SQL_AUTO_IS_NULL = 0
+                  639 Query     select max(iddesc) as consecutivo from tbdescuentos
+                  639 Quit
+                  640 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  640 Query     SET NAMES utf8
+260717  5:29:58   640 Query     SET character_set_results = NULL
+                  640 Query     SET SQL_AUTO_IS_NULL = 0
+                  640 Query     SELECT * FROM tbdescuentos WHERE Envia = 2
+                  640 Query     INSERT INTO tbdescuentos (ID,IDDESC,FECHA,TICKET,IDMENS,SOCIO,USUARIO,IMPORTE,DESCUENTO,TOTAL,AUTDES,MOTIVO,CORTE,CANCELADO,USUNVO,FECNVO,USUMOD,FECMOD,ENVIA) VALUES (0.00000000000000000e+000 ,1.26180000000000000e+004 ,_latin1'2026-07-16 23:29:55' ,0.00000000000000000e+000 ,5.91220000000000000e+004 ,5.07200000000000000e+003 ,1.00000000000000000e+000 ,2.59000000000000000e+003 ,1.00000000000000000e+000 ,2.58900000000000000e+003 ,1.00000000000000000e+000 ,_latin1'testtest test                                                                                                                                                                                           ' ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,1.00000000000000000e+000 ,_latin1'2026-07-16 23:29:58' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,1.00000000000000000e+000 )
+                  640 Quit
+                  641 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  641 Query     SET NAMES utf8
+                  641 Query     SET character_set_results = NULL
+                  641 Query     SET SQL_AUTO_IS_NULL = 0
+                  641 Query     Select a.ModoPago,a.DiaPago,b.CadaDias From tbsocios a left join tbmodospago b on a.modopago=b.modopago WHERE Socio=5.07200000000000000e+003
+                  641 Quit
+260717  5:29:59   642 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  642 Query     SET NAMES utf8
+                  642 Query     SET character_set_results = NULL
+                  642 Query     SET SQL_AUTO_IS_NULL = 0
+                  642 Query     UPDATE tbsocios SET DiaPago = _latin1'2027-03-04 00:00:00' ,UsuMod=1.00000000000000000e+000 ,FecMod=_latin1'2026-07-16 23:29:59' ,Envia=1.00000000000000000e+000  WHERE Socio=5.07200000000000000e+003
+                  642 Quit
+                  643 Connect   root@187.209.143.209 on bdksiste_bdkgym2
+                  643 Query     SET NAMES utf8
+                  643 Query     SET character_set_results = NULL
+                  643 Query     SET SQL_AUTO_IS_NULL = 0
+                  643 Query     Select Count(IDMens) AS CntMV From tbmensualidades a left join tbsocios b on a.socio=b.socio WHERE a.Saldo>0 AND a.Cancelado=0 AND a.Fecha<_latin1'2026-07-17 00:00:00'  AND b.Activo=1 AND b.Becado=0
+                  643 Quit

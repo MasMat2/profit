@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { ModalService } from '@services/shared/modal.service';
 import { ToastService } from '@services/shared/toast.service';
 import { CreateSocioDto, Socio, SociosService, UpdateSocioDto } from '@services/socios.service';
-import { SeleccionarClaseModalComponent } from '../seleccionar-clase-modal/seleccionar-clase-modal.component';
+import { SeleccionarClaseModalComponent } from './seleccionar-clase-modal/seleccionar-clase-modal.component';
 
 @Component({
   selector: 'app-socio-general-tab',

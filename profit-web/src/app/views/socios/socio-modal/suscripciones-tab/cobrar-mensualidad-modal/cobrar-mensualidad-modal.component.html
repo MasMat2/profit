@@ -1,0 +1,117 @@
+<app-shared-modal
+  modalTitle="Cobrar Mensualidad"
+  [viewportWidth]="'70vw'"
+  [showSaveButton]="true"
+  (save)="cobrar()"
+  (close)="onClose()">
+
+  <div *ngIf="isLoading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i> Cargando...
+  </div>
+
+  <div *ngIf="!isLoading" class="cards-row cobrar-row">
+
+    <!-- Resumen del Cobro -->
+    <div class="card">
+      <h2 class="section-title">Resumen del Cobro</h2>
+
+      <div class="summary">
+        <div class="summary-row">
+          <span class="summary-label">Importe</span>
+          <span class="summary-value">${{ importeBase | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="descuento">Descuento ($)</label>
+        <input
+          type="number"
+          id="descuento"
+          name="descuento"
+          step="0.01"
+          min="0"
+          [(ngModel)]="descuento"
+          placeholder="0.00">
+      </div>
+
+      <div class="form-field">
+        <label for="motivo">Motivo <span *ngIf="descuento > 0" class="req">*</span></label>
+        <textarea
+          id="motivo"
+          name="motivo"
+          rows="3"
+          [(ngModel)]="motivo"
+          [disabled]="!(descuento > 0)"
+          placeholder="Motivo del descuento"></textarea>
+      </div>
+
+      <div class="summary">
+        <div class="summary-row total-row">
+          <span class="summary-label">Total a pagar</span>
+          <span class="summary-value">${{ total | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formas de Pago -->
+    <div class="card card--grow">
+      <div class="formas-header">
+        <h2 class="section-title">Formas de Pago</h2>
+        <button type="button" class="btn-outline btn-add" (click)="agregarLinea()">
+          <i class="fas fa-plus"></i> Agregar
+        </button>
+      </div>
+
+      <table class="prices-table">
+        <thead>
+          <tr>
+            <th>FORMA DE PAGO</th>
+            <th>IMPORTE</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let linea of pagos; let i = index">
+            <td>
+              <select class="fp-select" [(ngModel)]="linea.fp" [name]="'fp_' + i">
+                <option *ngFor="let fp of formasPago" [ngValue]="fp.id">{{ fp.nomfp }}</option>
+              </select>
+            </td>
+            <td>
+              <div class="price-input-wrapper">
+                <span class="currency-symbol">$</span>
+                <input
+                  type="number"
+                  class="price-input"
+                  step="0.01"
+                  min="0"
+                  [(ngModel)]="linea.importe"
+                  [name]="'importe_' + i"
+                  placeholder="0.00">
+              </div>
+            </td>
+            <td class="action-cell">
+              <button
+                type="button"
+                class="btn-icon btn-delete"
+                [disabled]="pagos.length <= 1"
+                (click)="quitarLinea(i)"
+                title="Quitar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="summary">
+        <div class="summary-row" [class.summary-error]="restante !== 0">
+          <span class="summary-label">Restante</span>
+          <span class="summary-value">${{ restante | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</app-shared-modal>

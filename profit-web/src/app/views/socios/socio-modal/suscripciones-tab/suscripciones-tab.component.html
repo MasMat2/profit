@@ -11,23 +11,17 @@
     </div>
     <div class="info-row">
       <span class="info-label">Importe:</span>
-      <span class="info-value">${{ (socio.precio ?? 0) - (socio.descuento ?? 0) | number:'1.2-2' }}</span>
+      <span class="info-value">${{ socio.precio ?? 0 | number:'1.2-2' }}</span>
     </div>
 
-    <div class="two-col pago-actions">
-      <div class="form-field">
-        <label for="formaPago">Forma de Pago</label>
-        <select id="formaPago" [(ngModel)]="selectedFp" name="formaPago">
-          <option *ngFor="let fp of formasPago" [ngValue]="fp.id">{{ fp.nomfp }}</option>
-        </select>
-      </div>
+    <div class="pago-actions">
       <button
         type="button"
         class="btn-outline btn-pagar"
-        [disabled]="isPaying || !selectedFp"
-        (click)="pagarProximaMensualidad()">
+        [disabled]="!socioId"
+        (click)="abrirCobro()">
         <i class="fas fa-cash-register"></i>
-        {{ isPaying ? 'Procesando...' : 'Pagar Próxima Membresía' }}
+        Cobrar Mensualidad
       </button>
     </div>
   </div>
@@ -71,3 +65,11 @@
   </div>
 
 </div>
+
+<app-cobrar-mensualidad-modal
+  *ngIf="showCobrarModal"
+  [socioId]="socioId!"
+  [importeBase]="socio.precio ?? 0"
+  (pagada)="onPagada($event)"
+  (closed)="showCobrarModal = false">
+</app-cobrar-mensualidad-modal>

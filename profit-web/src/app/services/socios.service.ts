@@ -65,6 +65,18 @@ export interface Mensualidad {
   cancelado: number;
 }
 
+export interface PagoLinea {
+  fp: number;
+  importe: number;
+}
+
+export interface PagarMensualidadDto {
+  pagos: PagoLinea[];
+  descuento?: number;
+  motivo?: string;
+  autoriza?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -97,8 +109,8 @@ export class SociosService {
     return this.http.get<Mensualidad[]>(`${this.apiUrl}/${id}/mensualidades`);
   }
 
-  pagarMensualidad(id: number, fp: number): Observable<Socio> {
-    return this.http.post<Socio>(`${this.apiUrl}/${id}/pagar-mensualidad`, { fp });
+  pagarMensualidad(id: number, dto: PagarMensualidadDto): Observable<Socio> {
+    return this.http.post<Socio>(`${this.apiUrl}/${id}/pagar-mensualidad`, dto);
   }
 
 }

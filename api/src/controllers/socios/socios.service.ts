@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { DatabaseService } from '../../database/database.service';
 import { CajaService } from '../caja/caja.service';
-import { sql } from 'kysely';
+import { sql, Transaction } from 'kysely';
+import { DB } from '../../database/database.types';
 
 export interface CreateSocioDto {
   nomsocio: string;
@@ -33,8 +34,16 @@ export interface CambiarClaseDto {
   periodo: string;
 }
 
-export interface PagarMensualidadDto {
+export interface PagoLineaDto {
   fp: number;
+  importe: number;
+}
+
+export interface PagarMensualidadDto {
+  pagos: PagoLineaDto[];
+  descuento?: number;
+  motivo?: string;
+  autoriza?: number;
 }
 
 const EMPTY_DATE = new Date('1900-01-01T00:00:00');
@@ -54,6 +63,10 @@ function formatClasesField(claseIds: number[]): string {
 
 function formatCurrency(value: number): string {
   return value.toLocaleString('es-MX', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+}
+
+function round2(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 @Injectable()
@@ -372,12 +385,7 @@ export class SociosService {
 
     const rows = await db
       .selectFrom('tbsocios')
-      .leftJoin('tbhuellas', join =>
-        join
-          .onRef('tbhuellas.socio', '=', 'tbsocios.socio')
-          .on('tbhuellas.huella', 'is not', null),
-      )
-      .select([
+      .select((eb) => [
         'tbsocios.id',
         'tbsocios.socio',
         'tbsocios.nomsocio',
@@ -388,18 +396,25 @@ export class SociosService {
         'tbsocios.becado',
         'tbsocios.importepago',
         'tbsocios.fecnvo',
-        sql<number>`count(tbhuellas.id)`.as('huellaCount'),
+        eb
+          .exists(
+            eb
+              .selectFrom('tbhuellas')
+              .select('tbhuellas.id')
+              .whereRef('tbhuellas.socio', '=', 'tbsocios.socio')
+              .where('tbhuellas.huella', 'is not', null),
+          )
+          .as('tieneHuella'),
       ])
-      .groupBy('tbsocios.id')
       .orderBy('tbsocios.nomsocio', 'asc')
       .execute();
 
-    return rows.map(({ huellaCount, activo, becado, ...rest }) => ({
+    return rows.map(({ tieneHuella, activo, becado, ...rest }) => ({
       ...rest,
       activo,
       becado,
       estatus: becado === 1 ? 'Becado' : activo === 1 ? 'Activo' : 'Inactivo',
-      tieneHuella: Number(huellaCount) > 0,
+      tieneHuella: Boolean(tieneHuella),
     }));
   }
 
@@ -437,6 +452,29 @@ export class SociosService {
   async pagarMensualidad(id: number, dto: PagarMensualidadDto) {
     await this.cajaService.assertAbierta();
 
+    // Validaciones de entrada (replican el cobro de BDK: N formas de pago + descuento opcional).
+    const pagos = dto.pagos ?? [];
+    if (pagos.length === 0) {
+      throw new BadRequestException('Debe capturar al menos una forma de pago');
+    }
+    for (const linea of pagos) {
+      if (!linea.fp) {
+        throw new BadRequestException('Cada pago debe tener una forma de pago');
+      }
+      if (!(Number(linea.importe) > 0)) {
+        throw new BadRequestException('Cada pago debe tener un importe mayor a 0');
+      }
+    }
+
+    const descuento = round2(Number(dto.descuento ?? 0));
+    if (descuento < 0) {
+      throw new BadRequestException('El descuento no puede ser negativo');
+    }
+    const motivo = (dto.motivo ?? '').trim();
+    if (descuento > 0 && !motivo) {
+      throw new BadRequestException('El motivo del descuento es obligatorio');
+    }
+
     const db = this.db.getKysely();
 
     await db.transaction().execute(async (trx) => {
@@ -454,13 +492,15 @@ export class SociosService {
 
       let pendiente = await trx
         .selectFrom('tbmensualidades')
-        .select(['idmens', 'total'])
+        .select(['idmens', 'importe'])
         .where('socio', '=', socio.socio)
         .where('cancelado', '=', 0)
         .where('pagado', '=', 0)
         .orderBy('fecha', 'asc')
         .executeTakeFirst();
 
+      // Si no existe un cargo pendiente, se crea igual que BDK: importe = ImportePago,
+      // descuento = 0, total = importe, saldo = importe (el descuento se aplica al pagar).
       if (!pendiente) {
         const maxIdMensRow = await trx
           .selectFrom('tbmensualidades')
@@ -469,8 +509,6 @@ export class SociosService {
         const nuevoIdMens = Number(maxIdMensRow?.maxId ?? 0) + 1;
 
         const importe = Number(socio.importepago);
-        const descuento = Number(socio.descpo);
-        const total = importe - descuento;
         const fechaCargo = socio.diapago && new Date(socio.diapago).getTime() > 0 ? socio.diapago : now;
         const fechaLabel = new Date(fechaCargo).toLocaleDateString('en-GB').replace(/\//g, '/');
 
@@ -480,7 +518,7 @@ export class SociosService {
             autcan: 0,
             cancelado: 0,
             descrip: `SUSCRIPCION MENSUAL${fechaLabel}`,
-            descuento,
+            descuento: 0,
             envia: 1,
             factura: '',
             fecha: fechaCargo,
@@ -494,50 +532,67 @@ export class SociosService {
             motivo: '',
             notas: '',
             pagado: 0,
-            saldo: total,
+            saldo: importe,
             socio: socio.socio,
-            total,
+            total: importe,
             usumod: 0,
             usunvo: 1,
           })
           .execute();
 
-        pendiente = { idmens: nuevoIdMens, total } as any;
+        pendiente = { idmens: nuevoIdMens, importe: String(importe) } as any;
       }
 
-      const totalPagar = Number(pendiente!.total);
+      const importeBase = Number(pendiente!.importe);
+      const totalConDescuento = round2(importeBase - descuento);
 
-      const maxIdingRow = await trx
-        .selectFrom('tbingresos')
-        .select(sql<string>`coalesce(max(iding), 0)`.as('maxId'))
-        .executeTakeFirst();
-      const nuevoIding = Number(maxIdingRow?.maxId ?? 0) + 1;
+      if (totalConDescuento < 0) {
+        throw new BadRequestException('El descuento no puede ser mayor al importe de la mensualidad');
+      }
 
-      await trx
-        .insertInto('tbingresos')
-        .values({
-          cancelado: 0,
-          corte: 0,
-          envia: 1,
-          fecha: now,
-          fecmod: EMPTY_DATE,
-          fecnvo: now,
-          fp: dto.fp,
-          iding: nuevoIding,
-          idmens: pendiente!.idmens,
-          importe: totalPagar,
-          referencia: '',
-          socio: socio.socio,
-          ticket: 0,
-          usuario: 1,
-          usumod: 0,
-          usunvo: 1,
-        })
-        .execute();
+      const sumaPagos = round2(pagos.reduce((acc, p) => acc + Number(p.importe), 0));
+      if (sumaPagos !== totalConDescuento) {
+        throw new BadRequestException(
+          `La suma de los pagos ($${formatCurrency(sumaPagos)}) debe ser igual al total con descuento ($${formatCurrency(totalConDescuento)})`,
+        );
+      }
+
+      // Un registro en tbingresos por cada forma de pago (como BDK: max(iding)+1 por fila).
+      for (const linea of pagos) {
+        const maxIdingRow = await trx
+          .selectFrom('tbingresos')
+          .select(sql<string>`coalesce(max(iding), 0)`.as('maxId'))
+          .executeTakeFirst();
+        const nuevoIding = Number(maxIdingRow?.maxId ?? 0) + 1;
+
+        await trx
+          .insertInto('tbingresos')
+          .values({
+            cancelado: 0,
+            corte: 0,
+            envia: 1,
+            fecha: now,
+            fecmod: EMPTY_DATE,
+            fecnvo: now,
+            fp: linea.fp,
+            iding: nuevoIding,
+            idmens: pendiente!.idmens,
+            importe: round2(Number(linea.importe)),
+            referencia: '',
+            socio: socio.socio,
+            ticket: 0,
+            usuario: 1,
+            usumod: 0,
+            usunvo: 1,
+          })
+          .execute();
+      }
 
       await trx
         .updateTable('tbmensualidades')
         .set({
+          descuento,
+          total: totalConDescuento,
           pagado: 1,
           saldo: 0,
           fecpago: now,
@@ -547,6 +602,39 @@ export class SociosService {
         } as any)
         .where('idmens', '=', pendiente!.idmens)
         .execute();
+
+      // Registro del descuento en tbdescuentos (solo si aplica), como BDK: max(iddesc)+1.
+      if (descuento > 0) {
+        const maxIddescRow = await trx
+          .selectFrom('tbdescuentos')
+          .select(sql<string>`coalesce(max(iddesc), 0)`.as('maxId'))
+          .executeTakeFirst();
+        const nuevoIddesc = Number(maxIddescRow?.maxId ?? 0) + 1;
+
+        await trx
+          .insertInto('tbdescuentos')
+          .values({
+            autdes: dto.autoriza ?? 1,
+            cancelado: 0,
+            corte: 0,
+            descuento,
+            envia: 1,
+            fecha: now,
+            fecmod: EMPTY_DATE,
+            fecnvo: now,
+            iddesc: nuevoIddesc,
+            idmens: pendiente!.idmens,
+            importe: importeBase,
+            motivo,
+            socio: socio.socio,
+            ticket: 0,
+            total: totalConDescuento,
+            usuario: 1,
+            usumod: 0,
+            usunvo: 1,
+          })
+          .execute();
+      }
 
       const modo = await trx
         .selectFrom('tbmodospago')
@@ -565,12 +653,13 @@ export class SociosService {
         .where('id', '=', id)
         .executeTakeFirst();
 
+      const logDescuento = descuento > 0 ? ` con descuento de $${formatCurrency(descuento)}` : '';
       await trx
         .insertInto('tblogsocio')
         .values({
           socio: socio.socio,
           usuario: 1,
-          log: `Pagó mensualidad de $${formatCurrency(totalPagar)}`,
+          log: `Pagó mensualidad de $${formatCurrency(totalConDescuento)}${logDescuento}`,
           usunvo: 1,
           fecnvo: now,
           usumod: 0,
