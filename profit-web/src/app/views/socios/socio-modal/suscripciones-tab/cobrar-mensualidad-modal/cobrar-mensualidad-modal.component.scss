@@ -13,6 +13,11 @@
   .card--grow {
     min-width: 0;                      // permite que la tabla encoja/scrollee dentro de la card
   }
+
+  // Se apila en una sola columna cuando la modal es angosta (mismo patrón que administracion).
+  @container (max-width: 760px) {
+    grid-template-columns: 1fr;        // Resumen arriba, Formas de Pago abajo, cada card a todo el ancho
+  }
 }
 
 .summary {
@@ -71,7 +76,8 @@
 }
 
 .fp-select {
-  width: 100%;
+  width: 240px;                       // ancho fijo para columnas compactas y alineadas entre renglones
+  max-width: 100%;                    // permite encoger en vez de desbordar cuando la modal es angosta
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--surface-border);
   border-radius: 6px;
@@ -88,6 +94,8 @@
 }
 
 .prices-table {
+  width: auto;                        // ajusta al contenido en vez del width:100% compartido
+
   .price-input-wrapper .price-input {
     max-width: 130px;
   }
@@ -122,6 +130,26 @@
     &:hover:not(:disabled) {
       background-color: var(--danger-color-hover);
       border-color: var(--danger-color);
+    }
+  }
+}
+
+// Ajustes para pantallas de teléfono: controles fluidos y tabla a todo el ancho.
+@container (max-width: 460px) {
+  .formas-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .fp-select {
+    width: 100%;
+  }
+
+  .prices-table {
+    width: 100%;
+
+    .price-input-wrapper .price-input {
+      max-width: none;
     }
   }
 }
