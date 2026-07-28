@@ -8,6 +8,12 @@
   align-items: flex-start;
   background-color: var(--surface-c);
 
+  // Se apila en una sola columna cuando la modal es angosta (mismo patrón que cobrar-mensualidad-modal).
+  @container (max-width: 760px) {
+    flex-direction: column;
+    align-items: stretch;   // sin esto, flex-start deja las cards al ancho del contenido en vez de a todo el ancho
+  }
+
   > .card {
     flex: 1;
     min-width: 0;
@@ -99,5 +105,22 @@
   .btn-outline {
     flex: 1;
     min-width: 180px;
+  }
+}
+
+// Ajustes para pantallas de teléfono: campos de dos columnas y anchos fijos se vuelven fluidos.
+@container (max-width: 460px) {
+  // .two-col vive en _shared.scss como `.cards-row .card .two-col` (1fr 1fr);
+  // se usa la misma cadena de selectores para igualar/superar su especificidad.
+  .cards-row .card .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .diapago-field {
+    max-width: 100%;
+  }
+
+  .class-actions .btn-outline {
+    min-width: 0;
   }
 }
