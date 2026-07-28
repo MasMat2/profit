@@ -16,6 +16,7 @@
 
   // Se apila en una sola columna cuando la modal es angosta (mismo patrón que administracion).
   @container (max-width: 760px) {
+    gap: 0;
     grid-template-columns: 1fr;        // Resumen arriba, Formas de Pago abajo, cada card a todo el ancho
   }
 }
@@ -135,7 +136,7 @@
 }
 
 // Ajustes para pantallas de teléfono: controles fluidos y tabla a todo el ancho.
-@container (max-width: 460px) {
+@container (max-width: 550px) {
   .formas-header {
     flex-wrap: wrap;
     gap: 0.5rem;
