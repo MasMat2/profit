@@ -15,7 +15,7 @@ export class SharedModalComponent {
   @Input() modalTitle: string = "";
   @Input() showSaveButton: boolean = true;
   @Input() size: 'small' | 'medium' | 'large' = 'medium'; // Default size
-  @Input() viewportWidth?: string; // e.g. '45vw', '600px' — overrides size
+  @Input() viewportWidth?: number; // vw percentage, e.g. 60 for 60vw — overrides size
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<void>();
