@@ -5,6 +5,7 @@ import { SharedModalComponent } from '@components/shared-modal/shared-modal.comp
 import { ToastService } from '@services/shared/toast.service';
 import { PagoLinea, Socio, SociosService } from '@services/socios.service';
 import { FormaPago, FormasPagoService } from '@services/formas-pago.service';
+import { TicketCobroData } from './ticket-cobro-modal/ticket-cobro-modal.component';
 
 interface PagoRow {
   fp?: number;
@@ -22,7 +23,7 @@ export class CobrarMensualidadModalComponent implements OnInit {
   @Input() socioId!: number;
   @Input() importeBase = 0;
   @Output() closed = new EventEmitter<void>();
-  @Output() pagada = new EventEmitter<Socio>();
+  @Output() pagada = new EventEmitter<{ socio: Socio; ticket: TicketCobroData }>();
 
   formasPago: FormaPago[] = [];
   isLoading = false;
@@ -125,7 +126,28 @@ export class CobrarMensualidadModalComponent implements OnInit {
         next: (socio) => {
           this.isPaying = false;
           this.toast.show('Cobro registrado correctamente', 'success');
-          this.pagada.emit(socio);
+
+          const items = [
+            {
+              quantity: 1,
+              description: socio.clase?.nombre ?? socio.periodicidad ?? 'Suscripción Mensual',
+              price: this.importeBase,
+            },
+          ];
+          const pagos = this.pagos.map((p) => ({
+            formaPago: this.formasPago.find((f) => f.id === p.fp)?.nomfp ?? 'Pago',
+            importe: Number(p.importe),
+          }));
+          const ticket: TicketCobroData = {
+            date: new Date(),
+            clientName: socio.nomsocio,
+            memberNumber: socio.socio,
+            items,
+            pagos,
+            descuento: this.descuento || 0,
+            total: this.total,
+          };
+          this.pagada.emit({ socio, ticket });
         },
         error: (err) => {
           this.isPaying = false;

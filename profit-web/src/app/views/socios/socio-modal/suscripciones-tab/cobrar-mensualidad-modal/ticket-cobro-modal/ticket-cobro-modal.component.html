@@ -1,0 +1,97 @@
+<div class="ticket-backdrop" (click)="onClose()">
+  <div class="ticket-card" (click)="$event.stopPropagation()">
+
+    <div class="receipt-content printable-ticket">
+      <!-- Logo -->
+      <div class="receipt-logo">
+        <img [src]="negocio.logoUrl" [alt]="negocio.nombre + ' Logo'">
+      </div>
+
+      <!-- Business Info -->
+      <div class="business-info">
+        <p>{{ negocio.direccion }}</p>
+        <p>Tel: {{ negocio.telefono }}</p>
+        <p>RFC: {{ negocio.rfc }}</p>
+      </div>
+
+      <!-- Receipt Title -->
+      <div class="receipt-title">
+        <h1>Recibo de Pago</h1>
+      </div>
+
+      <!-- Receipt Details -->
+      <div class="receipt-details">
+        <div class="detail-row">
+          <strong>Fecha:</strong> {{ data.date | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div class="detail-row">
+          <strong>Cliente:</strong> {{ data.clientName }}
+        </div>
+        <div class="detail-row" *ngIf="data.memberNumber">
+          <strong>No. de Socio:</strong> {{ data.memberNumber }}
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Items Table -->
+      <div class="items-table">
+        <div class="table-header">
+          <div class="col-qty">Cant.</div>
+          <div class="col-desc">Descripción</div>
+          <div class="col-total">Total</div>
+        </div>
+
+        <div class="table-row" *ngFor="let item of data.items">
+          <div class="col-qty">{{ item.quantity }}</div>
+          <div class="col-desc">{{ item.description }}</div>
+          <div class="col-total">${{ item.price | number:'1.2-2' }}</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Discount -->
+      <div class="receipt-discount" *ngIf="data.descuento && data.descuento > 0">
+        <strong>Descuento:</strong>
+        <span>-${{ data.descuento | number:'1.2-2' }}</span>
+      </div>
+
+      <!-- Total -->
+      <div class="receipt-total">
+        <strong>Total:</strong>
+        <span class="total-amount">${{ data.total | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Desglose de Formas de Pago -->
+      <div class="payment-breakdown">
+        <strong>Forma de Pago</strong>
+        <div class="payment-row" *ngFor="let pago of data.pagos">
+          <span>{{ pago.formaPago }}</span>
+          <span>${{ pago.importe | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <!-- Reference -->
+      <div class="payment-info" *ngIf="data.paymentReference">
+        <strong>Referencia:</strong> {{ data.paymentReference }}
+      </div>
+
+      <!-- Thank You Message -->
+      <div class="thank-you">
+        ¡My body my profit!
+      </div>
+    </div>
+
+    <!-- Print Button -->
+    <div class="print-button-container">
+      <button type="button" class="btn-save" (click)="printReceipt()">
+        <i class="fas fa-print"></i>
+        Imprimir Ticket
+      </button>
+    </div>
+
+  </div>
+</div>

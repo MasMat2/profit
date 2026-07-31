@@ -3,11 +3,15 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from '@services/shared/toast.service';
 import { Mensualidad, Socio, SociosService } from '@services/socios.service';
 import { CobrarMensualidadModalComponent } from './cobrar-mensualidad-modal/cobrar-mensualidad-modal.component';
+import {
+  TicketCobroData,
+  TicketCobroModalComponent,
+} from './cobrar-mensualidad-modal/ticket-cobro-modal/ticket-cobro-modal.component';
 
 @Component({
   selector: 'app-socio-suscripciones-tab',
   standalone: true,
-  imports: [CommonModule, CobrarMensualidadModalComponent],
+  imports: [CommonModule, CobrarMensualidadModalComponent, TicketCobroModalComponent],
   templateUrl: './suscripciones-tab.component.html',
   styleUrls: ['./suscripciones-tab.component.scss'],
 })
@@ -21,6 +25,8 @@ export class SuscripcionesTabComponent implements OnChanges {
   isLoadingMensualidades = false;
 
   showCobrarModal = false;
+  showTicketModal = false;
+  ticketData?: TicketCobroData;
 
   constructor(
     private sociosService: SociosService,
@@ -68,9 +74,11 @@ export class SuscripcionesTabComponent implements OnChanges {
     this.showCobrarModal = true;
   }
 
-  onPagada(socio: Socio): void {
-    this.socio = { ...socio };
+  onPagada(res: { socio: Socio; ticket: TicketCobroData }): void {
+    this.socio = { ...res.socio };
+    this.ticketData = res.ticket;
     this.showCobrarModal = false;
+    this.showTicketModal = true; // encadena: abre el ticket
     this.loadMensualidades();
   }
 }

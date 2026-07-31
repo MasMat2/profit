@@ -75,6 +75,24 @@ body, html {
 :root {
     --primary-color: #F97316; /* Naranja (Tailwind Orange 500) */
     --text-color-secondary: #6B7280; /* Secundario (gris) */
-  
+
   }
-  
+
+/* --- IMPRESIÓN DE TICKETS --- */
+/* Muestra solo el recibo (.printable-ticket) y oculta el resto de la app y el
+   chrome del modal. Debe ser global: los estilos scoped de componente no
+   alcanzan a `body *`. */
+@media print {
+  body { overflow: visible !important; } /* body pone overflow:hidden por defecto */
+  body * { visibility: hidden !important; }
+  .printable-ticket,
+  .printable-ticket * { visibility: visible !important; }
+  .printable-ticket {
+    position: absolute;
+    inset: 0;
+    margin: 0 auto;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+}

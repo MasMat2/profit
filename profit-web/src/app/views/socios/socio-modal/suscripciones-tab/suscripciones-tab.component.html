@@ -73,3 +73,9 @@
   (pagada)="onPagada($event)"
   (closed)="showCobrarModal = false">
 </app-cobrar-mensualidad-modal>
+
+<app-ticket-cobro-modal
+  *ngIf="showTicketModal && ticketData"
+  [data]="ticketData"
+  (closed)="showTicketModal = false">
+</app-ticket-cobro-modal>
