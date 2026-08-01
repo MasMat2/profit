@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { SharedModalComponent } from '@components/shared-modal/shared-modal.component';
 import { GeneralTabComponent } from './general-tab/general-tab.component';
 import { SuscripcionesTabComponent } from './suscripciones-tab/suscripciones-tab.component';
+import { LogTabComponent } from './log-tab/log-tab.component';
 
 type SocioTab = 'general' | 'suscripciones' | 'ventas' | 'log';
 
 @Component({
   selector: 'app-socio-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModalComponent, GeneralTabComponent, SuscripcionesTabComponent],
+  imports: [CommonModule, FormsModule, SharedModalComponent, GeneralTabComponent, SuscripcionesTabComponent, LogTabComponent],
   templateUrl: './socio-modal.component.html',
   styleUrls: ['./socio-modal.component.scss'],
 })

@@ -65,6 +65,17 @@ export interface Mensualidad {
   cancelado: number;
 }
 
+export type LogTipo = 'precio' | 'clase' | 'pago' | 'alta' | 'baja' | 'datos' | 'general';
+
+export interface LogSocio {
+  id: number;
+  fecha: Date | string;
+  usuario: number;
+  usuarioNombre: string | null;
+  log: string;
+  tipo: LogTipo;
+}
+
 export interface PagoLinea {
   fp: number;
   importe: number;
@@ -107,6 +118,10 @@ export class SociosService {
 
   getMensualidades(id: number): Observable<Mensualidad[]> {
     return this.http.get<Mensualidad[]>(`${this.apiUrl}/${id}/mensualidades`);
+  }
+
+  getLogs(id: number): Observable<LogSocio[]> {
+    return this.http.get<LogSocio[]>(`${this.apiUrl}/${id}/logs`);
   }
 
   pagarMensualidad(id: number, dto: PagarMensualidadDto): Observable<Socio> {

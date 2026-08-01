@@ -35,6 +35,11 @@ export class SociosController {
     return this.sociosService.getMensualidades(id);
   }
 
+  @Get(':id/logs')
+  getLogs(@Param('id', ParseIntPipe) id: number) {
+    return this.sociosService.getLogs(id);
+  }
+
   @Post(':id/pagar-mensualidad')
   pagarMensualidad(@Param('id', ParseIntPipe) id: number, @Body() body: PagarMensualidadDto) {
     return this.sociosService.pagarMensualidad(id, body);

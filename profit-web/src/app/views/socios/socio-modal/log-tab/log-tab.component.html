@@ -1,0 +1,38 @@
+<div *ngIf="isLoading" class="loading-state">
+  <i class="fas fa-spinner fa-spin"></i> Cargando...
+</div>
+
+<div *ngIf="!isLoading" class="tab-content-log">
+
+  <div *ngIf="logs.length === 0" class="tab-placeholder">
+    <i class="fas fa-history"></i>
+    <p>No hay modificaciones registradas</p>
+  </div>
+
+  <div *ngIf="logs.length > 0" class="card log-card">
+    <h3 class="section-title">Log de Modificaciones</h3>
+
+    <div class="logs-scroll">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Movimiento</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of logs">
+            <td class="col-fecha">{{ l.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td class="col-usuario">{{ l.usuarioNombre || '-' }}</td>
+            <td class="col-movimiento">
+              <i class="fas log-icon" [ngClass]="[iconoDe(l.tipo), 'log-icon--' + l.tipo]"></i>
+              <span>{{ l.log }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

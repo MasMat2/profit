@@ -55,9 +55,9 @@
   </div>
 
   <!-- ── Tab: Log de Modificaciones ───────────────────────────────── -->
-  <div *ngIf="activeTab === 'log'" class="tab-placeholder">
-    <i class="fas fa-history"></i>
-    <p>Próximamente</p>
-  </div>
+  <app-socio-log-tab
+    *ngIf="activeTab === 'log'"
+    [socioId]="socioId">
+  </app-socio-log-tab>
 
 </app-shared-modal>

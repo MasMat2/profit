@@ -69,6 +69,29 @@ function round2(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+export type LogTipo = 'precio' | 'clase' | 'pago' | 'alta' | 'baja' | 'datos' | 'general';
+
+// El log de BDK es texto libre, así que el tipo se deduce de la frase para poder
+// pintar un icono por movimiento. Se compara sin acentos: la BD es latin1 y las
+// filas históricas pueden llegar mal decodificadas.
+function derivarTipoLog(log: string): LogTipo {
+  const t = log
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
+
+  // El orden importa: las reglas más específicas van primero. 'de alta'/'de baja'
+  // llevan preposición para no chocar con palabras como "falta" o "rebaja".
+  if (t.includes('modific') && t.includes('importe')) return 'precio';
+  if (t.includes('clase')) return 'clase';
+  if (t.includes('modific')) return 'datos';
+  if (t.includes('de alta') || t.includes('inscrib') || t.includes('reactiv')) return 'alta';
+  if (t.includes('de baja')) return 'baja';
+  if (t.includes('pago') || t.includes('mensualidad') || t.includes('suscripcion')) return 'pago';
+
+  return 'general';
+}
+
 @Injectable()
 export class SociosService {
   constructor(
@@ -446,6 +469,39 @@ export class SociosService {
       descuento: Number(row.descuento),
       total: Number(row.total),
       saldo: Number(row.saldo),
+    }));
+  }
+
+  async getLogs(id: number) {
+    const db = this.db.getKysely();
+
+    const socio = await db
+      .selectFrom('tbsocios')
+      .select(['socio'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+
+    if (!socio) {
+      throw new NotFoundException(`Socio con id ${id} no encontrado`);
+    }
+
+    // leftJoin: las filas históricas pueden apuntar a usuarios que ya no existen.
+    const rows = await db
+      .selectFrom('tblogsocio as l')
+      .leftJoin('tbusuarios as u', 'u.usuario', 'l.usuario')
+      .select(['l.id', 'l.log', 'l.fecnvo', 'l.usuario', 'u.nombre'])
+      .where('l.socio', '=', socio.socio)
+      .orderBy('l.fecnvo', 'desc')
+      .orderBy('l.id', 'desc')
+      .execute();
+
+    return rows.map((row) => ({
+      id: row.id,
+      fecha: row.fecnvo,
+      usuario: row.usuario,
+      usuarioNombre: row.nombre?.trim() || null,
+      log: row.log.trim(),
+      tipo: derivarTipoLog(row.log),
     }));
   }
 
