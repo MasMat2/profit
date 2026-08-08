@@ -17,10 +17,15 @@
       <!-- Receipt Title -->
       <div class="receipt-title">
         <h1>Recibo de Pago</h1>
+        <span class="receipt-stamp receipt-stamp--cancelado" *ngIf="data.cancelado">Cancelado</span>
+        <span class="receipt-stamp" *ngIf="data.reimpresion && !data.cancelado">Reimpresión</span>
       </div>
 
       <!-- Receipt Details -->
       <div class="receipt-details">
+        <div class="detail-row" *ngIf="data.folio">
+          <strong>Folio:</strong> {{ data.folio }}
+        </div>
         <div class="detail-row">
           <strong>Fecha:</strong> {{ data.date | date:'dd/MM/yyyy HH:mm' }}
         </div>
@@ -29,6 +34,9 @@
         </div>
         <div class="detail-row" *ngIf="data.memberNumber">
           <strong>No. de Socio:</strong> {{ data.memberNumber }}
+        </div>
+        <div class="detail-row" *ngIf="data.cajero">
+          <strong>Atendió:</strong> {{ data.cajero }}
         </div>
       </div>
 
@@ -55,6 +63,9 @@
       <div class="receipt-discount" *ngIf="data.descuento && data.descuento > 0">
         <strong>Descuento:</strong>
         <span>-${{ data.descuento | number:'1.2-2' }}</span>
+      </div>
+      <div class="receipt-discount-motivo" *ngIf="data.descuento && data.descuento > 0 && data.motivoDescuento">
+        Motivo: {{ data.motivoDescuento }}
       </div>
 
       <!-- Total -->

@@ -1,0 +1,93 @@
+<div class="component-page"> <!-- Necessary pattern -->
+  <div class="page-header"> <!-- Necessary pattern -->
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Registro de Tickets</h1>
+      <p class="page-subtitle">Consulta y reimpresión de cobros de mensualidades</p>
+    </div>
+  </div>
+
+  <div class="page-content"> <!-- Necessary pattern -->
+
+    <div class="filtros-card">
+      <div class="form-field">
+        <label for="desde">Desde</label>
+        <input id="desde" type="date" [(ngModel)]="desde" />
+      </div>
+
+      <div class="form-field">
+        <label for="hasta">Hasta</label>
+        <input id="hasta" type="date" [(ngModel)]="hasta" />
+      </div>
+
+      <div class="form-field filtro-socio">
+        <label for="socio">Socio</label>
+        <input
+          id="socio"
+          type="text"
+          placeholder="Nombre o número de socio"
+          [(ngModel)]="socio"
+          (keydown.enter)="buscar()" />
+      </div>
+
+      <div class="form-field">
+        <label for="estatus">Estatus</label>
+        <select id="estatus" [(ngModel)]="estatus">
+          <option value="pagados">Pagados</option>
+          <option value="pendientes">Pendientes</option>
+          <option value="cancelados">Cancelados</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+
+      <div class="filtros-actions">
+        <button type="button" class="btn-save" [disabled]="isLoading" (click)="buscar()">
+          <i class="fas fa-search"></i>
+          Buscar
+        </button>
+        <button type="button" class="btn-outline" [disabled]="isLoading" (click)="limpiar()">
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <div class="resumen-strip">
+      <span *ngIf="isLoading" class="resumen-loading">
+        <i class="fas fa-spinner fa-spin"></i> Cargando...
+      </span>
+
+      <ng-container *ngIf="!isLoading">
+        <span class="resumen-item">
+          <i class="fas fa-receipt"></i>
+          Tickets: <strong>{{ tickets.length }}</strong>
+        </span>
+        <span class="resumen-item">
+          <i class="fas fa-cash-register"></i>
+          Cobrado: <strong>${{ totalCobrado | number:'1.2-2' }}</strong>
+        </span>
+        <span class="resumen-item">
+          <i class="fas fa-tags"></i>
+          Descuentos: <strong>${{ totalDescuentos | number:'1.2-2' }}</strong>
+        </span>
+      </ng-container>
+    </div>
+
+    <div class="grid-shell">
+      <app-grid
+        [rowData]="tickets"
+        [columnDefs]="columnDefs"
+        [rowHeight]="56"
+        (rowClicked)="verTicket($event)"
+      />
+    </div>
+
+  </div>
+</div>
+
+<app-ticket-cobro-modal
+  *ngIf="showTicketModal && ticketData"
+  [data]="ticketData"
+  (closed)="showTicketModal = false">
+</app-ticket-cobro-modal>

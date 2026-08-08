@@ -72,6 +72,10 @@
 
 /* Receipt Title */
 .receipt-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   text-align: left;
   margin-bottom: 20px;
 }
@@ -80,6 +84,23 @@
   font-size: 18px;
   font-weight: bold;
   margin: 0;
+}
+
+/* Sello de reimpresión / cancelación (sólo lo usa el Registro de Tickets). */
+.receipt-stamp {
+  padding: 3px 10px;
+  border: 1px solid #999;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.receipt-stamp--cancelado {
+  border-color: #991b1b;
+  color: #991b1b;
 }
 
 /* Receipt Details */
@@ -149,6 +170,12 @@
 
 .receipt-discount strong {
   font-weight: bold;
+}
+
+.receipt-discount-motivo {
+  font-size: 12px;
+  font-style: italic;
+  margin: -4px 0 10px;
 }
 
 /* Total */

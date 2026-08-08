@@ -22,6 +22,12 @@ export interface TicketCobroData {
   descuento?: number; // se muestra si > 0
   total: number;
   paymentReference?: string;
+  // Opcionales: sólo los llena el Registro de Tickets al reimprimir un cobro pasado.
+  folio?: number;
+  cajero?: string | null;
+  motivoDescuento?: string | null;
+  cancelado?: boolean;
+  reimpresion?: boolean;
 }
 
 @Component({

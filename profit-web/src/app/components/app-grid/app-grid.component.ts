@@ -1,9 +1,19 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   ColDef,
+  Column,
+  ColumnState,
   GridApi,
   GridReadyEvent,
   GridSizeChangedEvent,
@@ -40,16 +50,39 @@ ModuleRegistry.registerModules([AllCommunityModule]);
         (paginationChanged)="onPaginationChanged($event)"
       />
 
-      <div class="pagination-bar" *ngIf="totalPages > 0">
+      <div class="pagination-bar">
         <div class="pagination-info">
           <span>Filas por página:</span>
           <select [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange($event)">
             <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
           </select>
           <span class="row-count">{{ rowRangeLabel }}</span>
+
+          <div class="chooser" #chooser>
+            <button type="button" class="chooser-btn" (click)="toggleColumnsPanel()">
+              <i class="fas fa-table-columns"></i>
+              Columnas
+            </button>
+
+            <div class="chooser-panel" *ngIf="showColumnsPanel">
+              <label class="chooser-item" *ngFor="let c of columnasChooser">
+                <input
+                  type="checkbox"
+                  [checked]="c.visible"
+                  (change)="toggleColumna(c.colId, $any($event.target).checked)"
+                />
+                <span>{{ c.header }}</span>
+              </label>
+
+              <div class="chooser-actions">
+                <button type="button" (click)="mostrarTodasLasColumnas()">Mostrar todas</button>
+                <button type="button" (click)="restablecerColumnas()">Restablecer</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="pagination-controls">
+        <div class="pagination-controls" *ngIf="totalPages > 0">
           <button class="page-btn" (click)="goToFirst()" [disabled]="currentPage === 1" title="Primera página">
             <i class="fas fa-angle-double-left"></i>
           </button>
@@ -95,6 +128,76 @@ ModuleRegistry.registerModules([AllCommunityModule]);
       min-height: 0;
     }
 
+    /* ── Selector de columnas (vive en la barra de paginación) ────────────── */
+
+    .chooser {
+      position: relative; /* ancla del panel flotante */
+      margin-left: 8px;
+    }
+
+    /* Se abre hacia arriba: el botón está en el borde inferior del grid. */
+    .chooser-panel {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 0;
+      z-index: 20;
+      min-width: 210px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .chooser-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chooser-item input[type='checkbox'] {
+      width: 15px;
+      height: 15px;
+      accent-color: #F97316;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .chooser-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid #E5E7EB;
+    }
+
+    .chooser-actions button {
+      border: none;
+      background: none;
+      padding: 4px 6px;
+      border-radius: 6px;
+      color: #F97316;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .chooser-item:hover,
+    .chooser-actions button:hover {
+      background: #FFF7ED;
+    }
+
     .pagination-bar {
       display: flex;
       align-items: center;
@@ -115,7 +218,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
       gap: 8px;
     }
 
-    .pagination-info select {
+    .pagination-info select,
+    .chooser-btn {
       border: 1px solid #E5E7EB;
       border-radius: 6px;
       padding: 3px 6px;
@@ -124,6 +228,15 @@ ModuleRegistry.registerModules([AllCommunityModule]);
       background: #fff;
       cursor: pointer;
       outline: none;
+    }
+
+    .chooser-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
     }
 
     .row-count {
@@ -150,7 +263,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .page-btn:hover:not(:disabled) {
+    .page-btn:hover:not(:disabled),
+    .chooser-btn:hover {
       background: #FFF7ED;
       border-color: #F97316;
       color: #F97316;
@@ -202,7 +316,15 @@ export class AppGridComponent {
   @Input() rowHeight: number = 52;
   @Output() rowClicked = new EventEmitter<any>();
 
+  @ViewChild('chooser') chooserRef?: ElementRef<HTMLElement>;
+
   private gridApi!: GridApi;
+
+  showColumnsPanel = false;
+  columnasChooser: { colId: string; header: string; visible: boolean }[] = [];
+
+  // Visibilidad declarada en columnDefs (el `hide`), para poder restablecerla.
+  private estadoInicial: ColumnState[] = [];
 
   currentPage = 1;
   totalPages = 0;
@@ -220,6 +342,9 @@ export class AppGridComponent {
     headerTextColor: '#6B7280',
     fontFamily: 'Inter, sans-serif',
     fontSize: 14,
+    // Sin separadores verticales: las columnas se distinguen por el espaciado.
+    headerColumnBorder: false,
+    columnBorder: false,
   });
 
   localeText = {
@@ -310,7 +435,60 @@ export class AppGridComponent {
 
   onGridReady(event: GridReadyEvent): void {
     this.gridApi = event.api;
+    // Se captura antes de que el usuario toque nada: es el estado por defecto.
+    this.estadoInicial = event.api.getColumnState().map((c) => ({ colId: c.colId, hide: !!c.hide }));
     event.api.sizeColumnsToFit();
+  }
+
+  toggleColumnsPanel(): void {
+    this.showColumnsPanel = !this.showColumnsPanel;
+    if (this.showColumnsPanel) this.refrescarListaColumnas();
+  }
+
+  toggleColumna(colId: string, visible: boolean): void {
+    this.gridApi?.setColumnsVisible([colId], visible);
+    const item = this.columnasChooser.find((c) => c.colId === colId);
+    if (item) item.visible = visible;
+    this.gridApi?.sizeColumnsToFit();
+  }
+
+  mostrarTodasLasColumnas(): void {
+    this.gridApi?.setColumnsVisible(this.columnasChooser.map((c) => c.colId), true);
+    this.refrescarListaColumnas();
+    this.gridApi?.sizeColumnsToFit();
+  }
+
+  restablecerColumnas(): void {
+    this.gridApi?.applyColumnState({ state: this.estadoInicial });
+    this.refrescarListaColumnas();
+    this.gridApi?.sizeColumnsToFit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    this.showColumnsPanel = false;
+  }
+
+  // Se compara contra el wrapper del selector y no contra todo el componente, para que
+  // un clic sobre el grid también cierre el panel.
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.showColumnsPanel) return;
+    if (!this.chooserRef?.nativeElement.contains(event.target as Node)) {
+      this.showColumnsPanel = false;
+    }
+  }
+
+  // getColumns() incluye las ocultas y respeta el orden de columnDefs.
+  private refrescarListaColumnas(): void {
+    this.columnasChooser = (this.gridApi?.getColumns() ?? []).map((col: Column) => {
+      const def = col.getColDef();
+      return {
+        colId: col.getColId(),
+        header: def.headerName ?? String(def.field ?? col.getColId()),
+        visible: col.isVisible(),
+      };
+    });
   }
 
   onGridSizeChanged(event: GridSizeChangedEvent): void {

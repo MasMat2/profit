@@ -6,7 +6,7 @@ import { CobrarMensualidadModalComponent } from './cobrar-mensualidad-modal/cobr
 import {
   TicketCobroData,
   TicketCobroModalComponent,
-} from './cobrar-mensualidad-modal/ticket-cobro-modal/ticket-cobro-modal.component';
+} from '@components/ticket-cobro-modal/ticket-cobro-modal.component';
 
 @Component({
   selector: 'app-socio-suscripciones-tab',

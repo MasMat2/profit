@@ -5,7 +5,7 @@ import { SharedModalComponent } from '@components/shared-modal/shared-modal.comp
 import { ToastService } from '@services/shared/toast.service';
 import { PagoLinea, Socio, SociosService } from '@services/socios.service';
 import { FormaPago, FormasPagoService } from '@services/formas-pago.service';
-import { TicketCobroData } from './ticket-cobro-modal/ticket-cobro-modal.component';
+import { TicketCobroData } from '@components/ticket-cobro-modal/ticket-cobro-modal.component';
 
 interface PagoRow {
   fp?: number;

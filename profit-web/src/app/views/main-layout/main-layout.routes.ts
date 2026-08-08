@@ -41,6 +41,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.CajaComponent
                     ),
             },
+            {
+                path: 'registro-tickets',
+                loadComponent: () =>
+                    import('../registro-tickets/registro-tickets.component').then(
+                        (m) => m.RegistroTicketsComponent
+                    ),
+            },
         ]
     },
 ];
