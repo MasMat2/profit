@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 
 export type TicketEstatusFiltro = 'pagados' | 'pendientes' | 'cancelados' | 'todos';
 
+// La vista solo manda el rango; `socio` y `estatus` los cubren los filtros de
+// columna del grid, pero el endpoint los sigue soportando.
 export interface TicketsFiltros {
   desde?: string; // 'yyyy-MM-dd'
   hasta?: string; // 'yyyy-MM-dd'

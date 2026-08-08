@@ -11,46 +11,23 @@
 
   <div class="page-content"> <!-- Necessary pattern -->
 
-    <div class="filtros-card">
+    <!-- Solo el rango: es lo que decide qué trae el backend. Socio y estatus se
+         filtran desde las columnas del grid. -->
+    <div class="filtros-row">
       <div class="form-field">
         <label for="desde">Desde</label>
-        <input id="desde" type="date" [(ngModel)]="desde" />
+        <input id="desde" type="date" [(ngModel)]="desde" (keydown.enter)="buscar()" />
       </div>
 
       <div class="form-field">
         <label for="hasta">Hasta</label>
-        <input id="hasta" type="date" [(ngModel)]="hasta" />
+        <input id="hasta" type="date" [(ngModel)]="hasta" (keydown.enter)="buscar()" />
       </div>
 
-      <div class="form-field filtro-socio">
-        <label for="socio">Socio</label>
-        <input
-          id="socio"
-          type="text"
-          placeholder="Nombre o número de socio"
-          [(ngModel)]="socio"
-          (keydown.enter)="buscar()" />
-      </div>
-
-      <div class="form-field">
-        <label for="estatus">Estatus</label>
-        <select id="estatus" [(ngModel)]="estatus">
-          <option value="pagados">Pagados</option>
-          <option value="pendientes">Pendientes</option>
-          <option value="cancelados">Cancelados</option>
-          <option value="todos">Todos</option>
-        </select>
-      </div>
-
-      <div class="filtros-actions">
-        <button type="button" class="btn-save" [disabled]="isLoading" (click)="buscar()">
-          <i class="fas fa-search"></i>
-          Buscar
-        </button>
-        <button type="button" class="btn-outline" [disabled]="isLoading" (click)="limpiar()">
-          Limpiar
-        </button>
-      </div>
+      <button type="button" class="btn-save" [disabled]="isLoading" (click)="buscar()">
+        <i class="fas fa-search"></i>
+        Buscar
+      </button>
     </div>
 
     <div class="resumen-strip">

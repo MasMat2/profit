@@ -45,7 +45,9 @@ export class TicketsService {
 
     const desde = parseFecha(query.desde);
     const hasta = parseFecha(query.hasta, true);
-    const estatus = query.estatus ?? 'pagados';
+    // Por defecto se devuelve todo el rango (pagados, pendientes y cancelados): el
+    // grid trae su propio filtro por columna sobre el estatus.
+    const estatus = query.estatus ?? 'todos';
     const socio = (query.socio ?? '').trim();
 
     let consulta = db

@@ -10,12 +10,7 @@ import {
 } from '@components/ticket-cobro-modal/ticket-cobro-modal.component';
 import { MenuService } from '@services/shared/menu.service';
 import { ToastService } from '@services/shared/toast.service';
-import {
-  Ticket,
-  TicketEstatusFiltro,
-  TicketsFiltros,
-  TicketsService,
-} from '@services/tickets.service';
+import { Ticket, TicketsFiltros, TicketsService } from '@services/tickets.service';
 
 const ESTATUS_STYLES: Record<string, string> = {
   Pagado: 'background:#D1FAE5;color:#065F46',
@@ -47,8 +42,6 @@ export class RegistroTicketsComponent implements OnInit {
 
   desde = '';
   hasta = '';
-  socio = '';
-  estatus: TicketEstatusFiltro = 'pagados';
 
   showTicketModal = false;
   ticketData?: TicketCobroData;
@@ -131,20 +124,20 @@ export class RegistroTicketsComponent implements OnInit {
     this.buscar();
   }
 
+  // Los totales solo consideran cobros vigentes: la lista ahora incluye pendientes
+  // y cancelados para que el filtro de la columna Estatus tenga sentido.
   get totalCobrado(): number {
-    return this.tickets.reduce((acc, t) => acc + (t.pagado === 1 ? t.total : 0), 0);
+    return this.tickets.reduce((acc, t) => acc + (this.esCobroVigente(t) ? t.total : 0), 0);
   }
 
   get totalDescuentos(): number {
-    return this.tickets.reduce((acc, t) => acc + t.descuento, 0);
+    return this.tickets.reduce((acc, t) => acc + (this.esCobroVigente(t) ? t.descuento : 0), 0);
   }
 
   buscar(): void {
     const filtros: TicketsFiltros = {
       desde: this.desde,
       hasta: this.hasta,
-      socio: this.socio.trim(),
-      estatus: this.estatus,
     };
 
     this.isLoading = true;
@@ -158,13 +151,6 @@ export class RegistroTicketsComponent implements OnInit {
         this.toast.show('Error al cargar los tickets.', 'error');
       },
     });
-  }
-
-  limpiar(): void {
-    this.aplicarRangoPorDefecto();
-    this.socio = '';
-    this.estatus = 'pagados';
-    this.buscar();
   }
 
   verTicket(row: Ticket): void {
@@ -199,6 +185,10 @@ export class RegistroTicketsComponent implements OnInit {
         this.toast.show('Error al cargar el detalle del ticket.', 'error');
       },
     });
+  }
+
+  private esCobroVigente(t: Ticket): boolean {
+    return t.pagado === 1 && t.cancelado !== 1;
   }
 
   private aplicarRangoPorDefecto(): void {
