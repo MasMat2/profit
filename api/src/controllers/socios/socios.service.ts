@@ -46,6 +46,11 @@ export interface PagarMensualidadDto {
   autoriza?: number;
 }
 
+export interface GuardarHuellaDto {
+  huella: string;
+  dedo?: number;
+}
+
 const EMPTY_DATE = new Date('1900-01-01T00:00:00');
 
 const PERIODO_COLS = [
@@ -439,6 +444,108 @@ export class SociosService {
       estatus: becado === 1 ? 'Becado' : activo === 1 ? 'Activo' : 'Inactivo',
       tieneHuella: Boolean(tieneHuella),
     }));
+  }
+
+  // tbhuellas.socio referencia tbsocios.socio (la llave de negocio), no tbsocios.id,
+  // así que los endpoints resuelven la llave antes de tocar la tabla.
+  private async getSocioKey(id: number): Promise<number> {
+    const socio = await this.db
+      .getKysely()
+      .selectFrom('tbsocios')
+      .select(['socio'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+
+    if (!socio) {
+      throw new NotFoundException(`Socio con id ${id} no encontrado`);
+    }
+
+    return socio.socio;
+  }
+
+  async getHuella(id: number) {
+    const socioKey = await this.getSocioKey(id);
+
+    // Los socios dados de alta desde la app quedan con socio = 0 (ver createSocio),
+    // así que compartirían fila en tbhuellas. Se tratan como "sin huella".
+    if (socioKey === 0) {
+      return null;
+    }
+
+    const row = await this.db
+      .getKysely()
+      .selectFrom('tbhuellas')
+      .select(['huella', 'dedo', 'fecnvo'])
+      .where('socio', '=', socioKey)
+      .where('huella', 'is not', null)
+      .executeTakeFirst();
+
+    // Sin huella es el caso normal, no un 404.
+    return row ? { huella: row.huella, dedo: row.dedo, fecnvo: row.fecnvo } : null;
+  }
+
+  async guardarHuella(id: number, dto: GuardarHuellaDto) {
+    if (!dto.huella?.trim()) {
+      throw new BadRequestException('La huella es requerida');
+    }
+
+    const db = this.db.getKysely();
+    const socioKey = await this.getSocioKey(id);
+
+    if (socioKey === 0) {
+      throw new BadRequestException(
+        'El socio no tiene número de socio asignado, no se le puede registrar una huella',
+      );
+    }
+
+    const now = new Date();
+    const dedo = dto.dedo ?? 1;
+
+    const existente = await db
+      .selectFrom('tbhuellas')
+      .select(['id'])
+      .where('socio', '=', socioKey)
+      .executeTakeFirst();
+
+    if (existente) {
+      await db
+        .updateTable('tbhuellas')
+        .set({ huella: dto.huella, dedo, usumod: 1, fecmod: now, envia: 1 })
+        .where('id', '=', existente.id)
+        .execute();
+    } else {
+      await db
+        .insertInto('tbhuellas')
+        .values({
+          socio: socioKey,
+          huella: dto.huella,
+          dedo,
+          envia: 1,
+          usunvo: 1,
+          fecnvo: now,
+          usumod: 0,
+          fecmod: EMPTY_DATE,
+        })
+        .execute();
+    }
+
+    return this.getHuella(id);
+  }
+
+  async eliminarHuella(id: number) {
+    const socioKey = await this.getSocioKey(id);
+
+    if (socioKey === 0) {
+      return { deleted: false };
+    }
+
+    await this.db
+      .getKysely()
+      .deleteFrom('tbhuellas')
+      .where('socio', '=', socioKey)
+      .execute();
+
+    return { deleted: true };
   }
 
   async getMensualidades(id: number) {

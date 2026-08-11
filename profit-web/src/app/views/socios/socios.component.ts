@@ -166,6 +166,9 @@ export class SociosComponent implements OnInit {
 
   cerrarModalSocio(): void {
     this.isSocioModalOpen = false;
+    // La huella se guarda fuera del flujo de "Guardar", así que la columna
+    // correspondiente sólo se entera al recargar aquí.
+    this.loadPartners();
   }
 
   onSocioGuardado(): void {

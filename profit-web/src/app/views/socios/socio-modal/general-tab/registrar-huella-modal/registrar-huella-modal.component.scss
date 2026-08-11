@@ -1,0 +1,635 @@
+/*
+ * Registro de huella — se mantiene deliberadamente la estética del diseño
+ * importado de la rama `demo` (fingerprint-modal + fingerprint-capture), por eso
+ * la paleta va en hex fijos y no usa las variables de tema del proyecto. En tema
+ * oscuro el modal se queda claro, igual que en el demo.
+ * El overlay propio sigue el patrón de components/ticket-cobro-modal, que
+ * tampoco usa el shared-modal.
+ */
+
+/* ── Contenedor del modal ─────────────────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-container {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 2px solid #FFEDD5;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%);
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+
+    .header-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #F97316, #EA580C);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-size: 24px;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+    }
+
+    .header-text {
+      flex: 1;
+
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 4px 0;
+      }
+
+      .partner-name {
+        font-size: 14px;
+        color: #F97316;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6B7280;
+    font-size: 20px;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: #FEE2E2;
+      color: #EF4444;
+    }
+  }
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  background: #FFFFFF;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px 32px;
+  border-top: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  gap: 12px;
+
+  .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: #F3F4F6;
+    color: #374151;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #E5E7EB;
+      border-color: #9CA3AF;
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+/* ── Estado del lector ────────────────────────────────────────────────────── */
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+
+  .status-indicator {
+    font-size: 20px;
+
+    i {
+      color: #F59E0B;
+      animation: pulse-opacity 2s infinite;
+    }
+  }
+
+  .status-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .status-label {
+      font-weight: 700;
+      font-size: 14px;
+      color: #111827;
+    }
+
+    .status-message {
+      font-size: 12px;
+      color: #6B7280;
+    }
+  }
+}
+
+/* Override de la .loading-state global: el modal usa la paleta fija del demo. */
+.loading-state {
+  padding: 2rem;
+  text-align: center;
+  color: #6B7280;
+}
+
+/* ── Progreso de capturas ─────────────────────────────────────────────────── */
+
+.capture-progress {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #FFF7ED, #FFFFFF);
+  border-radius: 12px;
+  border: 2px solid #FFEDD5;
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+
+    .progress-count {
+      font-size: 16px;
+      color: #F97316;
+      font-weight: 700;
+    }
+  }
+
+  .progress-indicators {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    .progress-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #E5E7EB;
+        z-index: 0;
+      }
+
+      &.completed:not(:last-child)::after {
+        background: linear-gradient(90deg, #F97316, #EA580C);
+      }
+
+      .step-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #F3F4F6;
+        border: 3px solid #E5E7EB;
+        color: #9CA3AF;
+        font-size: 18px;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 1;
+      }
+
+      &.completed .step-icon {
+        background: linear-gradient(135deg, #F97316, #EA580C);
+        border-color: #F97316;
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+        animation: checkPulse 0.5s ease;
+      }
+
+      &.active .step-icon {
+        background: #FFF7ED;
+        border-color: #F97316;
+        color: #F97316;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .step-number {
+        font-size: 11px;
+        font-weight: 700;
+        color: #9CA3AF;
+      }
+
+      &.completed .step-number,
+      &.active .step-number {
+        color: #F97316;
+      }
+    }
+  }
+}
+
+/* ── Área de captura ──────────────────────────────────────────────────────── */
+
+.capture-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fingerprint-placeholder {
+  position: relative;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 3px dashed #F97316;
+  border-radius: 12px;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &.capturing {
+    border-color: #EA580C;
+    background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%);
+    animation: pulse-border 1.5s infinite;
+  }
+
+  .fingerprint-icon {
+    font-size: 80px;
+    color: #F97316;
+    opacity: 0.3;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+
+  &.capturing .fingerprint-icon {
+    opacity: 0.6;
+    animation: rotate 2s linear infinite;
+  }
+
+  .capture-instruction {
+    text-align: center;
+    color: #6B7280;
+    font-size: 14px;
+    margin: 0;
+    font-weight: 500;
+
+    &.capturing-text {
+      color: #EA580C;
+      font-weight: 700;
+      animation: pulse-text 1s infinite;
+    }
+  }
+
+  .scan-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        #F97316 50%,
+        transparent 100%
+      );
+      box-shadow: 0 0 10px #F97316;
+      animation: scan 2s linear infinite;
+    }
+  }
+}
+
+.capture-actions {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.btn-capture,
+.btn-clear {
+  padding: 14px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+
+  i {
+    font-size: 16px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-capture {
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+.btn-clear {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #F59E0B;
+
+  &:hover:not(:disabled) {
+    background: #FDE68A;
+    border-color: #D97706;
+  }
+}
+
+/* ── Huella registrada ────────────────────────────────────────────────────── */
+
+.fingerprint-captured {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.captured-image-container {
+  position: relative;
+  background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+  border: 2px solid #F97316;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+
+  .fingerprint-icon-large {
+    font-size: 120px;
+    color: #F97316;
+    opacity: 0.4;
+
+    i {
+      display: block;
+    }
+  }
+
+  .quality-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    .quality-percentage {
+      margin-left: 4px;
+      font-size: 11px;
+      opacity: 0.9;
+    }
+  }
+}
+
+.captured-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #F9FAFB;
+  border-radius: 8px;
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #374151;
+    font-size: 14px;
+
+    i {
+      color: #10B981;
+      font-size: 16px;
+    }
+
+    &.quality-info i {
+      color: #F97316;
+    }
+
+    span {
+      font-weight: 500;
+    }
+  }
+}
+
+.captured-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Instrucciones ────────────────────────────────────────────────────────── */
+
+.info-box {
+  background: #F0F9FF;
+  border: 1px solid #3B82F6;
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+
+  i {
+    color: #3B82F6;
+    font-size: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+    color: #1E3A8A;
+    font-size: 12px;
+    line-height: 1.6;
+
+    strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+  }
+}
+
+/* ── Animaciones ──────────────────────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// El demo declaraba `pulse` dos veces (escala/halo y opacidad), así que la
+// segunda pisaba a la primera. Aquí van separadas para conservar ambos efectos.
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(249, 115, 22, 0);
+  }
+}
+
+@keyframes pulse-opacity {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+@keyframes checkPulse {
+  0%   { transform: scale(0.8); }
+  50%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: #F97316;
+    box-shadow: 0 0 0 rgba(249, 115, 22, 0);
+  }
+  50% {
+    border-color: #EA580C;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+  }
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.7; }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes scan {
+  0%   { top: 0; }
+  100% { top: 100%; }
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95%;
+    max-width: none;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .fingerprint-placeholder {
+    min-height: 200px;
+    padding: 30px 15px;
+
+    .fingerprint-icon {
+      font-size: 60px;
+    }
+  }
+
+  .captured-image-container {
+    min-height: 200px;
+  }
+}

@@ -88,6 +88,17 @@ export interface PagarMensualidadDto {
   autoriza?: number;
 }
 
+export interface HuellaSocio {
+  huella: string;
+  dedo: number;
+  fecnvo: Date | string;
+}
+
+export interface GuardarHuellaDto {
+  huella: string;
+  dedo?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -126,6 +137,18 @@ export class SociosService {
 
   pagarMensualidad(id: number, dto: PagarMensualidadDto): Observable<Socio> {
     return this.http.post<Socio>(`${this.apiUrl}/${id}/pagar-mensualidad`, dto);
+  }
+
+  getHuella(id: number): Observable<HuellaSocio | null> {
+    return this.http.get<HuellaSocio | null>(`${this.apiUrl}/${id}/huella`);
+  }
+
+  guardarHuella(id: number, dto: GuardarHuellaDto): Observable<HuellaSocio> {
+    return this.http.post<HuellaSocio>(`${this.apiUrl}/${id}/huella`, dto);
+  }
+
+  eliminarHuella(id: number): Observable<{ deleted: boolean }> {
+    return this.http.delete<{ deleted: boolean }>(`${this.apiUrl}/${id}/huella`);
   }
 
 }

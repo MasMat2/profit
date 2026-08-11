@@ -162,9 +162,15 @@
     </div>
 
     <div class="card huella-card">
-      <button type="button" class="btn-outline" (click)="registrarHuella()">
+      <button
+        type="button"
+        class="btn-outline"
+        [class.tiene-huella]="tieneHuella"
+        [disabled]="!isEditMode"
+        [title]="isEditMode ? '' : 'Guarda el socio antes de registrar su huella'"
+        (click)="registrarHuella()">
         <i class="fas fa-fingerprint"></i>
-        Registrar Huella
+        {{ tieneHuella ? 'Huella Registrada' : 'Registrar Huella' }}
       </button>
     </div>
   </div>
@@ -177,3 +183,11 @@
   (asignada)="onClaseAsignada($event)"
   (closed)="onSeleccionarClaseModalClosed()">
 </app-seleccionar-clase-modal>
+
+<app-registrar-huella-modal
+  *ngIf="showRegistrarHuellaModal && socioId"
+  [socioId]="socioId"
+  [nombreSocio]="socio.nomsocio"
+  (guardada)="onHuellaGuardada($event)"
+  (closed)="onRegistrarHuellaModalClosed()">
+</app-registrar-huella-modal>

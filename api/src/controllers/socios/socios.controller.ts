@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
-import { CambiarClaseDto, CreateSocioDto, PagarMensualidadDto, SociosService, UpdateSocioDto } from './socios.service';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { CambiarClaseDto, CreateSocioDto, GuardarHuellaDto, PagarMensualidadDto, SociosService, UpdateSocioDto } from './socios.service';
 
 @Controller('socios')
 export class SociosController {
@@ -43,5 +43,20 @@ export class SociosController {
   @Post(':id/pagar-mensualidad')
   pagarMensualidad(@Param('id', ParseIntPipe) id: number, @Body() body: PagarMensualidadDto) {
     return this.sociosService.pagarMensualidad(id, body);
+  }
+
+  @Get(':id/huella')
+  getHuella(@Param('id', ParseIntPipe) id: number) {
+    return this.sociosService.getHuella(id);
+  }
+
+  @Post(':id/huella')
+  guardarHuella(@Param('id', ParseIntPipe) id: number, @Body() body: GuardarHuellaDto) {
+    return this.sociosService.guardarHuella(id, body);
+  }
+
+  @Delete(':id/huella')
+  eliminarHuella(@Param('id', ParseIntPipe) id: number) {
+    return this.sociosService.eliminarHuella(id);
   }
 }

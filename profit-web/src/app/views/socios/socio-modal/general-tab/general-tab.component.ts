@@ -6,11 +6,12 @@ import { ModalService } from '@services/shared/modal.service';
 import { ToastService } from '@services/shared/toast.service';
 import { CreateSocioDto, Socio, SociosService, UpdateSocioDto } from '@services/socios.service';
 import { SeleccionarClaseModalComponent } from './seleccionar-clase-modal/seleccionar-clase-modal.component';
+import { RegistrarHuellaModalComponent } from './registrar-huella-modal/registrar-huella-modal.component';
 
 @Component({
   selector: 'app-socio-general-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, SeleccionarClaseModalComponent],
+  imports: [CommonModule, FormsModule, SeleccionarClaseModalComponent, RegistrarHuellaModalComponent],
   templateUrl: './general-tab.component.html',
   styleUrls: ['./general-tab.component.scss'],
 })
@@ -22,6 +23,8 @@ export class GeneralTabComponent implements OnChanges, OnInit, OnDestroy {
   isSaving = false;
 
   showSeleccionarClaseModal = false;
+  showRegistrarHuellaModal = false;
+  tieneHuella = false;
 
   socio: Partial<Socio> = {};
 
@@ -79,6 +82,7 @@ export class GeneralTabComponent implements OnChanges, OnInit, OnDestroy {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['socioId']) {
+      this.tieneHuella = false;
       if (this.socioId) {
         this.loadSocio(this.socioId);
       } else {
@@ -99,6 +103,12 @@ export class GeneralTabComponent implements OnChanges, OnInit, OnDestroy {
         this.toast.show('Error al cargar la información del socio.', 'error');
       },
     });
+
+    // Sólo alimenta la etiqueta del botón; si falla se queda en "Registrar Huella".
+    this.sociosService.getHuella(id).subscribe({
+      next: (huella) => (this.tieneHuella = !!huella),
+      error: () => (this.tieneHuella = false),
+    });
   }
 
   cambiarClase(): void {
@@ -115,7 +125,15 @@ export class GeneralTabComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   registrarHuella(): void {
-    console.log('Registrar huella - pendiente de implementar submodal');
+    this.showRegistrarHuellaModal = true;
+  }
+
+  onHuellaGuardada(registrada: boolean): void {
+    this.tieneHuella = registrada;
+  }
+
+  onRegistrarHuellaModalClosed(): void {
+    this.showRegistrarHuellaModal = false;
   }
 
   modificarDiaPago(): void {

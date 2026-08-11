@@ -40,8 +40,19 @@
           background: var(--surface-a);
           width: auto;
 
-          &:hover {
+          &:hover:not(:disabled) {
             background: var(--primary-color);
+          }
+
+          // Sólo se registra huella sobre un socio ya guardado (ver isEditMode).
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          &.tiene-huella {
+            background: var(--primary-color);
+            color: var(--primary-color-text);
           }
         }
       }
