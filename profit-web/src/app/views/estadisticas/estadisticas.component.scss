@@ -1,0 +1,160 @@
+// Component-specific styles.
+// Shared classes (.component-page, .page-header, .form-field, .btn-save,
+// .btn-outline) live in src/styles/_shared.scss.
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.filtros-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-shrink: 0;
+
+  .form-field {
+    margin-bottom: 0;
+    min-width: 160px;
+  }
+
+  // El botón de agregar se va a la derecha: es una acción sobre el tablero, no un filtro.
+  .selector-wrapper {
+    margin-left: auto;
+  }
+}
+
+.selector-wrapper {
+  position: relative;
+}
+
+.selector {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 20;
+  width: 300px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  background: var(--surface-a);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.selector-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--surface-c);
+  }
+}
+
+.selector-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: rgba(249, 115, 22, 0.12);
+  color: var(--primary-color);
+  font-size: 0.85rem;
+}
+
+.selector-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  small {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.stats-cell-completo {
+  grid-column: 1 / -1;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  border: 1px dashed var(--surface-border);
+  border-radius: var(--border-radius);
+  color: var(--text-color-secondary);
+
+  i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    opacity: 0.5;
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    max-width: 420px;
+  }
+}
+
+@container (max-width: 760px) {
+  .filtros-row {
+    flex-direction: column;
+    align-items: stretch;
+
+    .form-field {
+      min-width: 0;
+    }
+
+    .selector-wrapper {
+      margin-left: 0;
+    }
+  }
+
+  .selector {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

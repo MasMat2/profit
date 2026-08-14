@@ -42,6 +42,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                     ),
             },
             {
+                path: 'estadisticas',
+                loadComponent: () =>
+                    import('../estadisticas/estadisticas.component').then(
+                        (m) => m.EstadisticasComponent
+                    ),
+            },
+            {
                 path: 'registro-tickets',
                 loadComponent: () =>
                     import('../registro-tickets/registro-tickets.component').then(

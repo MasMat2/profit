@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { sql, SqlBool } from 'kysely';
 import { DatabaseService } from '../../database/database.service';
+import { FormasPagoService } from '../formas-pago/formas-pago.service';
 
 export type TicketEstatusFiltro = 'pagados' | 'pendientes' | 'cancelados' | 'todos';
 
@@ -38,7 +39,10 @@ function parseFecha(valor: string | undefined, finDelDia = false): Date | undefi
 
 @Injectable()
 export class TicketsService {
-  constructor(private readonly db: DatabaseService) {}
+  constructor(
+    private readonly db: DatabaseService,
+    private readonly formasPagoService: FormasPagoService,
+  ) {}
 
   async getTickets(query: ListarTicketsQuery) {
     const db = this.db.getKysely();
@@ -157,7 +161,7 @@ export class TicketsService {
       throw new NotFoundException(`Ticket de mensualidad ${idmens} no encontrado`);
     }
 
-    const nombresFp = await this.getCatalogoFormasPago();
+    const nombresFp = await this.formasPagoService.getCatalogoFormasPago();
 
     const pagos = await db
       .selectFrom('tbingresos')
@@ -204,7 +208,7 @@ export class TicketsService {
     if (idmensList.length === 0) return resultado;
 
     const db = this.db.getKysely();
-    const nombresFp = await this.getCatalogoFormasPago();
+    const nombresFp = await this.formasPagoService.getCatalogoFormasPago();
 
     const pagos = await db
       .selectFrom('tbingresos')
@@ -224,28 +228,5 @@ export class TicketsService {
     }
 
     return resultado;
-  }
-
-  // tbingresos.fp debería referenciar tbformaspago.fp (así lo une BDK), pero el alta de
-  // cobros guarda ahí el 'id' del catálogo. Se indexa por ambas llaves, dando prioridad
-  // a fp, para resolver tanto las filas históricas como las nuevas.
-  private async getCatalogoFormasPago(): Promise<Map<number, string>> {
-    const db = this.db.getKysely();
-
-    const formas = await db
-      .selectFrom('tbformaspago')
-      .select(['id', 'fp', 'nomfp'])
-      .execute();
-
-    const porLlave = new Map<number, string>();
-    for (const forma of formas) {
-      porLlave.set(Number(forma.id), forma.nomfp.trim());
-    }
-    for (const forma of formas) {
-      const fp = Number(forma.fp);
-      if (fp > 0) porLlave.set(fp, forma.nomfp.trim());
-    }
-
-    return porLlave;
   }
 }

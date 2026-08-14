@@ -1,0 +1,59 @@
+<div class="stat-card" [class.collapsed]="!expandida">
+  <div class="card-header" (click)="alternar.emit()">
+    <div class="card-title">
+      <span class="card-icon"><i [class]="opcion.icono"></i></span>
+      <div class="card-title-text">
+        <h3>{{ opcion.titulo }}</h3>
+        <p>{{ opcion.descripcion }}</p>
+      </div>
+    </div>
+
+    <div class="card-actions" (click)="$event.stopPropagation()">
+      <ng-content select="[cardControls]"></ng-content>
+
+      <button
+        type="button"
+        class="card-btn"
+        title="Recargar"
+        [disabled]="cargando"
+        (click)="recargar.emit()"
+      >
+        <i class="fas fa-rotate-right" [class.fa-spin]="cargando"></i>
+      </button>
+      <button
+        type="button"
+        class="card-btn"
+        [title]="expandida ? 'Colapsar' : 'Expandir'"
+        (click)="alternar.emit()"
+      >
+        <i class="fas" [class.fa-chevron-up]="expandida" [class.fa-chevron-down]="!expandida"></i>
+      </button>
+      <button type="button" class="card-btn card-btn-danger" title="Quitar" (click)="quitar.emit()">
+        <i class="fas fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body" *ngIf="expandida">
+    <div class="card-state" *ngIf="cargando">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Cargando...</span>
+    </div>
+
+    <div class="card-state card-state-error" *ngIf="!cargando && error">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>{{ error }}</span>
+      <button type="button" class="btn-outline" (click)="recargar.emit()">Reintentar</button>
+    </div>
+
+    <div class="card-state" *ngIf="!cargando && !error && vacia">
+      <i class="fas fa-inbox"></i>
+      <span>{{ mensajeVacio }}</span>
+    </div>
+
+    <!-- El slot NO va dentro de un *ngIf: el contenido proyectado se instancia en la vista
+         de la tarjeta, y si el ancla queda fuera del DOM las gráficas montan sobre un
+         elemento desconectado. Cada tarjeta decide qué mostrar con `mostrarContenido`. -->
+    <ng-content></ng-content>
+  </div>
+</div>

@@ -19,6 +19,29 @@ export class FormasPagoService {
       .execute();
   }
 
+  // tbingresos.fp debería referenciar tbformaspago.fp (así lo une BDK), pero el alta de
+  // cobros guarda ahí el 'id' del catálogo. Se indexa por ambas llaves, dando prioridad
+  // a fp, para resolver tanto las filas históricas como las nuevas.
+  async getCatalogoFormasPago(): Promise<Map<number, string>> {
+    const db = this.db.getKysely();
+
+    const formas = await db
+      .selectFrom('tbformaspago')
+      .select(['id', 'fp', 'nomfp'])
+      .execute();
+
+    const porLlave = new Map<number, string>();
+    for (const forma of formas) {
+      porLlave.set(Number(forma.id), forma.nomfp.trim());
+    }
+    for (const forma of formas) {
+      const fp = Number(forma.fp);
+      if (fp > 0) porLlave.set(fp, forma.nomfp.trim());
+    }
+
+    return porLlave;
+  }
+
   async createFormaPago(dto: CreateFormaPagoDto) {
     const db = this.db.getKysely();
     const now = new Date();

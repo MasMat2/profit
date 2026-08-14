@@ -7,6 +7,7 @@ import { AsistenciaModule } from './controllers/asistencia/asistencia.module';
 import { SociosModule } from './controllers/socios/socios.module';
 import { CajaModule } from './controllers/caja/caja.module';
 import { TicketsModule } from './controllers/tickets/tickets.module';
+import { EstadisticasModule } from './controllers/estadisticas/estadisticas.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TicketsModule } from './controllers/tickets/tickets.module';
     SociosModule,
     CajaModule,
     TicketsModule,
+    EstadisticasModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,143 @@
+<div class="component-page"> <!-- Necessary pattern -->
+  <div class="page-header"> <!-- Necessary pattern -->
+    <div class="page-header-icon">
+      <i [class]="pageIcon"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Estadísticas</h1>
+      <p class="page-subtitle">Indicadores del gimnasio: ingresos, padrón y asistencia</p>
+    </div>
+  </div>
+
+  <div class="page-content"> <!-- Necessary pattern -->
+
+    <div class="filtros-row">
+      <div class="form-field">
+        <label for="desde">Desde</label>
+        <input id="desde" type="date" [(ngModel)]="desde" (keydown.enter)="aplicarRango()" />
+      </div>
+
+      <div class="form-field">
+        <label for="hasta">Hasta</label>
+        <input id="hasta" type="date" [(ngModel)]="hasta" (keydown.enter)="aplicarRango()" />
+      </div>
+
+      <button type="button" class="btn-save" (click)="aplicarRango()">
+        <i class="fas fa-search"></i>
+        Aplicar
+      </button>
+
+      <div class="selector-wrapper">
+        <button
+          type="button"
+          class="btn-outline"
+          [disabled]="opcionesDisponibles.length === 0"
+          (click)="alternarSelector()"
+        >
+          <i class="fas fa-plus"></i>
+          Agregar Estadística
+        </button>
+
+        <div class="selector" *ngIf="mostrarSelector">
+          <button
+            type="button"
+            class="selector-item"
+            *ngFor="let opcion of opcionesDisponibles"
+            (click)="agregar(opcion.tipo)"
+          >
+            <span class="selector-icon"><i [class]="opcion.icono"></i></span>
+            <span class="selector-text">
+              <strong>{{ opcion.titulo }}</strong>
+              <small>{{ opcion.descripcion }}</small>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="tarjetas.length === 0">
+      <i class="fas fa-chart-pie"></i>
+      <h2>Aún no hay estadísticas</h2>
+      <p>Agrega las que quieras seguir y se quedarán guardadas para la próxima visita.</p>
+    </div>
+
+    <div class="stats-grid" *ngIf="tarjetas.length > 0">
+      <ng-container *ngFor="let tarjeta of tarjetas; trackBy: trackPorId">
+        <div class="stats-cell" [class.stats-cell-completo]="tarjeta.opcion.ancho === 'completo'"
+             [ngSwitch]="tarjeta.opcion.tipo">
+
+          <app-tarjeta-ingresos
+            *ngSwitchCase="'ingresos'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-asistencias
+            *ngSwitchCase="'asistencias'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-altas-bajas
+            *ngSwitchCase="'altas-bajas'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-genero
+            *ngSwitchCase="'genero'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-formas-pago
+            *ngSwitchCase="'formas-pago'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-socios-por-clase
+            *ngSwitchCase="'socios-por-clase'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+
+          <app-tarjeta-adeudos
+            *ngSwitchCase="'adeudos'"
+            [opcion]="tarjeta.opcion"
+            [expandida]="tarjeta.expandida"
+            [desde]="rangoDesde"
+            [hasta]="rangoHasta"
+            (alternar)="alternar(tarjeta)"
+            (quitar)="quitar(tarjeta.id)"
+          />
+        </div>
+      </ng-container>
+    </div>
+
+  </div>
+</div>

@@ -7,6 +7,7 @@ import { FormasPagoController } from './formas-pago.controller';
   imports: [DatabaseModule],
   controllers: [FormasPagoController],
   providers: [FormasPagoService],
+  exports: [FormasPagoService],
 })
 export class FormasPagoModule {}
 
