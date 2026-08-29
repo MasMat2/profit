@@ -1,0 +1,67 @@
+260829  6:39:41	931510 Connect	root@localhost on bdksiste_bdkgym2
+		931510 Query	SET NAMES utf8
+		931510 Query	SET character_set_results = NULL
+		931510 Query	SET SQL_AUTO_IS_NULL = 0
+		931510 Query	Select Abrir From tbapertura
+		931510 Quit	
+260829  6:39:44	931511 Connect	bdk@DESKTOP-VK579FE.localdomain on bdksiste_bdkgym2
+		931511 Query	SET NAMES utf8
+		931511 Query	SET character_set_results = NULL
+		931511 Query	SET SQL_AUTO_IS_NULL = 0
+		931511 Query	Select Abrir From tbapertura
+		931511 Quit	
+260829  6:39:51	931512 Connect	root@localhost on bdksiste_bdkgym2
+		931512 Query	SET NAMES utf8
+		931512 Query	SET character_set_results = NULL
+		931512 Query	SET SQL_AUTO_IS_NULL = 0
+		931512 Query	Select Abrir From tbapertura
+		931512 Quit	
+260829  6:39:54	931513 Connect	bdk@DESKTOP-VK579FE.localdomain on bdksiste_bdkgym2
+		931513 Query	SET NAMES utf8
+		931513 Query	SET character_set_results = NULL
+		931513 Query	SET SQL_AUTO_IS_NULL = 0
+		931513 Query	Select Abrir From tbapertura
+		931513 Quit	
+		931514 Connect	root@localhost on bdksiste_bdkgym2
+		931514 Query	SET NAMES utf8
+		931514 Query	SET character_set_results = NULL
+		931514 Query	SET SQL_AUTO_IS_NULL = 0
+		931514 Query	Select a.Socio,a.NomSocio,a.Activo,a.DiaPago,a.ModoPago,a.Becado,b.NomModoPago,b.cadadias,a.Foto,a.FotoStr,VisitasDisp,FecVenceVis,a.cumpleaños From tbsocios a left join tbmodospago b on a.modopago=b.modopago WHERE a.Socio=9.06300000000000000e+003
+		931514 Quit	
+		931515 Connect	root@localhost on bdksiste_bdkgym2
+		931515 Query	SET NAMES utf8
+		931515 Query	SET character_set_results = NULL
+		931515 Query	SET SQL_AUTO_IS_NULL = 0
+		931515 Query	Select a.*,b.NomClase,b.ControlHR,b.ImpTicketAsist,c.*, SPACE(25) AS NomDias From tbhorariossocio a left join tbclases b on a.clase=b.clase left join tbhorarios c on a.horario=c.horario WHERE a.Socio=9.06300000000000000e+003
+		931515 Quit	
+		931516 Connect	root@localhost on bdksiste_bdkgym2
+		931516 Query	SET NAMES utf8
+		931516 Query	SET character_set_results = NULL
+		931516 Query	SET SQL_AUTO_IS_NULL = 0
+		931516 Query	select fechacred  from tbtickets where socio=9.06300000000000000e+003  and cancelado = 0 and saldo > 0 and plazocred > 0 order by fechacred
+		931516 Quit	
+		931517 Connect	root@localhost on bdksiste_bdkgym2
+		931517 Query	SET NAMES utf8
+		931517 Query	SET character_set_results = NULL
+		931517 Query	SET SQL_AUTO_IS_NULL = 0
+		931517 Query	select cancelado  from tbmensualidades where socio=9.06300000000000000e+003   order by id desc limit 1
+		931517 Quit	
+		931518 Connect	root@localhost on bdksiste_bdkgym2
+		931518 Query	SET NAMES utf8
+		931518 Query	SET character_set_results = NULL
+		931518 Query	SET SQL_AUTO_IS_NULL = 0
+		931518 Query	SELECT * FROM tbasistencia WHERE Envia = 2
+260829  6:39:55	931518 Query	INSERT INTO tbasistencia (ID,SOCIO,FECHA,CLASE,HORARIO,RETARDO,AUTORIZO,MOTIVO,INSTRUCTOR,USUNVO,FECNVO,USUMOD,FECMOD,ENVIA) VALUES (0.00000000000000000e+000 ,9.06300000000000000e+003 ,_latin1'2026-08-29 06:39:54' ,1.60000000000000000e+001 ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,0.00000000000000000e+000 ,_latin1'' ,0.00000000000000000e+000 ,1.00000000000000000e+000 ,_latin1'2026-08-29 06:39:55' ,0.00000000000000000e+000 ,_latin1'1900-01-01 00:00:00' ,1.00000000000000000e+000 )
+		931518 Quit	
+260829  6:40:04	931519 Connect	bdk@DESKTOP-VK579FE.localdomain on bdksiste_bdkgym2
+		931519 Query	SET NAMES utf8
+		931519 Query	SET character_set_results = NULL
+		931519 Query	SET SQL_AUTO_IS_NULL = 0
+		931519 Query	Select Abrir From tbapertura
+		931519 Quit	
+260829  6:40:09	931520 Connect	root@localhost on bdksiste_bdkgym2
+		931520 Query	SET NAMES utf8
+		931520 Query	SET character_set_results = NULL
+		931520 Query	SET SQL_AUTO_IS_NULL = 0
+		931520 Query	Select Abrir From tbapertura
+		931520 Quit	

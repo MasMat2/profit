@@ -1,0 +1,198 @@
+<div class="component-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-icon">
+      <i class="fas fa-fingerprint"></i>
+    </div>
+    <div class="page-header-text">
+      <h1>Registro de Asistencia</h1>
+    </div>
+  </div>
+
+  <div class="page-content">
+  <!-- Contenedor principal -->
+  <div class="access-content">
+    
+    <!-- Panel de verificación -->
+    <div class="verification-panel panel">
+      
+      <!-- Área de lectura de huella -->
+      <div class="fingerprint-area">
+        <div class="fingerprint-icon" [class.scanning]="verificando">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        
+        <h2 class="instruction-text">
+          {{ verificando ? 'Verificando...' : 'Coloca tu huella digital' }}
+        </h2>
+
+        <!-- Estado de carga -->
+        <div class="loading-dots" *ngIf="verificando">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        
+        <!-- DEV_MODE: delete this ng-container and its contents when removing dev mode -->
+        <ng-container *ngIf="DEV_MODE">
+          <div class="dev-input-area">
+            <input 
+              type="text" 
+              class="input-huella"
+              [(ngModel)]="huellaInput"
+              placeholder="ID de socio (modo desarrollo)"
+              (keyup.enter)="verificarHuella()"
+              [disabled]="verificando"
+            >
+            <button 
+              class="btn-verificar"
+              (click)="verificarHuella()"
+              [disabled]="verificando || !huellaInput.trim()"
+            >
+              <i class="fas fa-check"></i>
+              Verificar
+            </button>
+          </div>
+        </ng-container>
+
+        
+        <div class="lector-container">
+          <!-- Problema con el lector: hardware o Lite Client -->
+          <div class="lector-error" *ngIf="errorLector">
+            <p>
+              <i class="fas fa-exclamation-triangle"></i>
+              {{ errorLector }}
+            </p>
+          </div>
+
+          <!-- Problema con el servicio de identificación: es otro problema y otra solución -->
+          <div class="lector-error servicio" *ngIf="errorServicio">
+            <p>
+              <i class="fas fa-server"></i>
+              {{ errorServicio }}
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="help-panel panel">
+      <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+      <ul>
+        <li>
+          <i class="fas fa-hand-point-right"></i>
+          Coloca tu dedo en el lector de huellas
+        </li>
+        <li>
+          <i class="fas fa-clock"></i>
+          Mantén el dedo quieto hasta que se complete la lectura
+        </li>
+        <li>
+          <i class="fas fa-check-double"></i>
+          El sistema verificará automáticamente tu acceso
+        </li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Modal de Resultado (Overlay) -->
+<div class="result-modal-overlay" *ngIf="resultadoAcceso || aviso" (click)="limpiarResultado()">
+  <div class="result-modal" (click)="$event.stopPropagation()">
+
+    <!-- Acceso permitido -->
+    <div class="result-success" *ngIf="resultadoAcceso?.acceso">
+      <button class="btn-close-modal" (click)="limpiarResultado()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      
+      <h3 class="result-title">¡Acceso Permitido!</h3>
+      
+      <div class="client-info" *ngIf="resultadoAcceso?.socio">
+        <div class="client-avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        
+        <div class="client-details">
+          <p class="client-name">{{ resultadoAcceso?.socio?.nombre }}</p>
+          <p class="client-id">ID: {{ resultadoAcceso?.socio?.socio ?? resultadoAcceso?.socio?.id }}</p>
+          
+          <!-- Información de Membresía -->
+          <div class="membership-info" *ngIf="resultadoAcceso?.socio?.tipoMembresia">
+            <div class="membership-badge">
+              <i class="fas fa-id-card"></i>
+              <span>{{ resultadoAcceso?.socio?.tipoMembresia }}</span>
+            </div>
+            
+            <div class="membership-details">
+              <div class="detail-item vencimiento" 
+                   [class]="obtenerEstadoMembresia(resultadoAcceso?.socio?.fechaVencimiento, resultadoAcceso?.socio?.becado).clase">
+                <i class="fas fa-calendar-check"></i>
+                <div>
+                  <small>Próximo pago</small>
+                  <strong>{{ resultadoAcceso?.socio?.fechaVencimiento | date:'dd/MM/yyyy' }}</strong>
+                </div>
+              </div>
+              
+              <div class="detail-item" *ngIf="resultadoAcceso?.socio?.clase">
+                <i class="fas fa-dumbbell"></i>
+                <div>
+                  <small>Clase</small>
+                  <strong>{{ resultadoAcceso?.socio?.clase }}</strong>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                  <small>Visitas</small>
+                  <strong>{{ resultadoAcceso?.socio?.visitasPeriodo ?? 0 }}</strong>
+                </div>
+              </div>
+              
+            </div>
+
+            <ng-container *ngIf="obtenerEstadoMembresia(resultadoAcceso?.socio?.fechaVencimiento, resultadoAcceso?.socio?.becado) as estado">
+              <span class="status-pill" [ngClass]="estado.clase">
+                <i class="fas fa-info-circle"></i>
+                {{ estado.texto }}
+              </span>
+            </ng-container>
+          </div>
+          
+        </div>
+      </div>
+      
+      <div class="timestamp">
+        <i class="fas fa-clock"></i>
+        {{ resultadoAcceso?.fecha | date:'dd/MM/yyyy HH:mm:ss' }}
+      </div>
+    </div>
+
+    <!--
+      Los tres modos de fallo comparten el modal, pero no el mensaje: una captura mala
+      ("lectura") no es una negativa de acceso, y un servicio caído no es culpa del socio.
+    -->
+    <div class="result-error" *ngIf="aviso" [ngClass]="'aviso-' + aviso.tipo">
+      <div class="error-icon">
+        <i class="fas" [ngClass]="aviso.icono"></i>
+      </div>
+
+      <h3 class="result-title">{{ aviso.titulo }}</h3>
+      <p class="error-message">
+        {{ aviso.mensaje }}
+      </p>
+
+      <button class="btn-retry" (click)="limpiarResultado()">
+        <i class="fas fa-redo"></i>
+        Intentar de nuevo
+      </button>
+    </div>
+  </div>
+</div>

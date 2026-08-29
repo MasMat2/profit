@@ -1,0 +1,9 @@
+build/
+logs/
+certs/*.p12
+certs/*.pem
+certs/*.key
+*.log
+.idea/
+*.iml
+.vscode/

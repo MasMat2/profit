@@ -20,6 +20,13 @@ export const MAIN_LAYOUT_ROUTES: Route[] = [
                         (m) => m.ClasesComponent
                     ),
             },
+            {
+                path: 'acceso-clientes',
+                loadComponent: () =>
+                    import('../acceso-cliente/acceso-cliente.component').then(
+                        (m) => m.AccessClientComponent
+                    ),
+            },
         ]
     },
 ];

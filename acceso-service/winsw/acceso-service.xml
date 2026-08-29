@@ -1,0 +1,59 @@
+<!--
+  Configuracion de WinSW para correr acceso-service como servicio de Windows.
+
+  Instalacion en el kiosco:
+    1. Descargar WinSW.NET4.exe y renombrarlo a acceso-service.exe, junto a este XML.
+    2. Copiar acceso-service.jar (de build/) y application.properties al mismo directorio.
+    3. acceso-service.exe install
+       acceso-service.exe start
+
+  Los logs quedan en .\logs\. Para actualizar: stop, reemplazar el jar, start.
+-->
+<service>
+  <id>acceso-service</id>
+  <name>Profit - Servicio de Acceso por Huella</name>
+  <description>Identifica huellas contra los templates del gimnasio y abre el torniquete.</description>
+
+  <executable>java</executable>
+  <!--
+    Dos rutas del SDK que hay que acertar:
+      - dpuareu.jar en el classpath: es la única dependencia externa del servicio.
+      - java.library.path a las DLL nativas (dpuareu_jni.dll y compañía). Si el instalador
+        del U.are.U SDK ya dejó ese directorio en el PATH del sistema se puede quitar, pero
+        explícito evita un UnsatisfiedLinkError difícil de diagnosticar en un kiosco.
+    Usar Lib\x64 con un JRE de 64 bits (Lib\win32 si fuera de 32).
+
+    --enable-native-access silencia el warning de acceso nativo restringido en Java 24+.
+  -->
+  <arguments>-cp "%BASE%\acceso-service.jar;C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\Java\dpuareu.jar" "-Djava.library.path=C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\x64" --enable-native-access=ALL-UNNAMED com.profit.acceso.Main</arguments>
+
+  <workingdirectory>%BASE%</workingdirectory>
+
+  <!--
+    El servicio necesita salida a internet (API) y el puerto COM del torniquete.
+    Cada variable corresponde a una clave de application.properties: la clave en mayúsculas
+    con los puntos convertidos a guión bajo (acceso.api.url -> ACCESO_API_URL).
+  -->
+  <env name="SERVER_PORT" value="8443"/>
+  <env name="ACCESO_API_URL" value="https://api.tudominio.com"/>
+  <env name="ACCESO_API_KEY" value="CAMBIAR-POR-LA-LLAVE-REAL"/>
+  <env name="ACCESO_ALLOWED_ORIGINS" value="https://app.tudominio.com"/>
+  <env name="ACCESO_TURNSTILE_ENABLED" value="true"/>
+  <env name="ACCESO_TURNSTILE_PORT" value="COM3"/>
+  <env name="ACCESO_SSL_KEYSTORE" value="%BASE%\certs\localhost.p12"/>
+  <env name="ACCESO_SSL_PASSWORD" value="CAMBIAR"/>
+
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <onfailure action="restart" delay="60 sec"/>
+  <resetfailure>1 hour</resetfailure>
+
+  <log mode="roll-by-size">
+    <logpath>%BASE%\logs</logpath>
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+</service>
