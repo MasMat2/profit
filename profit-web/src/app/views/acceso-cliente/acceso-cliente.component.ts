@@ -23,11 +23,32 @@ export interface Aviso {
   icono: string;
 }
 
+/**
+ * Lo que permanece en pantalla el resultado de un intento de acceso — el suyo y el del que sigue.
+ *
+ * "Si no es interrumpido": cualquier intento nuevo (huella o tarjeta) pasa por
+ * `limpiarResultado()`, que cancela este temporizador antes de armar el suyo, asi que en una fila
+ * el modal de cada socio lo cierra el siguiente sin esperar los 10 s.
+ */
+const DURACION_RESULTADO_MS = 10000;
+
 const DURACION_AVISO: Record<TipoAviso, number> = {
-  lectura: 25000,
-  denegado: 30000,
-  servicio: 50000
+  lectura: DURACION_RESULTADO_MS,
+  denegado: DURACION_RESULTADO_MS,
+  servicio: DURACION_RESULTADO_MS
 };
+
+/**
+ * Respiro entre cerrar la captura y volver a abrirla. Ver `reArmarCaptura()`.
+ *
+ * `stopAcquisition` es asincrono: con 300 ms el `startAcquisition` siguiente llegaba pisando el
+ * cierre y fallaba con "Communication failure.", que el SDK convierte en `onCommunicationFailed`
+ * — el aviso de Lite Client caido, en un lector que estaba leyendo bien.
+ */
+const RESPIRO_REARMADO_MS = 800;
+
+/** Espera del segundo intento de re-armado, si el primero llega demasiado pronto igual. */
+const REINTENTO_REARMADO_MS = 2000;
 
 const INTERVALO_SALUD_MS = 5 * 60 * 1000;
 
@@ -64,6 +85,12 @@ export class AccessClientComponent implements OnInit, OnDestroy {
   errorServicio: string | null = null;
 
   private sdk: any = null;
+  /** UID del lector en uso, de `enumerateDevices()`. Ver `iniciarCaptura()`. */
+  private lectorUid: string | null = null;
+  /** Captura activa. Sin esto `onDeviceConnected` se realimenta: ver `onDeviceConnected`. */
+  private capturando = false;
+  /** Hay un reintento de re-armado en curso: ver `iniciarCaptura()`. */
+  private reintentandoRearmado = false;
   private temporizadorAviso: ReturnType<typeof setTimeout> | null = null;
   private temporizadorSalud: ReturnType<typeof setInterval> | null = null;
 
@@ -85,6 +112,7 @@ export class AccessClientComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.sdk) {
+      this.capturando = false;
       try {
         this.sdk.stopAcquisition();
       } catch {
@@ -133,6 +161,10 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     this.sdk = new Fingerprint.WebApi();
 
     this.sdk.onSamplesAcquired = (s: any) => {
+      // El lector acaba de entregar una muestra: cualquier aviso de canal caido que siga en
+      // pantalla es viejo. Sin esto un fallo transitorio del re-armado deja el bloque de error
+      // puesto para siempre sobre un lector que funciona.
+      this.errorLector = null;
       try {
         const samples = JSON.parse(s.samples);
         const data: string = samples[0]?.Data;
@@ -141,6 +173,14 @@ export class AccessClientComponent implements OnInit, OnDestroy {
         }
       } catch (err) {
         console.error('Error al procesar la muestra de huella:', err);
+      } finally {
+        // Sin esto solo llega la primera muestra: el lector sigue reportando calidad buena y no
+        // vuelve a emitir `onSamplesAcquired` nunca mas. Lo que re-arma el canal es el
+        // `stopAcquisition` de aqui dentro, no el `startAcquisition` que va detras — medido en el
+        // kiosco: las muestras siguen llegando incluso cuando ese start falla.
+        //
+        // Va en el `finally` para que una muestra que no se pudo parsear no deje el lector mudo.
+        this.reArmarCaptura();
       }
     };
 
@@ -149,6 +189,7 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     this.sdk.onQualityReported = (e: any) => {
       // Si ya hay una identificación en vuelo, la captura fue buena: el reporte de calidad que
       // llegue detrás no debe contradecir el resultado que está por aparecer.
+      this.errorLector = null;
       if (this.verificando) {
         return;
       }
@@ -169,26 +210,43 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     // Desconexión y caída del Lite Client son condiciones persistentes, no eventos puntuales:
     // van al bloque fijo del lector, no al modal.
     this.sdk.onDeviceDisconnected = () => {
+      this.capturando = false;
       this.errorLector = 'Lector de huellas desconectado.';
     };
 
+    // Vuelve a enumerar en vez de reusar el UID viejo: si reconectan otro lector, el anterior
+    // ya no existe y capturar contra el UID guardado fallaria en silencio.
+    //
+    // Pero solo cuando NO hay captura activa. El SDK emite `onDeviceConnected` como respuesta a
+    // `startAcquisition`, asi que re-capturar aqui es un bucle que se realimenta solo: se midieron
+    // 4010 vueltas en 7 minutos, y entre vuelta y vuelta la captura se reiniciaba antes de que
+    // llegara la muestra. El sintoma era un lector que reportaba calidad y no entregaba nada.
     this.sdk.onDeviceConnected = () => {
       this.errorLector = null;
-      this.iniciarCaptura();
+      if (!this.capturando) {
+        this.detectarYCapturar();
+      }
     };
 
     this.sdk.onCommunicationFailed = () => {
+      this.capturando = false;
       this.errorLector =
         'Se perdió la conexión con el lector. Verifica que el DigitalPersona Lite Client esté corriendo.';
     };
 
+    this.detectarYCapturar();
+  }
+
+  private detectarYCapturar(): void {
     this.sdk
       .enumerateDevices()
       .then((devices: string[]) => {
         if (devices && devices.length > 0) {
           this.errorLector = null;
+          this.lectorUid = devices[0];
           this.iniciarCaptura();
         } else {
+          this.lectorUid = null;
           this.errorLector = 'No se detectó ningún lector de huellas.';
         }
       })
@@ -197,13 +255,62 @@ export class AccessClientComponent implements OnInit, OnDestroy {
       });
   }
 
-  private iniciarCaptura(): void {
+  /**
+   * Cierra la captura agotada y abre una nueva.
+   *
+   * El `stopAcquisition` no es decorativo: sin el, el `startAcquisition` siguiente cae sobre una
+   * captura que el SDK todavia cree viva y no re-arma nada. El respiro antes de reabrir evita
+   * pisar el cierre, que tambien es asincrono.
+   */
+  private reArmarCaptura(): void {
     if (!this.sdk) {
       return;
     }
+    try {
+      this.sdk.stopAcquisition();
+    } catch {
+      // ya estaba detenida
+    }
+    this.capturando = false;
+    setTimeout(() => this.iniciarCaptura(), RESPIRO_REARMADO_MS);
+  }
+
+  /**
+   * Hay que nombrar el lector explicitamente.
+   *
+   * `startAcquisition(formato)` sin UID manda `DeviceID: "00000000-0000-0000-0000-000000000000"`
+   * — el GUID nulo, que el SDK documenta como "cualquier lector". Con el Lite Client esa variante
+   * resuelve la promesa **sin llegar a tomar el lector**: no hay excepcion, no hay mensaje de
+   * error, y el dedo apoyado no produce ninguna muestra.
+   *
+   * El UID sale de `enumerateDevices()`.
+   */
+  private iniciarCaptura(): void {
+    if (!this.sdk || !this.lectorUid) {
+      return;
+    }
+    if (this.capturando) {
+      return;
+    }
+    this.capturando = true;
     this.sdk
-      .startAcquisition(Fingerprint.SampleFormat.Intermediate)
+      .startAcquisition(Fingerprint.SampleFormat.Intermediate, this.lectorUid)
+      .then(() => {
+        this.reintentandoRearmado = false;
+      })
       .catch((error: any) => {
+        this.capturando = false;
+
+        // Un fallo al reabrir no es un lector caido: la captura anterior sigue entregando
+        // muestras. Se reintenta una vez, mas lejos del cierre, y solo si ese segundo intento
+        // tambien falla se le dice algo al socio.
+        if (!this.reintentandoRearmado) {
+          this.reintentandoRearmado = true;
+          setTimeout(() => this.iniciarCaptura(), REINTENTO_REARMADO_MS);
+          return;
+        }
+
+        this.reintentandoRearmado = false;
         this.errorLector = 'Error al iniciar la captura: ' + (error?.message ?? error);
       });
   }
@@ -374,8 +481,8 @@ export class AccessClientComponent implements OnInit, OnDestroy {
       next: (res: AccesoDto) => {
         if (res.acceso && res.socio) {
           this.resultadoAcceso = res;
-          // this.mostrarAviso('lectura', 'Mensaje prueba');
           this.verificando = false;
+          this.programarCierreDelResultado();
           this.toastService.show('Acceso registrado exitosamente', 'success');
           this.abrirTorniquete();
         } else {
@@ -476,6 +583,17 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     }
 
     this.identificarSocio(socioId);
+  }
+
+  /**
+   * Cierra solo el modal de acceso concedido. Los avisos ya lo hacen dentro de `mostrarAviso()`;
+   * el exito no tenia temporizador y se quedaba en pantalla hasta el intento siguiente.
+   */
+  private programarCierreDelResultado(): void {
+    if (this.temporizadorAviso) {
+      clearTimeout(this.temporizadorAviso);
+    }
+    this.temporizadorAviso = setTimeout(() => this.limpiarResultado(), DURACION_RESULTADO_MS);
   }
 
   limpiarResultado() {
