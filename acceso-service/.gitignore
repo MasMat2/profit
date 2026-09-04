@@ -1,5 +1,7 @@
 build/
 logs/
+# WinSW, que se baja y se renombra: ver README. Son ~18 MB de binario de terceros.
+winsw/*.exe
 certs/*.p12
 certs/*.pem
 certs/*.key

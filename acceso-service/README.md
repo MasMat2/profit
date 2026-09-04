@@ -138,10 +138,18 @@ Con [WinSW](https://github.com/winsw/winsw), en el directorio de instalación ju
 .\acceso-service.exe start
 ```
 
+El `.exe` es WinSW renombrado — busca el XML con su mismo nombre base, de ahí el nombre. El
+kiosco corre la release **[v2.12.0, `WinSW-x64.exe`](https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe)**
+(el build autocontenido de .NET Core, ~18 MB: no depende de la versión de .NET Framework
+instalada). No se versiona en el repo, se baja y se renombra.
+
 Ajustar antes las variables de entorno y las rutas al SDK en `winsw/acceso-service.xml`. Los
 logs quedan en `.\logs\`. Como el servicio **no** toca el lector USB (eso es del navegador),
 correr bajo LocalSystem en sesión 0 no da problemas: sólo necesita el puerto COM y salida a
 internet.
+
+El kiosco corre además el API y la app Angular como servicios, con el mismo WinSW: eso está en
+[`DESPLIEGUE.md`](../DESPLIEGUE.md), junto con cómo se actualiza cada pieza.
 
 ## Notas de diseño
 
