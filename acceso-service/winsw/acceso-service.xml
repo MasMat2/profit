@@ -23,7 +23,8 @@
         explícito evita un UnsatisfiedLinkError difícil de diagnosticar en un kiosco.
     Usar Lib\x64 con un JRE de 64 bits (Lib\win32 si fuera de 32).
 
-    --enable-native-access silencia el warning de acceso nativo restringido en Java 24+.
+    La bandera enable-native-access silencia el warning de acceso nativo restringido en Java
+    24+ (no se escribe con sus guiones aqui: XML no admite '--' dentro de un comentario).
   -->
   <arguments>-cp "%BASE%\acceso-service.jar;C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\Java\dpuareu.jar" "-Djava.library.path=C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\x64" --enable-native-access=ALL-UNNAMED com.profit.acceso.Main</arguments>
 
