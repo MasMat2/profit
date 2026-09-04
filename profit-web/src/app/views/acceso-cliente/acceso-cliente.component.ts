@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -31,6 +31,21 @@ const DURACION_AVISO: Record<TipoAviso, number> = {
 
 const INTERVALO_SALUD_MS = 5 * 60 * 1000;
 
+/**
+ * El lector de tarjetas es un "keyboard wedge": teclea el número de socio y cierra con Enter.
+ * Nadie hace clic en un campo antes de pasar la tarjeta, así que las pulsaciones se escuchan a
+ * nivel documento y se separan de las de una persona por la cadencia: el lector manda un
+ * carácter cada 10-30 ms, una persona no sostiene menos de ~100 ms.
+ */
+const PAUSA_MAX_ENTRE_TECLAS_MS = 120;
+
+/**
+ * Hay socios de un solo dígito, así que el largo del código no sirve para descartar un Enter
+ * suelto: esta ventana es la que hace ese trabajo. El lector manda el Enter pegado al último
+ * carácter; un Enter que llega después de esto no cierra ninguna ráfaga.
+ */
+const VENTANA_CIERRE_ESCANEO_MS = 300;
+
 @Component({
   selector: 'app-acceso-cliente',
   standalone: true,
@@ -39,8 +54,6 @@ const INTERVALO_SALUD_MS = 5 * 60 * 1000;
   styleUrls: ['./acceso-cliente.component.scss']
 })
 export class AccessClientComponent implements OnInit, OnDestroy {
-  readonly DEV_MODE = true;
-
   verificando: boolean = false;
   resultadoAcceso: AccesoDto | null = null;
   aviso: Aviso | null = null;
@@ -53,6 +66,11 @@ export class AccessClientComponent implements OnInit, OnDestroy {
   private sdk: any = null;
   private temporizadorAviso: ReturnType<typeof setTimeout> | null = null;
   private temporizadorSalud: ReturnType<typeof setInterval> | null = null;
+
+  /** Caracteres acumulados del escaneo de tarjeta en curso. */
+  private bufferEscaneo = '';
+  /** Marca del último carácter imprimible, para medir la cadencia del lector. */
+  private ultimaTeclaMs = 0;
 
   constructor(
     private accesoService: AccesoService,
@@ -222,12 +240,141 @@ export class AccessClientComponent implements OnInit, OnDestroy {
   }
   // #endregion Fingerprint SDK
 
+  // #region Lector de tarjetas
+  /**
+   * El lector no escribe en ningún campo: sus pulsaciones llegan al documento como las de un
+   * teclado. Se acumulan aquí y se cierran con el Enter que el propio lector manda.
+   *
+   * Angular desmonta este manejador al destruir la vista, así que —a diferencia del SDK y los
+   * temporizadores— no lleva nada en `ngOnDestroy`.
+   */
+  @HostListener('document:keydown', ['$event'])
+  manejarTeclaGlobal(e: KeyboardEvent): void {
+    // Si el evento nació dentro de un campo de texto, ese campo manda: su (keyup.enter) ya
+    // dispara la verificación, y atenderlo también aquí registraría el acceso dos veces.
+    if (this.esCampoDeTexto(e.target)) {
+      return;
+    }
+
+    // El lector nunca usa modificadores. Un Ctrl+R o un Alt+Tab del operador no es un escaneo y
+    // además parte la ráfaga a media: lo que quedó en el buffer ya no sirve.
+    if (e.ctrlKey || e.altKey || e.metaKey || e.repeat) {
+      this.bufferEscaneo = '';
+      return;
+    }
+
+    const ahora = Date.now();
+
+    if (e.key === 'Enter') {
+      const codigo = this.bufferEscaneo;
+      // Se vacía siempre, incluso si el cierre se descarta: un segundo Enter no puede revivir
+      // un código que ya se rechazó.
+      this.bufferEscaneo = '';
+
+      if (!codigo || ahora - this.ultimaTeclaMs > VENTANA_CIERRE_ESCANEO_MS) {
+        return;
+      }
+
+      // Tras tocar "Intentar de nuevo" el botón se queda con el foco: sin esto el Enter del
+      // lector lo volvería a presionar además de disparar el escaneo.
+      e.preventDefault();
+      this.procesarEscaneo(codigo);
+      return;
+    }
+
+    // `length === 1` deja fuera Shift, Tab, F5, flechas y teclas muertas sin enumerarlas. Sale
+    // SIN vaciar el buffer y sin tocar `ultimaTeclaMs`: los lectores que mandan caracteres en
+    // mayúscula intercalan un evento de Shift en plena ráfaga, y limpiar ahí truncaría el código.
+    if (e.key.length !== 1) {
+      return;
+    }
+
+    // El primer carácter de una ráfaga siempre entra por aquí (la marca anterior es vieja), así
+    // que este reinicio es el que abre el escaneo, no sólo el que descarta uno interrumpido.
+    if (ahora - this.ultimaTeclaMs > PAUSA_MAX_ENTRE_TECLAS_MS) {
+      this.bufferEscaneo = '';
+    }
+
+    this.bufferEscaneo += e.key;
+    this.ultimaTeclaMs = ahora;
+  }
+
+  /**
+   * El lector teclea sobre el documento entero, así que hay que distinguir sus pulsaciones de
+   * las de alguien escribiendo en un campo. Si el evento nació dentro de un input, ese campo se
+   * queda con la ráfaga —incluido el Enter, que ahí ya dispara la verificación— y el manejador
+   * global se hace a un lado para no registrar el acceso dos veces.
+   */
+  private esCampoDeTexto(destino: EventTarget | null): boolean {
+    if (!(destino instanceof HTMLElement)) {
+      return false;
+    }
+    const etiqueta = destino.tagName.toLowerCase();
+    return etiqueta === 'input'
+      || etiqueta === 'textarea'
+      || etiqueta === 'select'
+      || destino.isContentEditable;
+  }
+
+  private procesarEscaneo(codigo: string): void {
+    // La guarda va aquí y no sólo dentro de identificarSocio: un aviso de tarjeta ilegible
+    // lanzado a media identificación apagaría `verificando` y dejaría entrar una segunda lectura
+    // encima de la primera.
+    if (this.verificando) {
+      return;
+    }
+
+    const socioId = this.normalizarCodigo(codigo);
+    if (socioId === null) {
+      // El tipo sigue siendo `lectura` —no es una negativa de acceso— pero el icono por defecto
+      // es una huella, y quien acaba de pasar una tarjeta no entendería ese dibujo.
+      this.mostrarAviso('lectura', 'No se pudo leer la tarjeta. Intenta de nuevo o pasa a recepción.',
+        'Tarjeta no reconocida', 'fa-id-card');
+      return;
+    }
+
+    this.identificarSocio(socioId);
+  }
+
+  /**
+   * El lector puede colar un sufijo de configuración o un carácter mal leído. Al backend sólo le
+   * sirve el número: un segmento no numérico en la ruta es un 400, y ese 400 el socio lo ve como
+   * "el sistema está caído" en vez de "vuelve a pasar la tarjeta".
+   */
+  private normalizarCodigo(codigo: string): number | null {
+    const digitos = codigo.replace(/\D/g, '');
+    if (!digitos) {
+      return null;
+    }
+    // Number() se come los ceros a la izquierda ("0000123" → 123), que es el número que guarda
+    // tbsocios. isSafeInteger descarta una lectura embarrada de 20 dígitos, que como float daría
+    // un id sin sentido.
+    const socioId = Number(digitos);
+    return Number.isSafeInteger(socioId) && socioId > 0 ? socioId : null;
+  }
+  // #endregion Lector de tarjetas
+
+  /**
+   * Único punto de entrada de una identificación por número de socio: huella, tarjeta y captura
+   * manual desembocan aquí para que la guarda de "ya hay una verificación en curso" sea una
+   * sola. Comparten el torniquete, así que dos identificaciones encimadas registrarían doble
+   * asistencia al mismo socio.
+   */
+  private identificarSocio(socioId: number): void {
+    if (this.verificando) {
+      return;
+    }
+    this.verificando = true;
+    this.limpiarResultado();
+    this.cargarSocio(socioId);
+  }
+
   private cargarSocio(socioId: number): void {
     this.accesoService.registrarAcceso(socioId).subscribe({
       next: (res: AccesoDto) => {
         if (res.acceso && res.socio) {
-          // this.resultadoAcceso = res;
-          this.mostrarAviso('lectura', 'Mensaje prueba');
+          this.resultadoAcceso = res;
+          // this.mostrarAviso('lectura', 'Mensaje prueba');
           this.verificando = false;
           this.toastService.show('Acceso registrado exitosamente', 'success');
           this.abrirTorniquete();
@@ -287,10 +434,16 @@ export class AccessClientComponent implements OnInit, OnDestroy {
    * Un aviso de `lectura` nunca pisa un modal visible: el SDK reporta la calidad justo después
    * de una captura buena, y ese reporte no puede tapar el "¡Acceso Permitido!" del socio.
    */
-  private mostrarAviso(tipo: TipoAviso, mensaje: string, titulo?: string): void {
+  private mostrarAviso(tipo: TipoAviso, mensaje: string, titulo?: string, icono?: string): void {
     // Ojo: aquí NO se puede filtrar por `verificando`. Los avisos de lectura que nacen de un
     // error HTTP llegan con la verificación todavía en curso; el filtro por captura en vuelo
     // vive en los manejadores del SDK.
+    //
+    // Pero el intento termina aquí incluso cuando el aviso no alcanza a mostrarse: si se saliera
+    // antes de apagar `verificando`, el kiosco quedaría bloqueado y no aceptaría ni una huella
+    // ni una tarjeta más hasta recargar la página.
+    this.verificando = false;
+
     if (tipo === 'lectura' && (this.resultadoAcceso || this.aviso)) {
       return;
     }
@@ -300,9 +453,8 @@ export class AccessClientComponent implements OnInit, OnDestroy {
       tipo,
       titulo: titulo ?? AccessClientComponent.TITULOS[tipo],
       mensaje,
-      icono: AccessClientComponent.ICONOS[tipo]
+      icono: icono ?? AccessClientComponent.ICONOS[tipo]
     };
-    this.verificando = false;
 
     if (this.temporizadorAviso) {
       clearTimeout(this.temporizadorAviso);
@@ -310,22 +462,21 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     this.temporizadorAviso = setTimeout(() => this.limpiarResultado(), DURACION_AVISO[tipo]);
   }
 
-  // #region DEV_MODE — delete this block (and matching HTML/SCSS sections) when removing dev mode
-  huellaInput: string = '';
+  /** Captura manual: el respaldo de recepción cuando una tarjeta no lee. */
+  socioInput: string = '';
 
-  // Repointed to the real NestJS retrieval: treats the input as a socio id.
-  verificarHuella() {
-    const socioId = Number(this.huellaInput.trim());
-    if (!this.huellaInput.trim() || Number.isNaN(socioId)) {
-      this.toastService.show('Ingresa un ID de socio válido', 'error');
+  verificarSocio(): void {
+    const texto = this.socioInput.trim();
+    // Estricto a propósito, al revés que el escaneo: aquí escribe una persona, y aceptar "12a3"
+    // como 123 registraría la asistencia de otro socio sin que nadie lo note.
+    const socioId = /^\d+$/.test(texto) ? Number(texto) : NaN;
+    if (!Number.isSafeInteger(socioId) || socioId <= 0) {
+      this.toastService.show('Ingresa un número de socio válido', 'error');
       return;
     }
 
-    this.verificando = true;
-    this.limpiarResultado();
-    this.cargarSocio(socioId);
+    this.identificarSocio(socioId);
   }
-  // #endregion DEV_MODE
 
   limpiarResultado() {
     this.resultadoAcceso = null;
@@ -334,12 +485,12 @@ export class AccessClientComponent implements OnInit, OnDestroy {
       clearTimeout(this.temporizadorAviso);
       this.temporizadorAviso = null;
     }
-    this.huellaInput = ''; // DEV — remove this line with the DEV_MODE region
+    this.socioInput = '';
   }
 
   obtenerEstadoMembresia(fechaVencimiento?: string, becado?: boolean): { clase: string; texto: string } {
     if (becado) {
-      // return { clase: 'vigente', texto: 'Beca activa' };
+      return { clase: 'becado', texto: 'Beca activa' };
     }
 
     if (!fechaVencimiento) {
@@ -349,8 +500,7 @@ export class AccessClientComponent implements OnInit, OnDestroy {
     const hoy = new Date();
     const vencimiento = new Date(fechaVencimiento);
     let diasRestantes = Math.ceil((vencimiento.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-    diasRestantes = -1; 
-    
+    // diasRestantes = 6;
     if (diasRestantes < 0) {
       return { clase: 'vencida', texto: 'Membresía vencida' }; // Cuvierto por la revision de adudos en el backend
     } else if (diasRestantes <= 7) {

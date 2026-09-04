@@ -23,7 +23,7 @@
         </div>
         
         <h2 class="instruction-text">
-          {{ verificando ? 'Verificando...' : 'Coloca tu huella digital' }}
+          {{ verificando ? 'Verificando...' : 'Coloca tu huella o pasa tu tarjeta' }}
         </h2>
 
         <!-- Estado de carga -->
@@ -33,27 +33,25 @@
           <span></span>
         </div>
         
-        <!-- DEV_MODE: delete this ng-container and its contents when removing dev mode -->
-        <ng-container *ngIf="DEV_MODE">
-          <div class="dev-input-area">
-            <input 
-              type="text" 
-              class="input-huella"
-              [(ngModel)]="huellaInput"
-              placeholder="ID de socio (modo desarrollo)"
-              (keyup.enter)="verificarHuella()"
-              [disabled]="verificando"
-            >
-            <button 
-              class="btn-verificar"
-              (click)="verificarHuella()"
-              [disabled]="verificando || !huellaInput.trim()"
-            >
-              <i class="fas fa-check"></i>
-              Verificar
-            </button>
-          </div>
-        </ng-container>
+        <!-- Respaldo de recepción cuando una tarjeta no lee -->
+        <div class="entrada-manual">
+          <input
+            type="text"
+            class="input-socio"
+            [(ngModel)]="socioInput"
+            placeholder="Número de socio"
+            (keyup.enter)="verificarSocio()"
+            [disabled]="verificando"
+          >
+          <button
+            class="btn-verificar"
+            (click)="verificarSocio()"
+            [disabled]="verificando || !socioInput.trim()"
+          >
+            <i class="fas fa-check"></i>
+            Verificar
+          </button>
+        </div>
 
         
         <div class="lector-container">
@@ -88,6 +86,10 @@
         <li>
           <i class="fas fa-clock"></i>
           Mantén el dedo quieto hasta que se complete la lectura
+        </li>
+        <li>
+          <i class="fas fa-id-card"></i>
+          O pasa tu tarjeta por el lector de código de barras
         </li>
         <li>
           <i class="fas fa-check-double"></i>
@@ -125,11 +127,17 @@
           
           <!-- Información de Membresía -->
           <div class="membership-info" *ngIf="resultadoAcceso?.socio?.tipoMembresia">
-            <div class="membership-badge">
-              <i class="fas fa-id-card"></i>
-              <span>{{ resultadoAcceso?.socio?.tipoMembresia }}</span>
+            <div class="membership-group">
+              <div class="membership-badge">
+                <i class="fas fa-id-card"></i>
+                <span>{{ resultadoAcceso?.socio?.tipoMembresia }}</span>
+              </div>
+
+              <span class="membership-clase" *ngIf="resultadoAcceso?.socio?.clase">
+                {{ resultadoAcceso?.socio?.clase }}
+              </span>
             </div>
-            
+
             <div class="membership-details">
               <div class="detail-item vencimiento" 
                    [class]="obtenerEstadoMembresia(resultadoAcceso?.socio?.fechaVencimiento, resultadoAcceso?.socio?.becado).clase">
@@ -137,14 +145,6 @@
                 <div>
                   <small>Próximo pago</small>
                   <strong>{{ resultadoAcceso?.socio?.fechaVencimiento | date:'dd/MM/yyyy' }}</strong>
-                </div>
-              </div>
-              
-              <div class="detail-item" *ngIf="resultadoAcceso?.socio?.clase">
-                <i class="fas fa-dumbbell"></i>
-                <div>
-                  <small>Clase</small>
-                  <strong>{{ resultadoAcceso?.socio?.clase }}</strong>
                 </div>
               </div>
               
