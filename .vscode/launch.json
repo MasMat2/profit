@@ -1,0 +1,30 @@
+{
+  // Se adjunta al proceso del SERVICIO profit-api que ya esta corriendo, no lanza uno nuevo.
+  //
+  // Requisito: el servicio tiene que estar escuchando el inspector. En C:\ProfitAcceso\profit-api.xml:
+  //   <arguments>--inspect=127.0.0.1:9229 dist/main</arguments>
+  // y despues Restart-Service profit-api -Force; Start-Service acceso-service   (elevado)
+  //
+  // 127.0.0.1 a proposito: el inspector de Node es ejecucion de codigo sin autenticacion. Nunca
+  // 0.0.0.0. Desde fuera se llega tunelizando el 9229 (Remote-SSH lo hace solo, o ssh -L).
+  //
+  // CUIDADO en horario de gimnasio: un breakpoint congela el API, y con el API congelado la huella
+  // se identifica pero no registra asistencia ni abre el torniquete. Usa logpoints (clic derecho en
+  // el margen > Add Logpoint), que imprimen sin detener el proceso.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Adjuntar a profit-api (servicio en vivo)",
+      "type": "node",
+      "request": "attach",
+      "address": "127.0.0.1",
+      "port": 9229,
+      // WinSW relanza el proceso si se cae; asi el debugger se vuelve a enganchar solo.
+      "restart": true,
+      "cwd": "${workspaceFolder}/api",
+      // dist trae los .js.map (tsconfig: sourceMap true), asi que los breakpoints caen en el .ts.
+      "outFiles": ["${workspaceFolder}/api/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}
