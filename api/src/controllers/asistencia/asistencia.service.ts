@@ -157,13 +157,31 @@ export class AsistenciaService {
    * SDK ya no puede importarlos. Con el CAST, mysql2 devuelve un Buffer con los bytes tal
    * como están almacenados.
    *
-   * **A diferencia de BDK, aquí no se filtra por socio activo.** Su kiosco carga las plantillas
-   * con `... left join tbsocios b on a.socio=b.socio WHERE b.Activo=1`, así que para él un socio
-   * dado de baja es indistinguible de una huella desconocida y sólo puede decir "no reconocida".
-   * Cargándolas todas, `registrarAcceso` alcanza a responder `Socio inactivo`, que es lo que
-   * recepción necesita oír. Es una divergencia deliberada y de sólo lectura: no cambia quién
-   * entra —el inactivo se rechaza igual— ni afecta un regreso a BDK. El costo es que las
-   * plantillas de los inactivos también viajan al caché del kiosco.
+   * **Sólo socios activos**, igual que BDK: `... left join tbsocios b on a.socio=b.socio
+   * WHERE b.Activo=1`, la consulta con la que su kiosco cargaba las plantillas (4607 veces en el
+   * `general.log` de junio).
+   *
+   * <p>Aquí vivía la divergencia contraria —cargarlas todas para poder responder `Socio inactivo`
+   * en vez de "no reconocida"— justificada en que "no cambia quién entra, el inactivo se rechaza
+   * igual". <b>Esa premisa era falsa.</b> `Engine.Identify` rankea por score sobre *todo* el pool,
+   * así que las plantillas de los dados de baja compiten contra las de los activos: un socio al
+   * corriente que además tiene un expediente viejo con huella es identificado por el expediente
+   * viejo y rechazado por inactivo. De 4038 plantillas cargadas, 2963 (73%) eran de socios de
+   * baja; BDK matcheaba contra 1075.
+   *
+   * <p>Casos comprobados en el log del 8-sep-2026: Bárbara Rocha Lara (3861 de baja gana sobre
+   * 3870 activa, `score=0x0` ×3) y Sofia Licona (1952 de baja, `score=0x0` ×4). Ver
+   * `BITACORA-ACCESO.md`.
+   *
+   * <p>El filtro no le puede quitar el acceso a nadie: un match contra un inactivo termina
+   * siempre en `acceso: false` en {@link AsistenciaService.registrarAcceso}, así que quitar esas
+   * plantillas sólo convierte rechazos en entradas. De paso baja el riesgo de falso positivo, con
+   * 1075 candidatos en vez de 4038 al mismo umbral.
+   *
+   * <p><b>Lo que se pierde:</b> para un socio dado de baja de verdad, recepción ve ahora "huella
+   * no reconocida" y ya no `Socio inactivo` — exactamente lo que veía con BDK. Recuperar ese
+   * mensaje sin volver a meter las plantillas al pool requiere una segunda pasada de `Identify`
+   * contra sólo los inactivos, en el camino de "no hubo match"; queda pendiente.
    */
   async listarHuellas(): Promise<string> {
     const db = this.db.getKysely();
@@ -172,9 +190,10 @@ export class AsistenciaService {
       socio: number;
       huella: Buffer | string | null;
     }>`
-      SELECT socio, CAST(huella AS BINARY) AS huella
-      FROM tbhuellas
-      WHERE huella IS NOT NULL AND huella <> ''
+      SELECT h.socio, CAST(h.huella AS BINARY) AS huella
+      FROM tbhuellas h
+      JOIN tbsocios s ON s.socio = h.socio
+      WHERE h.huella IS NOT NULL AND h.huella <> '' AND s.activo = 1
     `.execute(db);
 
     const lineas: string[] = [];
