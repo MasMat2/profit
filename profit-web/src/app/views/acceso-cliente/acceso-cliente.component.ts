@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -7,6 +7,7 @@ import { ToastService } from '../../services/shared/toast.service';
 import { MenuService } from '../../services/shared/menu.service';
 import { AccesoService, AccesoDto, EstadoServicio } from '../../services/acceso.service';
 import { FingerprintReaderService } from './fingerprint-reader.service';
+import { CardReaderParserService } from './card-reader-parser.service';
 
 /**
  * Los tres modos de fallo, que antes se veían todos como "Acceso Denegado":
@@ -44,7 +45,7 @@ const INTERVALO_SALUD_MS = 5 * 60 * 1000;
   selector: 'app-acceso-cliente',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [FingerprintReaderService],
+  providers: [FingerprintReaderService, CardReaderParserService],
   templateUrl: './acceso-cliente.component.html',
   styleUrls: ['./acceso-cliente.component.scss']
 })
@@ -68,7 +69,8 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private menuService: MenuService,
     private route: ActivatedRoute,
-    private lector: FingerprintReaderService
+    private lector: FingerprintReaderService,
+    private cardReader: CardReaderParserService
   ) {
     const segment = this.route.snapshot.url[0]?.path;
     this.pageIcon = this.menuService.getIconByRoute(segment);
@@ -325,4 +327,36 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
       return { clase: 'vigente', texto: 'Membresía vigente' };
     }
   }
+
+  // #region Lector de tarjetas
+  /**
+   * El lector no escribe en ningún campo: sus pulsaciones llegan al documento como las de un
+   * teclado. `CardReaderParserService` acumula y cierra la ráfaga; aquí sólo se decide qué hacer
+   * con un escaneo ya cerrado.
+   */
+  @HostListener('document:keydown', ['$event'])
+  manejarTeclaGlobal(e: KeyboardEvent): void {
+    const resultado = this.cardReader.procesarTecla(e);
+    if (!resultado) {
+      return;
+    }
+
+    // La guarda va aquí y no antes: un aviso de tarjeta ilegible lanzado a media identificación
+    // apagaría `verificando` y dejaría entrar una segunda lectura encima de la primera. El buffer
+    // ya se consumió en el servicio de todos modos, así que no hay nada que perder ignorándolo.
+    if (this.verificando) {
+      return;
+    }
+
+    if (resultado.tipo === 'invalido') {
+      // El tipo sigue siendo `lectura` —no es una negativa de acceso— pero el icono por defecto
+      // es una huella, y quien acaba de pasar una tarjeta no entendería ese dibujo.
+      this.mostrarAviso('lectura', 'No se pudo leer la tarjeta. Intenta de nuevo o pasa a recepción.',
+        'Tarjeta no reconocida', 'fa-id-card');
+      return;
+    }
+
+    this.identificarSocio(resultado.socioId);
+  }
+  // #endregion Lector de tarjetas
 }
