@@ -16,6 +16,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      // El default de mysql2 es utf8mb4, que no existe antes de MySQL 5.5.3. La base local de
+      // sucursal es 5.1.40, así que el handshake tiene que pedir utf8 — que además es lo que
+      // hace BDK en cada conexión (`SET NAMES utf8`). Las columnas son latin1; para texto BMP
+      // la conversión es idéntica, y `CAST(huella AS BINARY)` no depende del charset.
+      charset: 'utf8',
     });
 
 

@@ -93,6 +93,14 @@
   }
 }
 
+// Elevated surface panel: rounded, soft shadow, no border.
+// Complements `.card` (flat + bordered) for full-bleed feature panels.
+.panel {
+  background: var(--surface-a);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
 .form-field {
   margin-bottom: 1rem;
 

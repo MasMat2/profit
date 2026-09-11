@@ -50,7 +50,7 @@
 
 
 .sidebar {
-    width: 22vw;
+    width: 20vw;
     flex-shrink: 0;
     background-color: var(--surface-b); /* Color de fondo azul-grisáceo claro */
     border-right: 1px solid var(--surface-border);
@@ -79,6 +79,8 @@
 
 .sidebar.collapsed .logo-container { justify-content: center; }
 
+.sidebar.collapsed .sidebar-toggle { position: static; }
+
 .sidebar-toggle {
     background: none;
     border: none;
@@ -90,6 +92,8 @@
     align-items: center;
     justify-content: center;
     transition: color 0.2s, background-color 0.2s;
+    position: absolute;
+    right: 0;
 
     &:hover {
         color: var(--primary-color);
@@ -102,7 +106,8 @@
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    position: relative;
 }
 
 .logo-container img {
