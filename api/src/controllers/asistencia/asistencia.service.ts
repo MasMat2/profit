@@ -22,6 +22,11 @@ export interface AccesoDto {
   fecha?: Date;
 }
 
+interface FilaHuella {
+  socio: number;
+  huella: Buffer | string | null;
+}
+
 @Injectable()
 export class AsistenciaService {
   constructor(private readonly db: DatabaseService) {}
@@ -124,6 +129,56 @@ export class AsistenciaService {
 
     const total = result.rows.reduce((suma, row) => suma + Number(row.saldo), 0);
     return `Adeudo pendiente de ${total.toFixed(2)}`;
+  }
+
+  /**
+   * Templates de huella para el acceso-service del kiosco, como texto plano: una línea por
+   * huella, `socio,base64`. La coma es separador seguro porque el alfabeto base64 no la
+   * contiene.
+   *
+   * Es texto y no JSON porque el único consumidor es el servicio Java, y así no necesita
+   * parsear JSON para nada. Con ~1000 templates también es un payload bastante más chico.
+   *
+   * El CAST a BINARY es obligatorio: `huella` es una columna de texto y, si se deja que
+   * MySQL la convierta al charset de la conexión, los bytes del template se corrompen y el
+   * SDK ya no puede importarlos. Con el CAST, mysql2 devuelve un Buffer con los bytes tal
+   * como están almacenados.
+   *
+   * **Sólo socios activos**, igual que BDK: `... left join tbsocios b on a.socio=b.socio
+   * WHERE b.Activo=1`, la consulta con la que su kiosco cargaba las plantillas. Cargarlas
+   * todas dejaría que las de un socio dado de baja compitan en `Engine.Identify` contra las de
+   * uno al corriente — ver BITACORA-ACCESO.md.
+   */
+  async listarHuellas(): Promise<string> {
+    const db = this.db.getKysely();
+
+    const result = await sql<FilaHuella>`
+      SELECT h.socio, CAST(h.huella AS BINARY) AS huella
+      FROM tbhuellas h
+      JOIN tbsocios s ON s.socio = h.socio
+      WHERE h.huella IS NOT NULL AND h.huella <> '' AND s.activo = 1
+    `.execute(db);
+
+    return this.aLineas(result.rows);
+  }
+
+  private aLineas(rows: FilaHuella[]): string {
+    const lineas: string[] = [];
+
+    for (const row of rows) {
+      if (!row.huella || row.huella.length === 0) {
+        continue;
+      }
+
+      // 'binary' (latin1) preserva byte a byte si el driver entregara texto en vez de Buffer.
+      const bytes = Buffer.isBuffer(row.huella)
+        ? row.huella
+        : Buffer.from(row.huella, 'binary');
+
+      lineas.push(`${row.socio},${bytes.toString('base64')}`);
+    }
+
+    return lineas.join('\n');
   }
 
   private async getSocio(socioId: number) {

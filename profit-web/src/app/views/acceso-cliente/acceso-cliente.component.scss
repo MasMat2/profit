@@ -59,11 +59,84 @@ $estado-colors: (
   width: 100%;
   max-width: 500px;
 
+  .fingerprint-icon {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8edf2, #f8f9fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+
+    i {
+      font-size: 6rem;
+      color: var(--primary-color);
+      transition: all 0.3s ease;
+    }
+
+    &.scanning {
+      animation: pulse 1.5s ease-in-out infinite;
+      box-shadow: 0 8px 32px rgba(249, 115, 22, 0.3);
+
+      i {
+        animation: ripple 1.5s ease-in-out infinite;
+        color: var(--primary-color-darker);
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid var(--primary-color);
+        animation: ripple 1.5s ease-out infinite;
+      }
+    }
+  }
+
   .instruction-text {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-color);
     margin: 0 0 2rem 0;
+  }
+}
+
+.lector-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.lector-error {
+  text-align: center;
+  color: var(--text-color-secondary);
+  background-color: var(--surface-b);
+  border-radius: 8px;
+  padding: 0.5rem;
+  width: fit-content;
+  margin-bottom: 0.5rem;
+
+  p {
+    font-size: 1rem;
+    margin: 0;
+
+    i{
+      margin-right: 0.5rem;
+    }
+  }
+
+  // El servicio caído es un problema de operación, no del socio: se marca distinto del
+  // "lector desconectado" para que recepción sepa a quién llamar.
+  &.servicio {
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
   }
 }
 
@@ -497,6 +570,17 @@ $estado-colors: (
     }
   }
 
+  // Ámbar y no rojo a propósito: una captura mala es un "intenta otra vez", no un rechazo.
+  // Pintarla de rojo manda a recepción a gente que sólo apoyó mal el dedo.
+  &.aviso-lectura {
+    background: linear-gradient(135deg, #F59E0B, #D97706);
+    box-shadow: 0 20px 60px rgba(245, 158, 11, 0.4);
+
+    .btn-retry {
+      color: #B45309;
+    }
+  }
+
   // Gris: el sistema falló, no el socio.
   &.aviso-servicio {
     background: linear-gradient(135deg, #64748B, #475569);
@@ -556,6 +640,26 @@ $estado-colors: (
         flex-shrink: 0;
       }
     }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
   }
 }
 

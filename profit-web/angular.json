@@ -31,7 +31,10 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/scripts/websdk.client.bundle.min.js",
+              "src/assets/scripts/fingerprint.sdk.min.js"
+            ]
           },
           "configurations": {
             "production": {

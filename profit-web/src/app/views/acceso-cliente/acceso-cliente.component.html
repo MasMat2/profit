@@ -16,9 +16,14 @@
     <!-- Panel de verificación -->
     <div class="verification-panel panel">
 
+      <!-- Área de lectura de huella -->
       <div class="fingerprint-area">
+        <div class="fingerprint-icon" [class.scanning]="verificando">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+
         <h2 class="instruction-text">
-          {{ verificando ? 'Verificando...' : 'Ingresa tu número de socio' }}
+          {{ verificando ? 'Verificando...' : 'Coloca tu huella' }}
         </h2>
 
         <!-- Estado de carga -->
@@ -28,6 +33,7 @@
           <span></span>
         </div>
 
+        <!-- Respaldo de recepción cuando la huella no lee -->
         <div class="entrada-manual">
           <input
             type="text"
@@ -47,6 +53,24 @@
           </button>
         </div>
 
+        <div class="lector-container">
+          <!-- Problema con el lector: hardware o Lite Client -->
+          <div class="lector-error" *ngIf="errorLector">
+            <p>
+              <i class="fas fa-exclamation-triangle"></i>
+              {{ errorLector }}
+            </p>
+          </div>
+
+          <!-- Problema con el servicio de identificación: es otro problema y otra solución -->
+          <div class="lector-error servicio" *ngIf="errorServicio">
+            <p>
+              <i class="fas fa-server"></i>
+              {{ errorServicio }}
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -55,8 +79,12 @@
       <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
       <ul>
         <li>
-          <i class="fas fa-keyboard"></i>
-          Escribe tu número de socio en el recuadro
+          <i class="fas fa-hand-point-right"></i>
+          Coloca tu dedo en el lector de huellas
+        </li>
+        <li>
+          <i class="fas fa-clock"></i>
+          Mantén el dedo quieto hasta que se complete la lectura
         </li>
         <li>
           <i class="fas fa-check-double"></i>
@@ -149,8 +177,8 @@
     </div>
 
     <!--
-      Los dos modos de fallo comparten el modal, pero no el mensaje: un servicio caído no es
-      culpa del socio.
+      Los tres modos de fallo comparten el modal, pero no el mensaje: una captura mala
+      ("lectura") no es una negativa de acceso, y un servicio caído no es culpa del socio.
     -->
     <div class="result-error" *ngIf="aviso" [ngClass]="'aviso-' + aviso.tipo">
       <div class="error-icon">

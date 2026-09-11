@@ -1,18 +1,20 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../../services/shared/toast.service';
 import { MenuService } from '../../services/shared/menu.service';
-import { AccesoService, AccesoDto } from '../../services/acceso.service';
+import { AccesoService, AccesoDto, EstadoServicio } from '../../services/acceso.service';
+import { FingerprintReaderService } from './fingerprint-reader.service';
 
 /**
- * Los dos modos de fallo, que antes se veían todos como "Acceso Denegado":
+ * Los tres modos de fallo, que antes se veían todos como "Acceso Denegado":
+ *  - `lectura`  : la captura no sirvió (dedo mal apoyado, sucio, mojado). No es una negativa.
  *  - `denegado` : se identificó pero no puede pasar, o el número de socio no existe.
  *  - `servicio` : algo está roto. El socio no tiene la culpa y recepción necesita enterarse.
  */
-export type TipoAviso = 'denegado' | 'servicio';
+export type TipoAviso = 'lectura' | 'denegado' | 'servicio';
 
 export interface Aviso {
   tipo: TipoAviso;
@@ -24,47 +26,139 @@ export interface Aviso {
 /**
  * Lo que permanece en pantalla el resultado de un intento de acceso — el suyo y el del que sigue.
  *
- * "Si no es interrumpido": cualquier intento nuevo pasa por `limpiarResultado()`, que cancela
- * este temporizador antes de armar el suyo, asi que en una fila el modal de cada socio lo cierra
- * el siguiente sin esperar los 15 s.
+ * "Si no es interrumpido": cualquier intento nuevo (huella o manual) pasa por
+ * `limpiarResultado()`, que cancela este temporizador antes de armar el suyo, asi que en una fila
+ * el modal de cada socio lo cierra el siguiente sin esperar los 15 s.
  */
 const DURACION_RESULTADO_MS = 15000;
 
 const DURACION_AVISO: Record<TipoAviso, number> = {
+  lectura: DURACION_RESULTADO_MS,
   denegado: DURACION_RESULTADO_MS,
   servicio: DURACION_RESULTADO_MS
 };
+
+const INTERVALO_SALUD_MS = 5 * 60 * 1000;
 
 @Component({
   selector: 'app-acceso-cliente',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  providers: [FingerprintReaderService],
   templateUrl: './acceso-cliente.component.html',
   styleUrls: ['./acceso-cliente.component.scss']
 })
-export class AccesoClienteComponent implements OnDestroy {
+export class AccesoClienteComponent implements OnInit, OnDestroy {
   pageIcon: string;
 
   verificando: boolean = false;
   resultadoAcceso: AccesoDto | null = null;
   aviso: Aviso | null = null;
 
+  /** Problema con el lector: hardware o Lite Client. */
+  errorLector: string | null = null;
+  /** Problema con el servicio de identificación. Es distinto y se muestra aparte. */
+  errorServicio: string | null = null;
+
   private temporizadorAviso: ReturnType<typeof setTimeout> | null = null;
+  private temporizadorSalud: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private accesoService: AccesoService,
     private toastService: ToastService,
     private menuService: MenuService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private lector: FingerprintReaderService
   ) {
     const segment = this.route.snapshot.url[0]?.path;
     this.pageIcon = this.menuService.getIconByRoute(segment);
   }
 
+  ngOnInit(): void {
+    this.lector.muestra$.subscribe((data) => this.procesarHuella(data));
+    this.lector.errorLector$.subscribe((err) => (this.errorLector = err));
+
+    // Sin estas suscripciones, una captura mala no producía ninguna señal: el socio se quedaba
+    // esperando frente al lector sin saber que tenía que volver a intentar. Se filtran aquí y no
+    // en el servicio porque un aviso de lectura nunca debe pisar una identificación en curso.
+    this.lector.calidad$.subscribe((mensaje) => {
+      if (!this.verificando) {
+        this.mostrarAviso('lectura', mensaje);
+      }
+    });
+    this.lector.errorCaptura$.subscribe(() => {
+      if (!this.verificando) {
+        this.mostrarAviso('lectura', 'No se pudo leer la huella. Intenta de nuevo.');
+      }
+    });
+
+    this.lector.iniciar();
+    this.revisarSalud();
+    this.temporizadorSalud = setInterval(() => this.revisarSalud(), INTERVALO_SALUD_MS);
+  }
+
   ngOnDestroy(): void {
+    // FingerprintReaderService cierra la captura en su propio ngOnDestroy: Angular lo destruye
+    // junto con este componente por estar en sus `providers`.
+    if (this.temporizadorSalud) {
+      clearInterval(this.temporizadorSalud);
+    }
     if (this.temporizadorAviso) {
       clearTimeout(this.temporizadorAviso);
     }
+  }
+
+  /**
+   * Avisa de un servicio caído o sin templates antes de que nadie apoye el dedo. Sin esto, una
+   * caída del servicio se ve exactamente igual que una huella no enrolada, y recepción manda a
+   * re-enrolarse a gente que no lo necesita.
+   */
+  private revisarSalud(): void {
+    this.accesoService.estadoServicio().subscribe({
+      next: (estado: EstadoServicio) => {
+        if (estado.status === 'SIN_TEMPLATES') {
+          this.errorServicio =
+            'El servicio de huella no tiene huellas cargadas. Avisa a recepción.';
+        } else {
+          this.errorServicio = null;
+        }
+      },
+      error: () => {
+        this.errorServicio =
+          'El servicio de huella no responde. El acceso con huella no está disponible.';
+      }
+    });
+  }
+
+  /**
+   * Sends the captured template to the Java identification service, then
+   * retrieves the matched socio data from NestJS.
+   */
+  private procesarHuella(data: string): void {
+    // El SDK entrega muestras en streaming: sin esta guarda, un dedo apoyado
+    // dispara varias identificaciones (y varios registros de asistencia).
+    if (this.verificando) {
+      return;
+    }
+
+    this.verificando = true;
+    this.limpiarResultado();
+
+    this.accesoService.matchFingerprint(data).subscribe({
+      next: (res) => {
+        if (res && res.socio != null) {
+          this.cargarSocio(res.socio);
+        } else {
+          // El servicio respondió bien: la huella simplemente no está en el padrón.
+          this.mostrarAviso('denegado', 'Tu huella no está registrada. Pasa a recepción.',
+            'Huella no reconocida');
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error en la identificación de huella:', err);
+        this.mostrarAvisoDeError(err, 'No se pudo leer la huella. Intenta de nuevo.');
+      }
+    });
   }
 
   /**
@@ -89,6 +183,7 @@ export class AccesoClienteComponent implements OnDestroy {
           this.verificando = false;
           this.programarCierreDelResultado();
           this.toastService.show('Acceso registrado exitosamente', 'success');
+          this.abrirTorniquete();
         } else {
           this.mostrarAviso('denegado', res.motivo ?? 'Acceso denegado');
         }
@@ -104,27 +199,61 @@ export class AccesoClienteComponent implements OnDestroy {
    * Un servicio caído no es culpa del socio: distinguirlo evita que recepción mande a
    * re-enrolarse a gente cuya huella está perfectamente bien.
    */
-  private mostrarAvisoDeError(err: HttpErrorResponse, mensajeGenerico: string): void {
+  private mostrarAvisoDeError(err: HttpErrorResponse, mensajeDeLectura: string): void {
     const inalcanzable = err.status === 0 || err.status >= 500;
     if (inalcanzable) {
       this.mostrarAviso('servicio', 'El sistema de acceso no está disponible. Pasa a recepción.');
     } else {
-      this.mostrarAviso('denegado', mensajeGenerico);
+      this.mostrarAviso('lectura', mensajeDeLectura);
     }
   }
 
+  /**
+   * El torniquete se abre sólo después de que el API aprobó el acceso.
+   * Si el puerto serial falla no se le quita el acceso al socio: la asistencia
+   * ya quedó registrada, así que sólo se avisa.
+   */
+  private abrirTorniquete(): void {
+    this.accesoService.abrirTorniquete().subscribe({
+      error: (err: unknown) => {
+        console.error('Error al abrir el torniquete:', err);
+        this.toastService.show('No se pudo abrir el torniquete', 'error');
+      }
+    });
+  }
+
   private static readonly TITULOS: Record<TipoAviso, string> = {
+    lectura: 'No se pudo leer la huella',
     denegado: 'Acceso Denegado',
     servicio: 'Servicio no disponible'
   };
 
   private static readonly ICONOS: Record<TipoAviso, string> = {
+    lectura: 'fa-fingerprint',
     denegado: 'fa-times-circle',
     servicio: 'fa-plug-circle-xmark'
   };
 
+  /**
+   * Muestra uno de los tres modales de fallo.
+   *
+   * Un aviso de `lectura` nunca pisa un modal visible: el SDK reporta la calidad justo después
+   * de una captura buena, y ese reporte no puede tapar el "¡Acceso Permitido!" del socio.
+   */
   private mostrarAviso(tipo: TipoAviso, mensaje: string, titulo?: string, icono?: string): void {
+    // Ojo: aquí NO se puede filtrar por `verificando`. Los avisos de lectura que nacen de un
+    // error HTTP llegan con la verificación todavía en curso; el filtro por captura en vuelo
+    // vive en los manejadores del SDK.
+    //
+    // Pero el intento termina aquí incluso cuando el aviso no alcanza a mostrarse: si se saliera
+    // antes de apagar `verificando`, el kiosco quedaría bloqueado y no aceptaría ni una huella
+    // más hasta recargar la página.
     this.verificando = false;
+
+    if (tipo === 'lectura' && (this.resultadoAcceso || this.aviso)) {
+      return;
+    }
+
     this.resultadoAcceso = null;
     this.aviso = {
       tipo,
