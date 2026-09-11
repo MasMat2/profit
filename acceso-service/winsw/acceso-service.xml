@@ -2,7 +2,8 @@
   Configuracion de WinSW para correr acceso-service como servicio de Windows.
 
   Instalacion en el kiosco:
-    1. Descargar WinSW.NET4.exe y renombrarlo a acceso-service.exe, junto a este XML.
+    1. Descargar WinSW-x64.exe (release v2.12.0) y renombrarlo a acceso-service.exe, junto a
+       este XML. WinSW toma el XML que lleva su mismo nombre base.
     2. Copiar acceso-service.jar (de build/) y application.properties al mismo directorio.
     3. acceso-service.exe install
        acceso-service.exe start
@@ -23,7 +24,8 @@
         explícito evita un UnsatisfiedLinkError difícil de diagnosticar en un kiosco.
     Usar Lib\x64 con un JRE de 64 bits (Lib\win32 si fuera de 32).
 
-    --enable-native-access silencia el warning de acceso nativo restringido en Java 24+.
+    La bandera enable-native-access silencia el warning de acceso nativo restringido en Java
+    24+ (no se escribe con sus guiones aqui: XML no admite '--' dentro de un comentario).
   -->
   <arguments>-cp "%BASE%\acceso-service.jar;C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\Java\dpuareu.jar" "-Djava.library.path=C:\Program Files\DigitalPersona\U.are.U SDK\Windows\Lib\x64" --enable-native-access=ALL-UNNAMED com.profit.acceso.Main</arguments>
 
