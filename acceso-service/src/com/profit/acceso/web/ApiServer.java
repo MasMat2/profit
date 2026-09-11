@@ -160,15 +160,24 @@ public final class ApiServer implements AutoCloseable {
     salud.put("status", snapshot.isEmpty() ? "SIN_TEMPLATES" : "OK");
     salud.putAll(resumenTemplates(snapshot));
     salud.put("matchFormat", importer.formatoEnUso().toString());
+    salud.put("pollSeconds", templates.intervaloSondeo().toSeconds());
     salud.put("turnstile", Map.of("enabled", torniquete.habilitado(), "port", torniquete.puerto()));
     return salud;
   }
 
+  /**
+   * {@code marca} en null con {@code loadedAt} puesto significa que el API no la manda (o el
+   * sondeo se apago por un error) y la cache solo se mueve con la recarga completa.
+   */
   private Map<String, Object> resumenTemplates(TemplateSnapshot snapshot) {
     Map<String, Object> resumen = new LinkedHashMap<>();
     resumen.put("templates", snapshot.size());
     resumen.put("descartados", snapshot.descartados());
     resumen.put("loadedAt", snapshot.loadedAt() == null ? null : snapshot.loadedAt().toString());
+    resumen.put(
+        "actualizadoAt",
+        snapshot.actualizadoAt() == null ? null : snapshot.actualizadoAt().toString());
+    resumen.put("marca", templates.marca());
     return resumen;
   }
 

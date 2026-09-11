@@ -33,8 +33,20 @@ export interface EstadoServicio {
   templates: number;
   descartados: number;
   loadedAt: string | null;
+  /** Último delta del sondeo de cambios aplicado sobre la carga completa. */
+  actualizadoAt?: string | null;
+  /** Null: el sondeo está apagado y la caché sólo se mueve con la recarga completa. */
+  marca?: string | null;
+  pollSeconds?: number;
   matchFormat: string;
   turnstile: { enabled: boolean; port: string };
+}
+
+/** Respuesta de POST /api/templates/refresh del servicio Java. */
+export interface ResumenHuellas {
+  templates: number;
+  descartados: number;
+  loadedAt: string | null;
 }
 
 @Injectable({
@@ -80,5 +92,17 @@ export class AccesoService {
    */
   estadoServicio(): Observable<EstadoServicio> {
     return this.http.get<EstadoServicio>(`${environment.javaServiceUrl}/api/health`);
+  }
+
+  /**
+   * Recarga completa de la caché de huellas del servicio local. Es lo que hay detrás del botón
+   * "Actualizar huellas" del kiosco: para el socio recién enrolado en recepción que llega al
+   * torniquete antes de que el sondeo de cambios lo alcance, o con el sondeo apagado.
+   */
+  refrescarHuellas(): Observable<ResumenHuellas> {
+    return this.http.post<ResumenHuellas>(
+      `${environment.javaServiceUrl}/api/templates/refresh`,
+      {}
+    );
   }
 }

@@ -187,9 +187,14 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--primary-color);
     color: var(--surface-a);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 }
 

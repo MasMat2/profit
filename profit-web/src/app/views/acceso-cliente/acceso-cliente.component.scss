@@ -570,6 +570,9 @@ $estado-colors: (
     }
   }
 
+  // Variantes del mismo modal. Sólo cambia el color: la estructura, el icono, el mensaje y el
+  // botón se reutilizan tal cual.
+  //
   // Ámbar y no rojo a propósito: una captura mala es un "intenta otra vez", no un rechazo.
   // Pintarla de rojo manda a recepción a gente que sólo apoyó mal el dedo.
   &.aviso-lectura {
@@ -639,6 +642,28 @@ $estado-colors: (
         margin-top: 2px;
         flex-shrink: 0;
       }
+    }
+  }
+
+  // Secundario a propósito (borde, sin relleno): no compite con "Verificar", que es el flujo
+  // principal. El `ul` de arriba ya deja el espacio.
+  .actualizar-huellas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+
+    // Visual base (color, borde, hover, disabled) viene de .btn-outline en _shared.scss;
+    // aquí sólo el ajuste de ancho para este layout apilado.
+    .btn-actualizar {
+      width: 100%;
+    }
+
+    small {
+      color: var(--text-color-secondary);
+      font-size: 0.8rem;
+      line-height: 1.4;
+      text-align: center;
     }
   }
 }

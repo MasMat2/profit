@@ -39,6 +39,13 @@ const DURACION_AVISO: Record<TipoAviso, number> = {
   servicio: DURACION_RESULTADO_MS
 };
 
+/**
+ * Lo que el botón "Actualizar huellas" queda deshabilitado después de cada uso. La recarga que
+ * dispara es completa (~13 MB y 2-3 s del hilo nativo del servicio, durante los cuales una
+ * identificación espera): no es para apretarlo en ráfaga.
+ */
+const ENFRIAMIENTO_ACTUALIZAR_MS = 10 * 1000;
+
 const INTERVALO_SALUD_MS = 5 * 60 * 1000;
 
 @Component({
@@ -108,8 +115,63 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
     if (this.temporizadorAviso) {
       clearTimeout(this.temporizadorAviso);
     }
+    if (this.temporizadorEnfriamiento) {
+      clearTimeout(this.temporizadorEnfriamiento);
+    }
   }
 
+  // #region Actualizar huellas
+  /** Hay una recarga en vuelo: el botón gira. */
+  actualizandoHuellas = false;
+  /** Acaba de terminar una: el botón se queda deshabilitado un rato, sin girar. */
+  enfriandoHuellas = false;
+  private temporizadorEnfriamiento: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * Botón bajo las instrucciones. Para el socio que acaba de enrolarse en recepción y llega al
+   * torniquete antes de que el sondeo de cambios del servicio lo alcance (o con el sondeo
+   * apagado). Es la recarga completa a propósito: es la acción de "asegúrate", y sirve aunque
+   * el camino incremental esté caído.
+   */
+  actualizarHuellas(evento: Event): void {
+    // El lector de tarjetas teclea Enter sobre el documento: si el botón se queda con el foco,
+    // un Enter suelto lo volvería a presionar. Mismo problema que "Intentar de nuevo".
+    (evento.currentTarget as HTMLElement | null)?.blur();
+
+    if (this.actualizandoHuellas || this.enfriandoHuellas) {
+      return;
+    }
+    this.actualizandoHuellas = true;
+
+    this.accesoService.refrescarHuellas().subscribe({
+      next: (resumen) => {
+        this.toastService.show(`Huellas actualizadas: ${resumen.templates}`, 'success');
+        // Un SIN_TEMPLATES que hubiera en pantalla ya no aplica.
+        this.revisarSalud();
+        this.programarEnfriamiento();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al actualizar las huellas:', err);
+        this.toastService.show('No se pudieron actualizar las huellas. Avisa a recepción.', 'error');
+        this.programarEnfriamiento();
+      }
+    });
+  }
+
+  private programarEnfriamiento(): void {
+    this.actualizandoHuellas = false;
+    this.enfriandoHuellas = true;
+    if (this.temporizadorEnfriamiento) {
+      clearTimeout(this.temporizadorEnfriamiento);
+    }
+    this.temporizadorEnfriamiento = setTimeout(() => {
+      this.enfriandoHuellas = false;
+      this.temporizadorEnfriamiento = null;
+    }, ENFRIAMIENTO_ACTUALIZAR_MS);
+  }
+  // #endregion Actualizar huellas
+
+  // #region Salud del servicio
   /**
    * Avisa de un servicio caído o sin templates antes de que nadie apoye el dedo. Sin esto, una
    * caída del servicio se ve exactamente igual que una huella no enrolada, y recepción manda a
@@ -131,7 +193,9 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
       }
     });
   }
+  // #endregion Salud del servicio
 
+  // #region Fingerprint SDK
   /**
    * Sends the captured template to the Java identification service, then
    * retrieves the matched socio data from NestJS.
@@ -162,6 +226,7 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
       }
     });
   }
+  // #endregion Fingerprint SDK
 
   /**
    * Único punto de entrada de una identificación por número de socio: la guarda de "ya hay una

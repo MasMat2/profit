@@ -33,7 +33,7 @@
           <span></span>
         </div>
 
-        <!-- Respaldo de recepción cuando la huella no lee -->
+        <!-- Respaldo de recepción cuando una tarjeta no lee -->
         <div class="entrada-manual">
           <input
             type="text"
@@ -95,6 +95,23 @@
           El sistema verificará automáticamente tu acceso
         </li>
       </ul>
+
+      <!--
+        Para el socio que acaba de enrolarse en recepción y llega antes de que el sondeo de
+        cambios del servicio lo alcance. Recarga completa: ver `actualizarHuellas()`.
+      -->
+      <div class="actualizar-huellas">
+        <button
+          type="button"
+          class="btn-outline btn-actualizar"
+          (click)="actualizarHuellas($event)"
+          [disabled]="actualizandoHuellas || enfriandoHuellas || verificando"
+        >
+          <i class="fas fa-sync-alt"></i>
+          {{ actualizandoHuellas ? 'Actualizando huellas...' : 'Actualizar huellas' }}
+        </button>
+        <small>Si acabas de registrarte en recepción y tu huella no se reconoce.</small>
+      </div>
     </div>
   </div>
   </div>

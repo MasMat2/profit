@@ -38,19 +38,44 @@ public final class MatcherService {
 
   public Optional<Match> identificar(String fingerprintBase64) {
     byte[] raw = FmdImporter.decodificar(fingerprintBase64);
-    TemplateSnapshot snapshot = templates.current();
+    TemplateSnapshot activos = templates.current();
+    TemplateSnapshot inactivos = templates.currentInactivos();
 
-    if (snapshot.isEmpty()) {
+    if (activos.isEmpty() && inactivos.isEmpty()) {
       Log.warn("Llego una identificacion pero la cache de templates esta vacia.");
       return Optional.empty();
     }
 
-    return nativo.call("identificar", () -> identificarNativo(raw, snapshot));
+    return nativo.call("identificar", () -> identificarNativo(raw, activos, inactivos));
   }
 
-  private Optional<Match> identificarNativo(byte[] raw, TemplateSnapshot snapshot) {
+  /**
+   * Dos pasadas de {@code Identify}, nunca en el mismo pool: si la de activos no encuentra nada,
+   * se intenta contra los inactivos. Es lo unico que le devuelve a recepcion el mensaje
+   * `Socio inactivo` en vez de "huella no reconocida" sin repetir el bug original —mezclar los
+   * dos pools deja que un expediente viejo le gane el match a uno al corriente— porque cada
+   * `Identify` sólo rankea dentro de un pool homogeneo.
+   *
+   * <p>El resultado de la segunda pasada no se distingue del de la primera: da igual, porque
+   * {@code AsistenciaService.registrarAcceso} ya rechaza a cualquier socio inactivo sea cual sea
+   * el pool que lo encontro.
+   */
+  private Optional<Match> identificarNativo(
+      byte[] raw, TemplateSnapshot activos, TemplateSnapshot inactivos) {
     Engine engine = UareUGlobal.GetEngine();
     Fmd muestra = importer.importarMuestra(raw);
+
+    Optional<Match> match = buscar(engine, muestra, activos);
+    if (match.isPresent() || inactivos.isEmpty()) {
+      return match;
+    }
+    return buscar(engine, muestra, inactivos);
+  }
+
+  private Optional<Match> buscar(Engine engine, Fmd muestra, TemplateSnapshot snapshot) {
+    if (snapshot.isEmpty()) {
+      return Optional.empty();
+    }
 
     Engine.Candidate[] candidatos;
     try {

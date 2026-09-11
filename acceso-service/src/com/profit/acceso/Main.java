@@ -42,7 +42,9 @@ public final class Main {
             importer,
             nativo,
             config.get("acceso.api.url", "http://localhost:3000"),
-            config.get("acceso.api.key", ""));
+            config.get("acceso.api.key", ""),
+            Duration.ofMinutes(config.getInt("acceso.refresh.minutes", 15)),
+            Duration.ofSeconds(config.getInt("acceso.poll.seconds", 15)));
 
     MatcherService matcher =
         new MatcherService(
@@ -85,7 +87,7 @@ public final class Main {
 
     // Despues de abrir el puerto: si el API no responde, el servicio igual queda arriba y
     // /api/health lo reporta, en vez de no arrancar.
-    loader.iniciar(Duration.ofMinutes(config.getInt("acceso.refresh.minutes", 15)));
+    loader.iniciar();
   }
 
   /** Primer valor de {@code --clave=valor}, o el valor por omision. */
