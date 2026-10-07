@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { sql } from 'kysely';
 import { DatabaseService } from '../../database/database.service';
 
@@ -16,7 +16,7 @@ export interface SocioAcceso {
 export interface AccesoDto {
   acceso: boolean;
   motivo?: string;
-  /** Se dejó pasar, pero hay algo que recepción debería saber (por ahora, adeudo pendiente). */
+  /** Se dejó pasar, pero hay algo que recepción debería saber (por ahora, el cargo de hoy sin pagar). */
   advertencia?: string;
   socio?: SocioAcceso;
   fecha?: Date;
@@ -61,35 +61,48 @@ function aMs(fecha: Date | string | null | undefined): number {
   return Number.isFinite(ms) ? ms : 0;
 }
 
+/** Medianoche local del día de `fecha`. */
+function inicioDelDia(fecha: Date): Date {
+  const dia = new Date(fecha);
+  dia.setHours(0, 0, 0, 0);
+  return dia;
+}
+
 @Injectable()
 export class AsistenciaService {
+  private readonly logger = new Logger(AsistenciaService.name);
+
   constructor(private readonly db: DatabaseService) {}
 
   async registrarAcceso(socioId: number): Promise<AccesoDto> {
     const socio = await this.getSocio(socioId);
 
     if (!socio) {
-      return { acceso: false, motivo: `Socio ${socioId} no encontrado` };
+      return this.negar(socioId, `Socio ${socioId} no encontrado`);
     }
 
     if (!socio.activo) {
-      return { acceso: false, motivo: 'Socio inactivo' };
+      return this.negar(socio.socio, 'Socio inactivo');
     }
 
     const now = new Date();
 
-    // Al becado no se le revisa ni vigencia ni adeudo: es la misma rama que aplica BDK.
-    let adeudo: string | null = null;
+    // Al becado no se le revisa adeudo: es la misma rama que aplica BDK.
+    let advertencia: string | undefined;
 
     if (!socio.becado) {
-      const membresiaVigente =
-        socio.diapago && new Date(socio.diapago).getTime() > now.getTime();
+      const adeudo = await this.consultarAdeudo(socio.socio, inicioDelDia(now));
 
-      if (!membresiaVigente) {
-        return { acceso: false, motivo: 'Membresía vencida' };
+      if (adeudo.antesDeHoy > 0) {
+        return this.negar(
+          socio.socio,
+          `Adeudo pendiente de ${adeudo.antesDeHoy.toFixed(2)}`,
+        );
       }
 
-      adeudo = await this.consultarAdeudo(socio.socio, now);
+      if (adeudo.delDia > 0) {
+        advertencia = `Cargo del día pendiente de ${adeudo.delDia.toFixed(2)}`;
+      }
     }
 
     const claseId = this.parseClaseId(socio.clases);
@@ -100,7 +113,7 @@ export class AsistenciaService {
 
     return {
       acceso: true,
-      advertencia: adeudo ?? undefined,
+      advertencia,
       socio: {
         id: socio.id,
         socio: socio.socio,
@@ -116,53 +129,60 @@ export class AsistenciaService {
   }
 
   /**
-   * Adeudo pendiente: la misma consulta que corre BDK en el torniquete — mensualidades no
-   * canceladas con saldo cuya fecha ya llegó. El límite es el **inicio del día siguiente**, tal
-   * cual está en el log general (`Fecha<'2026-05-24 00:00:00'` para un acceso del 23 de mayo),
-   * o sea "hasta hoy inclusive".
+   * Adeudo pendiente, con el mismo filtro que el procedimiento `validaciones` de
+   * `C:\BDKGymV2\asistenciagym.exe`: `Saldo>0 AND Cancelado=0 AND Fecha<mañana`. Se separa en
+   * dos montos porque se tratan distinto:
    *
-   * <p><b>BDK no niega por esto.</b> Pide `Descrip, Fecha, Saldo` para desplegarlo, no para
-   * evaluar: sobre el subconjunto verificable contra `backup5` (adeudo con certeza vigente en
-   * mayo), dejó pasar 36 accesos de 7 socios con adeudo vencido —el 2002 con 15,290 de 10
-   * mensualidades sin pagar— contra 1 solo negado. Por eso el resultado de aquí nunca bloquea en
-   * {@link registrarAcceso}: sólo viaja como `advertencia` para que recepción lo vea.
+   * <ul>
+   *   <li>`antesDeHoy` — cargos de días anteriores. **Niega**, sin tolerancia ni pagos
+   *       parciales.
+   *   <li>`delDia` — el cargo con fecha de hoy. Sólo avisa: hoy todavía lo cubre el pago
+   *       anterior (decisión del gimnasio del 2026-10-05). **Diferencia con BDK**, que lo niega
+   *       en cuanto el lote de la mañana lo genera.
+   * </ul>
    *
-   * <p><b>A quién no se le revisa.</b> BDK corre esta consulta 980 de 1346 veces; las 366 que
-   * salta son de becados. Comprobado contra la base: de los 65 socios que la saltan los 65 son
-   * `becado=1`, y de los 574 que la corren los 574 son `becado=0` — separación perfecta, y
-   * ningún socio cae en ambos grupos. Coherente con el dato de fondo: 51 de esos 65 becados no
-   * tienen ni una fila en `tbmensualidades`. Por eso la llamada vive dentro de la rama
-   * `!becado` de {@link registrarAcceso}, la misma que ya se salta la vigencia.
+   * <p>BDK **no revisa `diapago`** en el torniquete (no aparece en ninguno de los 19,831
+   * intentos del general log de jul-ago): lo avanza al generar el cargo, no al pagar, así que
+   * quien no ha pagado aparece aquí como adeudo. Tampoco se salta a los socios de VISITA como
+   * BDK, porque el gimnasio no vende paquetes de visitas.
    *
-   * <p>La consulta de `tbtickets` que BDK hace en el mismo punto no se replica: en los cuatro
-   * días del log no negó a nadie, así que no hay ni un caso del que sacar su regla y adivinarla
-   * sería dejar gente fuera sin razón.
-   *
-   * @return el motivo si hay adeudo, o `null`
+   * @param hoy inicio del día del acceso
    */
   private async consultarAdeudo(
     socio: number,
-    now: Date,
-  ): Promise<string | null> {
-    const limite = new Date(now);
-    limite.setHours(0, 0, 0, 0);
-    limite.setDate(limite.getDate() + 1);
+    hoy: Date,
+  ): Promise<{ antesDeHoy: number; delDia: number }> {
+    const manana = new Date(hoy);
+    manana.setDate(manana.getDate() + 1);
 
-    const result = await sql<{ saldo: string }>`
-      SELECT saldo
+    const result = await sql<{
+      antesDeHoy: string | null;
+      delDia: string | null;
+    }>`
+      SELECT SUM(CASE WHEN fecha < ${hoy} THEN saldo END) AS antesDeHoy,
+             SUM(CASE WHEN fecha >= ${hoy} THEN saldo END) AS delDia
       FROM tbmensualidades
       WHERE socio = ${socio}
         AND saldo > 0
         AND cancelado = 0
-        AND fecha < ${limite}
+        AND fecha < ${manana}
     `.execute(this.db.getKysely());
 
-    if (result.rows.length === 0) {
-      return null;
-    }
+    const fila = result.rows[0];
+    return {
+      antesDeHoy: Number(fila?.antesDeHoy ?? 0),
+      delDia: Number(fila?.delDia ?? 0),
+    };
+  }
 
-    const total = result.rows.reduce((suma, row) => suma + Number(row.saldo), 0);
-    return `Adeudo pendiente de ${total.toFixed(2)}`;
+  /**
+   * El API es el único que sabe por qué se negó un acceso: el acceso-service sólo ve que el
+   * torniquete no se abrió. Sin esta línea el motivo había que reconstruirlo cruzando su log
+   * con la base.
+   */
+  private negar(socio: number, motivo: string): AccesoDto {
+    this.logger.log(`Acceso negado: socio=${socio} motivo=${motivo}`);
+    return { acceso: false, motivo };
   }
 
   /**
