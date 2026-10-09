@@ -106,7 +106,13 @@ export class AsistenciaService {
     }
 
     const claseId = this.parseClaseId(socio.clases);
-    await this.insertarAsistencia(socio.socio, claseId, now);
+
+    // Las validaciones ya corrieron: un reingreso se niega igual si el socio debe algo.
+    if (await this.yaEntroHoy(socio.socio, inicioDelDia(now))) {
+      this.logger.log(`Asistencia ya registrada hoy: socio=${socio.socio}`);
+    } else {
+      await this.insertarAsistencia(socio.socio, claseId, now);
+    }
 
     const { tipoMembresia, claseNombre, visitasPeriodo } =
       await this.consultarInfoAcceso(socio, claseId, now);
@@ -173,6 +179,33 @@ export class AsistenciaService {
       antesDeHoy: Number(fila?.antesDeHoy ?? 0),
       delDia: Number(fila?.delDia ?? 0),
     };
+  }
+
+  /**
+   * **Una asistencia por socio por día** (decisión del gimnasio del 2026-10-08). Si ya entró hoy
+   * no se inserta otra fila, pero el acceso se concede igual y el torniquete se abre: puede ser
+   * un reingreso legítimo o un reintento porque el torniquete se volvió a trabar.
+   *
+   * <p>Lo que motivó la regla son las lecturas repetidas: el dedo que se queda apoyado o la
+   * tarjeta que se pasa dos veces. Con el kiosco (29-ago a 8-sep) había 16.6 repetidas por día a
+   * menos de 10 s y 11.6 entre 10 y 59 s; con BDK (1-jun a 28-ago) eran 3.8 y 7.0.
+   *
+   * <p><b>Diferencia con BDK</b>, que no revisa nada antes de `fcnInserta('tbAsistencia')` y
+   * registraba cada reingreso del día (~130 filas por día de más). Desde aquí `tbasistencia`
+   * cuenta días de asistencia, no pasadas por el torniquete.
+   *
+   * @param hoy inicio del día del acceso, con la hora local del kiosco
+   */
+  private async yaEntroHoy(socio: number, hoy: Date): Promise<boolean> {
+    const fila = await this.db
+      .getKysely()
+      .selectFrom('tbasistencia')
+      .select('id')
+      .where('socio', '=', socio)
+      .where('fecha', '>=', hoy)
+      .limit(1)
+      .executeTakeFirst();
+    return !!fila;
   }
 
   /**

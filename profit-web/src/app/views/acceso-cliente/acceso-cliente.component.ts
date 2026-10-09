@@ -46,6 +46,16 @@ const DURACION_AVISO: Record<TipoAviso, number> = {
  */
 const ENFRIAMIENTO_ACTUALIZAR_MS = 10 * 1000;
 
+/**
+ * Cuánto se ignora al socio que acaba de entrar si se vuelve a leer: el dedo que se queda apoyado
+ * sigue entregando muestras, y la tarjeta a veces se pasa dos veces. La ventana se recorre con
+ * cada lectura ignorada, así que un dedo apoyado largo no termina colándose.
+ *
+ * El API ya no inserta una segunda asistencia en el día, pero sin esto cada lectura mandaría
+ * otro `R01` y alargaría el tiempo que el torniquete queda desbloqueado.
+ */
+const SILENCIO_MISMO_SOCIO_MS = 10 * 1000;
+
 const INTERVALO_SALUD_MS = 5 * 60 * 1000;
 
 @Component({
@@ -242,10 +252,25 @@ export class AccesoClienteComponent implements OnInit, OnDestroy {
     this.cargarSocio(socioId);
   }
 
+  /** El último acceso concedido, para reconocer la relectura del mismo socio. */
+  private ultimoAcceso: { socio: number; ms: number; resultado: AccesoDto } | null = null;
+
   private cargarSocio(socioId: number): void {
+    const ahora = Date.now();
+    if (this.ultimoAcceso?.socio === socioId && ahora - this.ultimoAcceso.ms < SILENCIO_MISMO_SOCIO_MS) {
+      // Quien llama ya limpió la pantalla: se repone el "¡Acceso Permitido!" que estaba, sin
+      // volver a llamar al API ni abrir el torniquete otra vez.
+      this.ultimoAcceso.ms = ahora;
+      this.resultadoAcceso = this.ultimoAcceso.resultado;
+      this.verificando = false;
+      this.programarCierreDelResultado();
+      return;
+    }
+
     this.accesoService.registrarAcceso(socioId).subscribe({
       next: (res: AccesoDto) => {
         if (res.acceso && res.socio) {
+          this.ultimoAcceso = { socio: socioId, ms: Date.now(), resultado: res };
           this.resultadoAcceso = res;
           this.verificando = false;
           this.programarCierreDelResultado();
